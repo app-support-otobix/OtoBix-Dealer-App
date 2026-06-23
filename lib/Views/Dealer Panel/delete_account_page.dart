@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:otobix/Utils/app_colors.dart';
+import 'package:otobix/Widgets/app_bar_widget.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -50,14 +51,15 @@ class _DeleteAccountPageState extends State<DeleteAccountPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Delete Account',
-          style: TextStyle(fontSize: 16, color: AppColors.white),
-        ),
-        backgroundColor: AppColors.green,
-        iconTheme: const IconThemeData(color: AppColors.white),
-      ),
+      // appBar: AppBar(
+      //   title: const Text(
+      //     'Delete Account',
+      //     style: TextStyle(fontSize: 16, color: AppColors.white),
+      //   ),
+      //   backgroundColor: AppColors.green,
+      //   iconTheme: const IconThemeData(color: AppColors.white),
+      // ),
+      appBar: AppBarWidget(title: 'Delete Account'),
       body: Stack(
         children: [
           WebViewWidget(controller: _controller),

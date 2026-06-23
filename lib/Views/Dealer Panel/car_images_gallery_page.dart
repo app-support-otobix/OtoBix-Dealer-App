@@ -7,6 +7,7 @@ import 'package:otobix/Models/car_gallery_sections_model.dart';
 import 'package:otobix/Models/car_model.dart';
 import 'package:otobix/Utils/app_colors.dart';
 import 'package:otobix/Views/Dealer%20Panel/car_images_page.dart';
+import 'package:otobix/Widgets/app_bar_widget.dart';
 import 'package:shimmer/shimmer.dart';
 
 class CarImagesGalleryPage extends StatelessWidget {
@@ -38,14 +39,15 @@ class CarImagesGalleryPage extends StatelessWidget {
     );
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Car Images Gallery',
-          style: TextStyle(fontSize: 16, color: AppColors.white),
-        ),
-        backgroundColor: AppColors.green,
-        iconTheme: const IconThemeData(color: AppColors.white),
-      ),
+      // appBar: AppBar(
+      //   title: const Text(
+      //     'Car Images Gallery',
+      //     style: TextStyle(fontSize: 16, color: AppColors.white),
+      //   ),
+      //   backgroundColor: AppColors.green,
+      //   iconTheme: const IconThemeData(color: AppColors.white),
+      // ),
+      appBar: AppBarWidget(title: 'Car Images Gallery'),
       body: Column(
         children: [
           _buildChipsBar(controller: getxController),

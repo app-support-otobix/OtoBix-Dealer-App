@@ -2,7 +2,6 @@ import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:http/http.dart';
 import 'package:intl/intl.dart';
 import 'package:otobix/Controllers/home_controller.dart';
 import 'package:otobix/Controllers/live_bids_controller.dart';
@@ -596,14 +595,22 @@ class _CarDetailsPageState extends State<CarDetailsPage> {
       iconDetail(
         Icons.speed,
         'Odometer Reading in Kms',
-        '${NumberFormat.decimalPattern('en_IN').format(carDetails.odometerReadingInKms)} km',
+        // '${NumberFormat.decimalPattern('en_IN').format(carDetails.odometerReadingInKms)} km',
+        '${NumberFormat.decimalPattern('en_IN').format(getFirstValidValueFromCarModel(values: [carDetails.odometerReadingBeforeTestDrive, carDetails.odometerReadingInKms], returnType: ReturnType.number))} km',
       ),
       iconDetail(Icons.local_gas_station, 'Fuel Type', carDetails.fuelType),
 
       iconDetail(
         Icons.settings,
         'Transmission',
-        carDetails.commentsOnTransmission,
+        // carDetails.commentsOnTransmission,
+        getFirstValidValueFromCarModel(
+          values: [
+            carDetails.transmissionTypeDropdownList,
+            carDetails.commentsOnTransmission,
+          ],
+          returnType: ReturnType.string,
+        ),
       ),
       iconDetail(
         Icons.person,
@@ -632,7 +639,15 @@ class _CarDetailsPageState extends State<CarDetailsPage> {
       //       ? '${carDetails.cubicCapacity} cc'
       //       : 'N/A',
       // ),
-      iconDetail(Icons.location_on, 'Inspection Location', carDetails.city),
+      iconDetail(
+        Icons.location_on,
+        'Inspection Location',
+        // carDetails.city
+        getFirstValidValueFromCarModel(
+          values: [carDetails.inspectionCity, carDetails.city],
+          returnType: ReturnType.string,
+        ),
+      ),
       iconDetail(
         Icons.directions_car_filled,
         'Registration No.',
@@ -682,7 +697,7 @@ class _CarDetailsPageState extends State<CarDetailsPage> {
               children: [
                 Flexible(
                   child: Text(
-                    '${GlobalFunctions.getFormattedDate(date: carDetails.yearMonthOfManufacture, type: GlobalFunctions.year)} ${carDetails.make} ${carDetails.model} ${carDetails.variant}',
+                    '${GlobalFunctions.getFormattedDate(date: getFirstValidValueFromCarModel(values: [carDetails.yearAndMonthOfManufacture, carDetails.yearMonthOfManufacture], returnType: ReturnType.datetime), type: GlobalFunctions.year)} ${carDetails.make} ${carDetails.model} ${carDetails.variant}',
                     textAlign: TextAlign.center,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -946,9 +961,27 @@ class _CarDetailsPageState extends State<CarDetailsPage> {
       content: Column(
         children: [
           buildRow('Appointment ID', carDetails.appointmentId),
-          buildRow('RC Book Availability', carDetails.rcBookAvailability),
+          buildRow(
+            'RC Book Availability',
+            getFirstValidValueFromCarModel(
+              values: [
+                carDetails.rcBookAvailabilityDropdownList,
+                carDetails.rcBookAvailability,
+              ],
+              returnType: ReturnType.string,
+            ),
+          ),
           buildRow('RC Condition', carDetails.rcCondition),
-          buildRow('Mismatch In RC', carDetails.mismatchInRc),
+          buildRow(
+            'Mismatch In RC',
+            getFirstValidValueFromCarModel(
+              values: [
+                carDetails.mismatchInRcDropdownList,
+                carDetails.mismatchInRc,
+              ],
+              returnType: ReturnType.string,
+            ),
+          ),
           buildRow(
             'Registration Date',
             GlobalFunctions.getFormattedDate(
@@ -960,7 +993,13 @@ class _CarDetailsPageState extends State<CarDetailsPage> {
           buildRow(
             'Fitness Till',
             GlobalFunctions.getFormattedDate(
-                  date: carDetails.fitnessTill,
+                  date: getFirstValidValueFromCarModel(
+                    values: [
+                      carDetails.fitnessValidity,
+                      carDetails.fitnessTill,
+                    ],
+                    returnType: ReturnType.datetime,
+                  ),
                   type: GlobalFunctions.monthYear,
                 ) ??
                 'N/A',
@@ -977,7 +1016,13 @@ class _CarDetailsPageState extends State<CarDetailsPage> {
                 ) ??
                 'N/A',
           ),
-          buildRow('Insurance', carDetails.insurance),
+          buildRow(
+            'Insurance',
+            getFirstValidValueFromCarModel(
+              values: [carDetails.insuranceDropdownList, carDetails.insurance],
+              returnType: ReturnType.string,
+            ),
+          ),
           buildRow(
             'Insurance Validity',
             GlobalFunctions.getFormattedDate(
@@ -989,7 +1034,16 @@ class _CarDetailsPageState extends State<CarDetailsPage> {
           buildRow('Duplicate Key', carDetails.duplicateKey),
           buildRow('RTO NOC', carDetails.rtoNoc),
           buildRow('Party Peshi', carDetails.partyPeshi),
-          buildRow('Additional Details', carDetails.additionalDetails),
+          buildRow(
+            'Additional Details',
+            getFirstValidValueFromCarModel(
+              values: [
+                carDetails.additionalDetailsDropdownList,
+                carDetails.additionalDetails,
+              ],
+              returnType: ReturnType.string,
+            ),
+          ),
           // if (getxController.isValidComment(carDetails.comments))
           //   _buildCommentsCard(
           //     title: 'Comments',
@@ -1207,110 +1261,192 @@ class _CarDetailsPageState extends State<CarDetailsPage> {
     final fields = [
       {
         "label": "Upper Cross Member",
-        "value": carDetails.upperCrossMember,
+        "value": getFirstValidValueFromCarModel(
+          values: [
+            carDetails.upperCrossMemberDropdownList,
+            carDetails.upperCrossMember,
+          ],
+          returnType: ReturnType.string,
+        ),
         "icon": Icons.border_top,
       },
       {
         "label": "Radiator Support",
-        "value": carDetails.radiatorSupport,
+        "value": getFirstValidValueFromCarModel(
+          values: [
+            carDetails.radiatorSupportDropdownList,
+            carDetails.radiatorSupport,
+          ],
+          returnType: ReturnType.string,
+        ),
         "icon": Icons.water_drop_outlined, // coolant-related
       },
       {
         "label": "Head Light Support",
-        "value": carDetails.headlightSupport,
+        "value": getFirstValidValueFromCarModel(
+          values: [
+            carDetails.headlightSupportDropdownList,
+            carDetails.headlightSupport,
+          ],
+          returnType: ReturnType.string,
+        ),
         "icon": Icons.lightbulb_outline, // lights
       },
       {
         "label": "Lower Cross Member",
-        "value": carDetails.lowerCrossMember,
+        "value": getFirstValidValueFromCarModel(
+          values: [
+            carDetails.lowerCrossMemberDropdownList,
+            carDetails.lowerCrossMember,
+          ],
+          returnType: ReturnType.string,
+        ),
         "icon": Icons.border_bottom,
       },
       {
         "label": "LHS Apron",
-        "value": carDetails.lhsApron,
+        "value": getFirstValidValueFromCarModel(
+          values: [carDetails.lhsApronDropdownList, carDetails.lhsApron],
+          returnType: ReturnType.string,
+        ),
         "icon": Icons.align_horizontal_left,
-        "imageUrls": [
-          carDetails.apronLhsRhs.isNotEmpty ? carDetails.apronLhsRhs[0] : 'NA',
-        ],
+        // "imageUrls": [ carDetails.apronLhsRhs.isNotEmpty ? carDetails.apronLhsRhs[0] : 'NA', ],
+        "imageUrls": getFirstValidValueFromCarModel(
+          values: [
+            carDetails.lhsApronImages,
+            carDetails.apronLhsRhs.isNotEmpty
+                ? carDetails.apronLhsRhs[0]
+                : null,
+          ],
+          returnType: ReturnType.list,
+          defaultValue: [],
+        ),
       },
       {
         "label": "RHS Apron",
-        "value": carDetails.rhsApron,
+        "value": getFirstValidValueFromCarModel(
+          values: [carDetails.rhsApronDropdownList, carDetails.rhsApron],
+          returnType: ReturnType.string,
+        ),
         "icon": Icons.align_horizontal_right,
-        "imageUrls": [
-          carDetails.apronLhsRhs.length > 1 ? carDetails.apronLhsRhs[1] : 'NA',
-        ],
+        // "imageUrls": [ carDetails.apronLhsRhs.length > 1 ? carDetails.apronLhsRhs[1] : 'NA', ],
+        "imageUrls": getFirstValidValueFromCarModel(
+          values: [
+            carDetails.rhsApronImages,
+            carDetails.apronLhsRhs.length > 1
+                ? carDetails.apronLhsRhs[1]
+                : null,
+          ],
+          returnType: ReturnType.list,
+          defaultValue: [],
+        ),
       },
       {
         "label": "Firewall",
-        "value": carDetails.firewall,
+        "value": getFirstValidValueFromCarModel(
+          values: [carDetails.firewallDropdownList, carDetails.firewall],
+          returnType: ReturnType.string,
+        ),
         "icon": Icons.shield, // metaphorical for firewall
+        "imageUrls": carDetails.firewallImages,
       },
       {
         "label": "Cowl Top",
-        "value": carDetails.cowlTop,
+        "value": getFirstValidValueFromCarModel(
+          values: [carDetails.cowlTopDropdownList, carDetails.cowlTop],
+          returnType: ReturnType.string,
+        ),
         "icon": Icons.expand_less, // top area metaphor
+        "imageUrls": carDetails.cowlTopImages,
       },
       {
         "label": "Engine",
-        "value": carDetails.engine,
+        "value": getFirstValidValueFromCarModel(
+          values: [carDetails.engineDropdownList, carDetails.engine],
+          returnType: ReturnType.string,
+        ),
         "icon": Icons.settings, // engine machinery
       },
-      // {
-      //   "label": "Engine Video",
-      //   "value": carDetails.engine,
-      //   "icon": Icons.confirmation_number,
-      // },
       {
         "label": "Battery",
-        "value": carDetails.battery,
+        "value": getFirstValidValueFromCarModel(
+          values: [carDetails.batteryDropdownList, carDetails.battery],
+          returnType: ReturnType.string,
+        ),
         "icon": Icons.battery_full,
         "imageUrls": carDetails.batteryImages,
       },
       {
         "label": "Coolant",
-        "value": carDetails.coolant,
+        "value": getFirstValidValueFromCarModel(
+          values: [carDetails.coolantDropdownList, carDetails.coolant],
+          returnType: ReturnType.string,
+        ),
         "icon": Icons.water_drop,
       },
       {
         "label": "Engine Oil Level Dipstick",
-        "value": carDetails.engineOilLevelDipstick,
+        "value": getFirstValidValueFromCarModel(
+          values: [
+            carDetails.engineOilLevelDipstickDropdownList,
+            carDetails.engineOilLevelDipstick,
+          ],
+          returnType: ReturnType.string,
+        ),
         "icon": Icons.straighten, // for measuring tool
       },
       {
         "label": "Engine Oil",
-        "value": carDetails.engineOil,
+        "value": getFirstValidValueFromCarModel(
+          values: [carDetails.engineOilDropdownList, carDetails.engineOil],
+          returnType: ReturnType.string,
+        ),
         "icon": Icons.oil_barrel,
       },
       {
         "label": "Engine Mount",
-        "value": carDetails.engineMount,
+        "value": getFirstValidValueFromCarModel(
+          values: [carDetails.engineMountDropdownList, carDetails.engineMount],
+          returnType: ReturnType.string,
+        ),
         "icon": Icons.construction,
       },
       {
         "label": "Permisable Blow By",
-        "value": carDetails.enginePermisableBlowBy,
+        "value": getFirstValidValueFromCarModel(
+          values: [
+            carDetails.enginePermisableBlowByDropdownList,
+            carDetails.enginePermisableBlowBy,
+          ],
+          returnType: ReturnType.string,
+        ),
         "icon": Icons.compress,
       },
       {
         "label": "Exhaust Smoke",
-        "value": carDetails.exhaustSmoke,
+        "value": getFirstValidValueFromCarModel(
+          values: [
+            carDetails.exhaustSmokeDropdownList,
+            carDetails.exhaustSmoke,
+          ],
+          returnType: ReturnType.string,
+        ),
         "icon": Icons.air,
       },
-
-      // {
-      //   "label": "Exhaust Smoke Video",
-      //   "value": carDetails.exhaustSmokeVideo,
-      //   "icon": Icons.confirmation_number,
-      // },
       {
         "label": "Clutch",
-        "value": carDetails.clutch,
+        "value": getFirstValidValueFromCarModel(
+          values: [carDetails.clutchDropdownList, carDetails.clutch],
+          returnType: ReturnType.string,
+        ),
         "icon": Icons.sync_alt, // motion/transfer metaphor
       },
       {
         "label": "Gear Shift",
-        "value": carDetails.gearShift,
+        "value": getFirstValidValueFromCarModel(
+          values: [carDetails.gearShiftDropdownList, carDetails.gearShift],
+          returnType: ReturnType.string,
+        ),
         "icon": Icons.settings_input_component,
       },
 
@@ -1404,6 +1540,60 @@ class _CarDetailsPageState extends State<CarDetailsPage> {
       // },
     ];
 
+    // Extract Comments
+    final String commentsOnEngine = getFirstValidValueFromCarModel(
+      values: [
+        carDetails.commentsOnEngineDropdownList,
+        carDetails.commentsOnEngine,
+      ],
+      returnType: ReturnType.string,
+    );
+    final String commentsOnEngineOil = getFirstValidValueFromCarModel(
+      values: [
+        carDetails.commentsOnEngineOilDropdownList,
+        carDetails.commentsOnEngineOil,
+      ],
+      returnType: ReturnType.string,
+    );
+    final String commentsOnTransmission = getFirstValidValueFromCarModel(
+      values: [
+        carDetails.commentsOnTransmissionDropdownList,
+        carDetails.commentsOnTransmission,
+      ],
+      returnType: ReturnType.string,
+    );
+    final String commentsOnRadiator = getFirstValidValueFromCarModel(
+      values: [
+        carDetails.commentsOnRadiatorDropdownList,
+        carDetails.commentsOnRadiator,
+      ],
+      returnType: ReturnType.string,
+    );
+    final String commentsOnTowing = getFirstValidValueFromCarModel(
+      values: [
+        carDetails.commentsOnTowingDropdownList,
+        carDetails.commentsOnTowing,
+      ],
+      returnType: ReturnType.string,
+    );
+    final String commentsOnOthers = getFirstValidValueFromCarModel(
+      values: [
+        carDetails.commentsOnOthersDropdownList,
+        carDetails.commentsOnOthers,
+      ],
+      returnType: ReturnType.string,
+    );
+
+    final List<String> engineBayImages = getFirstValidValueFromCarModel(
+      values: [carDetails.engineBayImages, carDetails.engineBay],
+      returnType: ReturnType.list,
+    );
+
+    final List<String> additionalEngineImages = getFirstValidValueFromCarModel(
+      values: [carDetails.additionalEngineImages, carDetails.additionalImages],
+      returnType: ReturnType.list,
+    );
+
     return AccordionWidget(
       title: 'Engine Bay',
       contentSize: 400,
@@ -1412,6 +1602,14 @@ class _CarDetailsPageState extends State<CarDetailsPage> {
         padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 8),
         child: Column(
           children: [
+            if (engineBayImages.isNotEmpty)
+              buildItem(
+                icon: Icons.collections_outlined,
+                label: 'Engine Bay Images',
+                trailing: engineBayValue(engineBayImages.length.toString()),
+                imageUrls: engineBayImages,
+              ),
+
             ...fields.map((item) {
               return buildItem(
                 icon: item['icon'] as IconData,
@@ -1420,14 +1618,15 @@ class _CarDetailsPageState extends State<CarDetailsPage> {
                 imageUrls: (item['imageUrls'] as List<String>?) ?? [],
               );
             }),
-            if (carDetails.additionalImages.isNotEmpty)
+
+            if (additionalEngineImages.isNotEmpty)
               buildItem(
                 icon: Icons.collections_outlined,
                 label: 'Additional Images',
                 trailing: engineBayValue(
-                  carDetails.additionalImages.length.toString(),
+                  additionalEngineImages.length.toString(),
                 ),
-                imageUrls: carDetails.additionalImages,
+                imageUrls: additionalEngineImages,
               ),
 
             // LayoutGrid(
@@ -1459,15 +1658,41 @@ class _CarDetailsPageState extends State<CarDetailsPage> {
               children: [
                 videoCard(
                   label: 'Engine Sound',
-                    videoUrl: carDetails.engineSound.isNotEmpty
-                      ? carDetails.engineSound[0]
-                      : 'NA',
+                  // videoUrl: carDetails.engineSound.isNotEmpty ? carDetails.engineSound[0] : 'NA',
+                  videoUrl: getFirstValidValueFromCarModel(
+                    values: [
+                      [
+                        carDetails.engineVideo.isNotEmpty
+                            ? carDetails.engineVideo[0]
+                            : 'NA',
+                      ],
+                      [
+                        carDetails.engineSound.isNotEmpty
+                            ? carDetails.engineSound[0]
+                            : 'NA',
+                      ],
+                    ],
+                    returnType: ReturnType.string,
+                  ),
                 ),
                 videoCard(
                   label: 'Exhaust Smoke',
-                  videoUrl: carDetails.exhaustSmokeImages.isNotEmpty
-                      ? carDetails.exhaustSmokeImages[0]
-                      : 'NA',
+                  // videoUrl: carDetails.exhaustSmokeImages.isNotEmpty ? carDetails.exhaustSmokeImages[0] : 'NA',
+                  videoUrl: getFirstValidValueFromCarModel(
+                    values: [
+                      [
+                        carDetails.exhaustSmokeVideo.isNotEmpty
+                            ? carDetails.exhaustSmokeVideo[0]
+                            : 'NA',
+                      ],
+                      [
+                        carDetails.exhaustSmokeImages.isNotEmpty
+                            ? carDetails.exhaustSmokeImages[0]
+                            : 'NA',
+                      ],
+                    ],
+                    returnType: ReturnType.string,
+                  ),
                 ),
               ],
             ),
@@ -1482,58 +1707,52 @@ class _CarDetailsPageState extends State<CarDetailsPage> {
             const Divider(),
             const SizedBox(height: 10),
             // if no comments on any of the fields
-            if (!getxController.isValidComment(carDetails.commentsOnEngine) &&
-                !getxController.isValidComment(
-                  carDetails.commentsOnEngineOil,
-                ) &&
-                !getxController.isValidComment(
-                  carDetails.commentsOnTransmission,
-                ) &&
-                !getxController.isValidComment(carDetails.commentsOnRadiator) &&
-                !getxController.isValidComment(carDetails.commentsOnTowing) &&
-                !getxController.isValidComment(carDetails.commentsOnOthers))
+            if (!getxController.isValidComment(commentsOnEngine) &&
+                !getxController.isValidComment(commentsOnEngineOil) &&
+                !getxController.isValidComment(commentsOnTransmission) &&
+                !getxController.isValidComment(commentsOnRadiator) &&
+                !getxController.isValidComment(commentsOnTowing) &&
+                !getxController.isValidComment(commentsOnOthers))
               Text(
                 'No Comments',
                 style: TextStyle(fontSize: 12, color: AppColors.grey),
               ),
 
             // else show comments on each field
-            if (getxController.isValidComment(carDetails.commentsOnEngine))
+            if (getxController.isValidComment(commentsOnEngine))
               _buildCommentsCard(
                 title: 'Comments on Engine',
-                comment: carDetails.commentsOnEngine,
+                comment: commentsOnEngine,
                 icon: Icons.settings, // represents engine/machinery
               ),
-            if (getxController.isValidComment(carDetails.commentsOnEngineOil))
+            if (getxController.isValidComment(commentsOnEngineOil))
               _buildCommentsCard(
                 title: 'Comments on Engine Oil',
-                comment: carDetails.commentsOnEngineOil,
+                comment: commentsOnEngineOil,
                 icon: Icons.oil_barrel, // ideal for oil-related comments
               ),
-            if (getxController.isValidComment(
-              carDetails.commentsOnTransmission,
-            ))
+            if (getxController.isValidComment(commentsOnTransmission))
               _buildCommentsCard(
                 title: 'Comments on Transmission',
-                comment: carDetails.commentsOnTransmission,
+                comment: commentsOnTransmission,
                 icon: Icons.sync_alt, // movement between components
               ),
-            if (getxController.isValidComment(carDetails.commentsOnRadiator))
+            if (getxController.isValidComment(commentsOnRadiator))
               _buildCommentsCard(
                 title: 'Comments on Radiator',
-                comment: carDetails.commentsOnRadiator,
+                comment: commentsOnRadiator,
                 icon: Icons.water_drop, // fluid/coolant
               ),
-            if (getxController.isValidComment(carDetails.commentsOnTowing))
+            if (getxController.isValidComment(commentsOnTowing))
               _buildCommentsCard(
                 title: 'Comments on Towing',
-                comment: carDetails.commentsOnTowing,
+                comment: commentsOnTowing,
                 icon: Icons.local_shipping, // towing/truck metaphor
               ),
-            if (getxController.isValidComment(carDetails.commentsOnOthers))
+            if (getxController.isValidComment(commentsOnOthers))
               _buildCommentsCard(
                 title: 'Comments on Others',
-                comment: carDetails.commentsOnOthers,
+                comment: commentsOnOthers,
                 icon: Icons.info_outline, // general purpose
               ),
           ],
@@ -1584,12 +1803,32 @@ class _CarDetailsPageState extends State<CarDetailsPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 12),
-          buildItem(Icons.settings_ethernet, 'Steering', carDetails.steering),
-          buildItem(Icons.car_repair, 'Brakes', carDetails.brakes),
+          buildItem(
+            Icons.settings_ethernet,
+            'Steering',
+            getFirstValidValueFromCarModel(
+              values: [carDetails.steeringDropdownList, carDetails.steering],
+              returnType: ReturnType.string,
+            ),
+          ),
+          buildItem(
+            Icons.car_repair,
+            'Brakes',
+            getFirstValidValueFromCarModel(
+              values: [carDetails.brakesDropdownList, carDetails.brakes],
+              returnType: ReturnType.string,
+            ),
+          ),
           buildItem(
             Icons.directions_car_filled,
             'Suspension',
-            carDetails.suspension,
+            getFirstValidValueFromCarModel(
+              values: [
+                carDetails.suspensionDropdownList,
+                carDetails.suspension,
+              ],
+              returnType: ReturnType.string,
+            ),
           ),
         ],
       ),
@@ -1721,7 +1960,9 @@ class _CarDetailsPageState extends State<CarDetailsPage> {
 
       if (status == 'available' || status == 'yes') {
         return Icon(Icons.check_circle, color: AppColors.green, size: 20);
-      } else if (status == 'not applicable' || status == 'not available') {
+      } else if (status == 'not applicable' ||
+          status == 'not available' ||
+          status == '') {
         return Icon(Icons.cancel, color: AppColors.red, size: 20);
       } else {
         return Text(value.toString(), style: const TextStyle(fontSize: 13));
@@ -1744,6 +1985,31 @@ class _CarDetailsPageState extends State<CarDetailsPage> {
     //   );
     // }
 
+    final List<String> additionalInteriorImages =
+        getFirstValidValueFromCarModel(
+          values: [
+            carDetails.additionalInteriorImages,
+            carDetails.additionalImages2,
+          ],
+          returnType: ReturnType.list,
+        );
+
+    final String commentOnInterior = getFirstValidValueFromCarModel(
+      values: [
+        carDetails.commentOnInteriorDropdownList,
+        carDetails.commentOnInterior,
+      ],
+      returnType: ReturnType.string,
+    );
+
+    final List<String> clusterMeterImages = getFirstValidValueFromCarModel(
+      values: [
+        carDetails.meterConsoleWithEngineOnImages,
+        carDetails.meterConsoleWithEngineOn,
+      ],
+      returnType: ReturnType.list,
+    );
+
     return AccordionWidget(
       title: 'Interior & Electricals',
       icon: Icons.chair_alt_outlined,
@@ -1752,39 +2018,85 @@ class _CarDetailsPageState extends State<CarDetailsPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           item(
+            icon: Icons.speed, // Cluster Meter With Engine Running
+            label: 'Cluster Meter With Engine Running',
+            trailing: interiorFeatureValue(
+              clusterMeterImages.length.toString(),
+            ),
+            imageUrls: clusterMeterImages,
+          ),
+
+          item(
             icon: Icons.security, // ABS
             label: 'ABS',
             trailing: interiorFeatureValue(carDetails.abs),
           ),
 
+          // item(
+          //   icon: Icons.electric_bolt, // Electricals
+          //   label: 'Electricals',
+          //   trailing: interiorFeatureValue(carDetails.electricals),
+          // ),
           item(
-            icon: Icons.electric_bolt, // Electricals
-            label: 'Electricals',
-            trailing: interiorFeatureValue(carDetails.electricals),
+            icon: Icons.wash, // Front Wiper & Washer
+            label: 'Front Wiper & Washer',
+            trailing: interiorFeatureValue(
+              getFirstValidValueFromCarModel(
+                values: [carDetails.frontWiperAndWasherDropdownList],
+                returnType: ReturnType.string,
+              ),
+            ),
+            imageUrls: carDetails.frontWiperAndWasherImages,
           ),
 
           item(
-            icon: Icons.wash, // Rear Wiper Washer
-            label: 'Rear Wiper Washer',
-            trailing: interiorFeatureValue(carDetails.rearWiperWasher),
+            icon: Icons.wash, // Rear Wiper & Washer
+            label: 'Rear Wiper & Washer',
+            trailing: interiorFeatureValue(
+              getFirstValidValueFromCarModel(
+                values: [
+                  carDetails.rearWiperWasherDropdownList,
+                  carDetails.rearWiperWasher,
+                ],
+                returnType: ReturnType.string,
+              ),
+            ),
+            imageUrls: carDetails.rearWiperAndWasherImages,
           ),
 
           item(
             icon: Icons.blur_on, // Rear Defogger
             label: 'Rear Defogger',
-            trailing: interiorFeatureValue(carDetails.rearDefogger),
+            trailing: interiorFeatureValue(
+              getFirstValidValueFromCarModel(
+                values: [
+                  carDetails.rearDefoggerDropdownList,
+                  carDetails.rearDefogger,
+                ],
+                returnType: ReturnType.string,
+              ),
+            ),
           ),
 
-          item(
-            icon: Icons.music_note, // Music System
-            label: 'Music System',
-            trailing: interiorFeatureValue(carDetails.musicSystem),
-          ),
+          // item(
+          //   icon: Icons.music_note, // Music System
+          //   label: 'Music System',
+          //   trailing: interiorFeatureValue(carDetails.musicSystem),
+          // ),
 
+          // item(
+          //   icon: Icons.speaker, // Stereo
+          //   label: 'Stereo',
+          //   trailing: interiorFeatureValue(carDetails.stereo),
+          // ),
           item(
-            icon: Icons.speaker, // Stereo
-            label: 'Stereo',
-            trailing: interiorFeatureValue(carDetails.stereo),
+            icon: Icons.music_note, // Infotainment System
+            label: 'Infotainment System',
+            trailing: interiorFeatureValue(
+              carDetails.infotainmentSystemDropdownList.isNotEmpty
+                  ? carDetails.infotainmentSystemDropdownList.join(', ')
+                  : 'not applicable',
+            ),
           ),
 
           item(
@@ -1800,10 +2112,31 @@ class _CarDetailsPageState extends State<CarDetailsPage> {
           ),
 
           item(
-            icon: Icons.surround_sound, // Steering Mounted Audio Control
-            label: 'Steering Mounted Audio Control',
+            // icon: Icons.surround_sound, // Steering Mounted Media Controls
+            icon: Icons.music_note, // Steering Mounted Media Controls
+            label: 'Steering Mounted Media Controls',
             trailing: interiorFeatureValue(
-              carDetails.steeringMountedAudioControl,
+              getFirstValidValueFromCarModel(
+                values: [
+                  carDetails.steeringMountedMediaControls,
+                  carDetails.steeringMountedAudioControl,
+                ],
+                returnType: ReturnType.string,
+              ),
+            ),
+          ),
+
+          item(
+            icon: Icons.settings_remote, // Steering Mounted System Controls
+            label: 'Steering Mounted System Controls',
+            trailing: interiorFeatureValue(
+              getFirstValidValueFromCarModel(
+                values: [
+                  carDetails.steeringMountedSystemControls,
+                  carDetails.steeringMountedAudioControl,
+                ],
+                returnType: ReturnType.string,
+              ),
             ),
           ),
 
@@ -1814,34 +2147,62 @@ class _CarDetailsPageState extends State<CarDetailsPage> {
           ),
 
           item(
-            icon: Icons.open_in_browser, // RHS Front Power Window
-            label: 'Power Window Condition (RHS) Front',
+            icon: Icons.door_front_door, // RHS Front Power Window
+            // label: 'Power Window Condition (RHS) Front',
+            label: 'RHS Front Door Features',
             trailing: interiorFeatureValue(
-              carDetails.powerWindowConditionRhsFront,
+              getFirstValidValueFromCarModel(
+                values: [
+                  carDetails.rhsFrontDoorFeaturesDropdownList,
+                  carDetails.powerWindowConditionRhsFront,
+                ],
+                returnType: ReturnType.string,
+              ),
             ),
           ),
 
           item(
-            icon: Icons.open_in_browser, // LHS Front Power Window
-            label: 'Power Window Condition (LHS) Front',
+            icon: Icons.door_front_door, // LHS Front Power Window
+            // label: 'Power Window Condition (LHS) Front',
+            label: 'LHS Front Door Features',
             trailing: interiorFeatureValue(
-              carDetails.powerWindowConditionLhsFront,
+              getFirstValidValueFromCarModel(
+                values: [
+                  carDetails.lhsFrontDoorFeaturesDropdownList,
+                  carDetails.powerWindowConditionLhsFront,
+                ],
+                returnType: ReturnType.string,
+              ),
             ),
           ),
 
           item(
-            icon: Icons.open_in_browser, // RHS Rear Power Window
-            label: 'Power Window Condition (RHS) Rear',
+            icon: Icons.meeting_room, // RHS Rear Power Window
+            // label: 'Power Window Condition (RHS) Rear',
+            label: 'RHS Rear Door Features',
             trailing: interiorFeatureValue(
-              carDetails.powerWindowConditionRhsRear,
+              getFirstValidValueFromCarModel(
+                values: [
+                  carDetails.rhsRearDoorFeaturesDropdownList,
+                  carDetails.powerWindowConditionRhsRear,
+                ],
+                returnType: ReturnType.string,
+              ),
             ),
           ),
 
           item(
-            icon: Icons.open_in_browser, // LHS Rear Power Window
-            label: 'Power Window Condition (LHS) Rear',
+            icon: Icons.meeting_room, // LHS Rear Power Window
+            // label: 'Power Window Condition (LHS) Rear',
+            label: 'LHS Rear Door Features',
             trailing: interiorFeatureValue(
-              carDetails.powerWindowConditionLhsRear,
+              getFirstValidValueFromCarModel(
+                values: [
+                  carDetails.lhsRearDoorFeaturesDropdownList,
+                  carDetails.powerWindowConditionLhsRear,
+                ],
+                returnType: ReturnType.string,
+              ),
             ),
           ),
 
@@ -1849,119 +2210,373 @@ class _CarDetailsPageState extends State<CarDetailsPage> {
             icon: Icons.airline_seat_recline_normal, // No. of Airbags
             label: 'No. of Airbags',
             trailing: interiorFeatureValue(carDetails.noOfAirBags.toString()),
-            imageUrls: carDetails.airbags,
-          ),
-
-          item(
-            icon: Icons.airline_seat_flat, // Driver Airbag
-            label: 'Airbag Feature Driver Side',
-            trailing: interiorFeatureValue(carDetails.airbagFeaturesDriverSide),
-          ),
-
-          item(
-            icon: Icons.airline_seat_recline_extra, // Co-Driver Airbag
-            label: 'Airbag Feature Co-Driver Side',
-            trailing: interiorFeatureValue(
-              carDetails.airbagFeaturesCoDriverSide,
+            imageUrls: getFirstValidValueFromCarModel(
+              values: [carDetails.airbagImages, carDetails.airbags],
+              returnType: ReturnType.list,
             ),
           ),
 
           item(
-            icon: Icons.view_column, // LHS A Pillar Airbag
-            label: 'Airbag Feature LHS A Pillar',
+            icon: Icons.shield_outlined, // Driver Airbag
+            // label: 'Airbag Feature Driver Side',
+            label: 'Driver Airbag',
             trailing: interiorFeatureValue(
-              carDetails.airbagFeaturesLhsAPillarCurtain,
+              getFirstValidValueFromCarModel(
+                values: [
+                  carDetails.driverAirbag,
+                  carDetails.airbagFeaturesDriverSide,
+                ],
+                returnType: ReturnType.string,
+              ),
+            ),
+            imageUrls: getFirstValidValueFromCarModel(
+              values: [
+                carDetails.airbagImages.isNotEmpty
+                    ? carDetails.airbagImages[0]
+                    : null,
+                carDetails.airbags.isNotEmpty ? carDetails.airbags[0] : null,
+              ],
+              returnType: ReturnType.list,
+              defaultValue: [],
             ),
           ),
 
           item(
-            icon: Icons.view_column, // LHS B Pillar Airbag
-            label: 'Airbag Feature LHS B Pillar',
+            icon: Icons.shield_outlined, // Co-Driver Airbag
+            // label: 'Airbag Feature Co-Driver Side',
+            label: 'Co-Driver Airbag',
             trailing: interiorFeatureValue(
-              carDetails.airbagFeaturesLhsBPillarCurtain,
+              getFirstValidValueFromCarModel(
+                values: [
+                  carDetails.coDriverAirbag,
+                  carDetails.airbagFeaturesCoDriverSide,
+                ],
+                returnType: ReturnType.string,
+              ),
+            ),
+            imageUrls: getFirstValidValueFromCarModel(
+              values: [
+                carDetails.airbagImages.length > 1
+                    ? carDetails.airbagImages[1]
+                    : null,
+                carDetails.airbags.length > 1 ? carDetails.airbags[1] : null,
+              ],
+              returnType: ReturnType.list,
+              defaultValue: [],
             ),
           ),
 
           item(
-            icon: Icons.view_column, // LHS C Pillar Airbag
-            label: 'Airbag Feature LHS C Pillar',
+            icon: Icons.event_seat, // RHS A Pillar Airbag
+            // label: 'Airbag Feature RHS A Pillar',
+            label: 'Driver Seat Airbag',
             trailing: interiorFeatureValue(
-              carDetails.airbagFeaturesLhsCPillarCurtain,
+              getFirstValidValueFromCarModel(
+                values: [
+                  carDetails.driverSeatAirbag,
+                  carDetails.airbagFeaturesRhsAPillarCurtain,
+                ],
+                returnType: ReturnType.string,
+              ),
+            ),
+            imageUrls: getFirstValidValueFromCarModel(
+              values: [
+                carDetails.airbagImages.length > 2
+                    ? carDetails.airbagImages[2]
+                    : null,
+                carDetails.airbags.length > 2 ? carDetails.airbags[2] : null,
+              ],
+              returnType: ReturnType.list,
+              defaultValue: [],
             ),
           ),
 
           item(
-            icon: Icons.view_column, // RHS A Pillar Airbag
-            label: 'Airbag Feature RHS A Pillar',
+            icon: Icons.event_seat, // LHS A Pillar Airbag
+            // label: 'Airbag Feature LHS A Pillar',
+            label: 'Co-Driver Seat Airbag',
             trailing: interiorFeatureValue(
-              carDetails.airbagFeaturesRhsAPillarCurtain,
+              getFirstValidValueFromCarModel(
+                values: [
+                  carDetails.coDriverSeatAirbag,
+                  carDetails.airbagFeaturesLhsAPillarCurtain,
+                ],
+                returnType: ReturnType.string,
+              ),
+            ),
+            imageUrls: getFirstValidValueFromCarModel(
+              values: [
+                carDetails.airbagImages.length > 3
+                    ? carDetails.airbagImages[3]
+                    : null,
+                carDetails.airbags.length > 3 ? carDetails.airbags[3] : null,
+              ],
+              returnType: ReturnType.list,
+              defaultValue: [],
             ),
           ),
 
           item(
-            icon: Icons.view_column, // RHS B Pillar Airbag
-            label: 'Airbag Feature RHS B Pillar',
+            icon: Icons.vertical_split, // RHS B Pillar Airbag
+            // label: 'Airbag Feature RHS B Pillar',
+            label: 'RHS Curtain Airbag',
             trailing: interiorFeatureValue(
-              carDetails.airbagFeaturesRhsBPillarCurtain,
+              getFirstValidValueFromCarModel(
+                values: [
+                  carDetails.rhsCurtainAirbag,
+                  carDetails.airbagFeaturesRhsBPillarCurtain,
+                ],
+                returnType: ReturnType.string,
+              ),
+            ),
+            imageUrls: getFirstValidValueFromCarModel(
+              values: [
+                carDetails.airbagImages.length > 4
+                    ? carDetails.airbagImages[4]
+                    : null,
+                carDetails.airbags.length > 4 ? carDetails.airbags[4] : null,
+              ],
+              returnType: ReturnType.list,
+              defaultValue: [],
             ),
           ),
 
           item(
-            icon: Icons.view_column, // RHS C Pillar Airbag
-            label: 'Airbag Feature RHS C Pillar',
+            icon: Icons.vertical_split, // LHS B Pillar Airbag
+            // label: 'Airbag Feature LHS B Pillar',
+            label: 'LHS Curtain Airbag',
             trailing: interiorFeatureValue(
-              carDetails.airbagFeaturesRhsCPillarCurtain,
+              getFirstValidValueFromCarModel(
+                values: [
+                  carDetails.lhsCurtainAirbag,
+                  carDetails.airbagFeaturesLhsBPillarCurtain,
+                ],
+                returnType: ReturnType.string,
+              ),
+            ),
+            imageUrls: getFirstValidValueFromCarModel(
+              values: [
+                carDetails.airbagImages.length > 5
+                    ? carDetails.airbagImages[5]
+                    : null,
+                carDetails.airbags.length > 5 ? carDetails.airbags[5] : null,
+              ],
+              returnType: ReturnType.list,
+              defaultValue: [],
+            ),
+          ),
+
+          item(
+            icon: Icons.accessibility_new, // Driver Knee Airbag (new)
+            label: 'Driver Knee Airbag',
+            trailing: interiorFeatureValue(carDetails.driverSideKneeAirbag),
+            imageUrls: getFirstValidValueFromCarModel(
+              values: [
+                carDetails.airbagImages.length > 6
+                    ? carDetails.airbagImages[6]
+                    : null,
+                carDetails.airbags.length > 6 ? carDetails.airbags[6] : null,
+              ],
+              returnType: ReturnType.list,
+              defaultValue: [],
+            ),
+          ),
+
+          item(
+            icon: Icons.accessibility_new, // Co-Driver Knee Airbag (new)
+            label: 'Co-Driver Knee Airbag',
+            trailing: interiorFeatureValue(carDetails.coDriverKneeSeatAirbag),
+            imageUrls: getFirstValidValueFromCarModel(
+              values: [
+                carDetails.airbagImages.length > 7
+                    ? carDetails.airbagImages[7]
+                    : null,
+                carDetails.airbags.length > 7 ? carDetails.airbags[7] : null,
+              ],
+              returnType: ReturnType.list,
+              defaultValue: [],
+            ),
+          ),
+
+          item(
+            icon: Icons.airline_seat_recline_normal, // RHS C Pillar Airbag
+            // label: 'Airbag Feature RHS C Pillar',
+            label: 'RHS Rear Side Airbag',
+            trailing: interiorFeatureValue(
+              getFirstValidValueFromCarModel(
+                values: [
+                  carDetails.rhsRearSideAirbag,
+                  carDetails.airbagFeaturesRhsCPillarCurtain,
+                ],
+                returnType: ReturnType.string,
+              ),
+            ),
+            imageUrls: getFirstValidValueFromCarModel(
+              values: [
+                carDetails.airbagImages.length > 8
+                    ? carDetails.airbagImages[8]
+                    : null,
+                carDetails.airbags.length > 8 ? carDetails.airbags[8] : null,
+              ],
+              returnType: ReturnType.list,
+              defaultValue: [],
+            ),
+          ),
+
+          item(
+            icon: Icons.airline_seat_recline_normal, // LHS C Pillar Airbag
+            // label: 'Airbag Feature LHS C Pillar',
+            label: 'LHS Rear Side Airbag',
+            trailing: interiorFeatureValue(
+              getFirstValidValueFromCarModel(
+                values: [
+                  carDetails.lhsRearSideAirbag,
+                  carDetails.airbagFeaturesLhsCPillarCurtain,
+                ],
+                returnType: ReturnType.string,
+              ),
+            ),
+            imageUrls: getFirstValidValueFromCarModel(
+              values: [
+                carDetails.airbagImages.length > 9
+                    ? carDetails.airbagImages[9]
+                    : null,
+                carDetails.airbags.length > 9 ? carDetails.airbags[9] : null,
+              ],
+              returnType: ReturnType.list,
+              defaultValue: [],
+            ),
+          ),
+
+          item(
+            icon: Icons.event_seat, // Front Seats From Driver Side
+            label: 'Front Seats From Driver Side',
+            trailing: interiorFeatureValue(
+              getFirstValidValueFromCarModel(
+                values: [
+                  carDetails.frontSeatsFromDriverSideImages,
+                  carDetails.frontSeatsFromDriverSideDoorOpen,
+                ],
+                returnType: ReturnType.list,
+              ).length.toString(),
+            ),
+            imageUrls: getFirstValidValueFromCarModel(
+              values: [
+                carDetails.frontSeatsFromDriverSideImages,
+                carDetails.frontSeatsFromDriverSideDoorOpen,
+              ],
+              returnType: ReturnType.list,
+            ),
+          ),
+
+          item(
+            icon: Icons.weekend, // Rear Seats From Right Side
+            label: 'Rear Seats From Right Side',
+            trailing: interiorFeatureValue(
+              getFirstValidValueFromCarModel(
+                values: [
+                  carDetails.rearSeatsFromRightSideImages,
+                  carDetails.rearSeatsFromRightSideDoorOpen,
+                ],
+                returnType: ReturnType.list,
+              ).length.toString(),
+            ),
+            imageUrls: getFirstValidValueFromCarModel(
+              values: [
+                carDetails.rearSeatsFromRightSideImages,
+                carDetails.rearSeatsFromRightSideDoorOpen,
+              ],
+              returnType: ReturnType.list,
+            ),
+          ),
+
+          item(
+            icon: Icons.dashboard, // Dashboard From Rear Seat
+            label: 'Dashboard From Rear Seat',
+            trailing: interiorFeatureValue(
+              getFirstValidValueFromCarModel(
+                values: [
+                  carDetails.dashboardImages,
+                  carDetails.dashboardFromRearSeat,
+                ],
+                returnType: ReturnType.list,
+              ).length.toString(),
+            ),
+            imageUrls: getFirstValidValueFromCarModel(
+              values: [
+                carDetails.dashboardImages,
+                carDetails.dashboardFromRearSeat,
+              ],
+              returnType: ReturnType.list,
             ),
           ),
 
           item(
             icon: Icons.wb_sunny, // Sunroof
             label: 'Sunroof',
-            trailing: interiorFeatureValue(carDetails.sunroof),
+            trailing: interiorFeatureValue(
+              getFirstValidValueFromCarModel(
+                values: [carDetails.sunroofDropdownList, carDetails.sunroof],
+                returnType: ReturnType.string,
+              ),
+            ),
             imageUrls: carDetails.sunroofImages,
           ),
 
           item(
             icon: Icons.videocam, // Reverse Camera
             label: 'Reverse Camera',
-            trailing: interiorFeatureValue(carDetails.reverseCamera),
+            trailing: interiorFeatureValue(
+              getFirstValidValueFromCarModel(
+                values: [
+                  carDetails.reverseCameraDropdownList,
+                  carDetails.reverseCamera,
+                ],
+                returnType: ReturnType.string,
+              ),
+            ),
+            imageUrls: carDetails.reverseCameraImages,
           ),
 
+          // item(
+          //   icon: Icons.event_seat, // Leather Seats
+          //   label: 'Leather Seats',
+          //   trailing: interiorFeatureValue(carDetails.leatherSeats),
+          // ),
+
+          // item(
+          //   icon: Icons.event_seat_outlined, // Fabric Seats
+          //   label: 'Fabric Seats',
+          //   trailing: interiorFeatureValue(carDetails.fabricSeats),
+          // ),
           item(
-            icon: Icons.event_seat, // Leather Seats
-            label: 'Leather Seats',
-            trailing: interiorFeatureValue(carDetails.leatherSeats),
+            icon: Icons.event_seat, // Seats Upholstery
+            label: 'Seats Upholstery',
+            trailing: interiorFeatureValue(carDetails.seatsUpholstery),
           ),
 
-          item(
-            icon: Icons.event_seat_outlined, // Fabric Seats
-            label: 'Fabric Seats',
-            trailing: interiorFeatureValue(carDetails.fabricSeats),
-          ),
-
-          if (carDetails.additionalImages2.isNotEmpty)
+          if (additionalInteriorImages.isNotEmpty)
             item(
               icon: Icons.collections_outlined,
               label: 'Additional Images',
               trailing: interiorFeatureValue(
-                carDetails.additionalImages2.length.toString(),
+                additionalInteriorImages.length.toString(),
               ),
-              imageUrls: carDetails.additionalImages2,
+              imageUrls: additionalInteriorImages,
             ),
 
           const SizedBox(height: 10),
 
-          if (getxController.isValidComment(carDetails.commentsOnElectricals))
-            _buildCommentsCard(
-              title: 'Comments on Electricals',
-              comment: carDetails.commentsOnElectricals,
-              icon: Icons.electrical_services,
-            ),
-
-          if (getxController.isValidComment(carDetails.commentOnInterior))
+          // if (getxController.isValidComment(carDetails.commentsOnElectricals))
+          //   _buildCommentsCard(
+          //     title: 'Comments on Electricals',
+          //     comment: carDetails.commentsOnElectricals,
+          //     icon: Icons.electrical_services,
+          //   ),
+          if (getxController.isValidComment(commentOnInterior))
             _buildCommentsCard(
               title: 'Comments on Interior',
-              comment: carDetails.commentOnInterior,
+              comment: commentOnInterior,
               icon: Icons.weekend,
             ),
 
@@ -2103,12 +2718,24 @@ class _CarDetailsPageState extends State<CarDetailsPage> {
           buildItem(
             Icons.ac_unit,
             'Air Conditioning - Manual',
-            carDetails.airConditioningManual,
+            getFirstValidValueFromCarModel(
+              values: [
+                carDetails.acTypeDropdownList,
+                carDetails.airConditioningManual,
+              ],
+              returnType: ReturnType.string,
+            ),
           ),
           buildItem(
             Icons.ac_unit,
             'Air Conditioning - Climate Control',
-            carDetails.airConditioningClimateControl,
+            getFirstValidValueFromCarModel(
+              values: [
+                carDetails.acCoolingDropdownList,
+                carDetails.airConditioningClimateControl,
+              ],
+              returnType: ReturnType.string,
+            ),
           ),
 
           // const SizedBox(height: 10),
@@ -2241,42 +2868,102 @@ class _CarDetailsPageState extends State<CarDetailsPage> {
             itemsList: [
               buildExteriorItem(
                 'Bonnet',
-                carDetails.bonnet,
-                imageUrls: carDetails.bonnetImages,
+                getFirstValidValueFromCarModel(
+                  values: [carDetails.bonnetDropdownList, carDetails.bonnet],
+                  returnType: ReturnType.string,
+                ),
+                imageUrls: getFirstValidValueFromCarModel(
+                  values: [
+                    [
+                      ...carDetails.bonnetClosedImages,
+                      ...carDetails.bonnetOpenImages,
+                    ],
+                    carDetails.bonnetImages,
+                  ],
+                  returnType: ReturnType.list,
+                ),
               ),
               buildExteriorItem(
                 'Front Windshield',
-                carDetails.frontWindshield,
+                getFirstValidValueFromCarModel(
+                  values: [
+                    carDetails.frontWindshieldDropdownList,
+                    carDetails.frontWindshield,
+                  ],
+                  returnType: ReturnType.string,
+                ),
                 imageUrls: carDetails.frontWindshieldImages,
               ),
               buildExteriorItem(
                 'Roof',
-                carDetails.roof,
+                getFirstValidValueFromCarModel(
+                  values: [carDetails.roofDropdownList, carDetails.roof],
+                  returnType: ReturnType.string,
+                ),
                 imageUrls: carDetails.roofImages,
               ),
               buildExteriorItem(
                 'Front Bumper',
-                carDetails.frontBumper,
-                imageUrls: carDetails.frontBumperImages,
+                getFirstValidValueFromCarModel(
+                  values: [
+                    carDetails.frontBumperDropdownList,
+                    carDetails.frontBumper,
+                  ],
+                  returnType: ReturnType.string,
+                ),
+                imageUrls: getFirstValidValueFromCarModel(
+                  values: [
+                    [
+                      ...carDetails.frontBumperLhs45DegreeImages,
+                      ...carDetails.frontBumperRhs45DegreeImages,
+                    ],
+                    carDetails.frontBumperImages,
+                  ],
+                  returnType: ReturnType.list,
+                ),
               ),
               buildExteriorItem(
                 'LHS Headlamp',
-                carDetails.lhsHeadlamp,
+                getFirstValidValueFromCarModel(
+                  values: [
+                    carDetails.lhsHeadlampDropdownList,
+                    carDetails.lhsHeadlamp,
+                  ],
+                  returnType: ReturnType.string,
+                ),
                 imageUrls: carDetails.lhsHeadlampImages,
               ),
               buildExteriorItem(
                 'LHS Foglamp',
-                carDetails.lhsFoglamp,
+                getFirstValidValueFromCarModel(
+                  values: [
+                    carDetails.lhsFoglampDropdownList,
+                    carDetails.lhsFoglamp,
+                  ],
+                  returnType: ReturnType.string,
+                ),
                 imageUrls: carDetails.lhsFoglampImages,
               ),
               buildExteriorItem(
                 'RHS Headlamp',
-                carDetails.rhsHeadlamp,
+                getFirstValidValueFromCarModel(
+                  values: [
+                    carDetails.rhsHeadlampDropdownList,
+                    carDetails.rhsHeadlamp,
+                  ],
+                  returnType: ReturnType.string,
+                ),
                 imageUrls: carDetails.rhsHeadlampImages,
               ),
               buildExteriorItem(
                 'RHS Foglamp',
-                carDetails.rhsFoglamp,
+                getFirstValidValueFromCarModel(
+                  values: [
+                    carDetails.rhsFoglampDropdownList,
+                    carDetails.rhsFoglamp,
+                  ],
+                  returnType: ReturnType.string,
+                ),
                 imageUrls: carDetails.rhsFoglampImages,
                 isLast: true,
               ),
@@ -2288,68 +2975,164 @@ class _CarDetailsPageState extends State<CarDetailsPage> {
             itemsList: [
               buildExteriorItem(
                 'LHS Fender',
-                carDetails.lhsFender,
+                getFirstValidValueFromCarModel(
+                  values: [
+                    carDetails.lhsFenderDropdownList,
+                    carDetails.lhsFender,
+                  ],
+                  returnType: ReturnType.string,
+                ),
                 imageUrls: carDetails.lhsFenderImages,
               ),
               buildExteriorItem(
                 'LHS ORVM',
-                carDetails.lhsOrvm,
+                getFirstValidValueFromCarModel(
+                  values: [carDetails.lhsOrvmDropdownList, carDetails.lhsOrvm],
+                  returnType: ReturnType.string,
+                ),
                 imageUrls: carDetails.lhsOrvmImages,
               ),
               buildExteriorItem(
                 'LHS A Pillar',
-                carDetails.lhsAPillar,
+                getFirstValidValueFromCarModel(
+                  values: [
+                    carDetails.lhsAPillarDropdownList,
+                    carDetails.lhsAPillar,
+                  ],
+                  returnType: ReturnType.string,
+                ),
                 imageUrls: carDetails.lhsAPillarImages,
               ),
               buildExteriorItem(
                 'LHS B Pillar',
-                carDetails.lhsBPillar,
+                getFirstValidValueFromCarModel(
+                  values: [
+                    carDetails.lhsBPillarDropdownList,
+                    carDetails.lhsAPillar,
+                  ],
+                  returnType: ReturnType.string,
+                ),
                 imageUrls: carDetails.lhsBPillarImages,
               ),
               buildExteriorItem(
                 'LHS C Pillar',
-                carDetails.lhsCPillar,
+                getFirstValidValueFromCarModel(
+                  values: [
+                    carDetails.lhsCPillarDropdownList,
+                    carDetails.lhsCPillar,
+                  ],
+                  returnType: ReturnType.string,
+                ),
                 imageUrls: carDetails.lhsCPillarImages,
               ),
               buildExteriorItem(
-                'LHS Front Alloy',
-                carDetails.lhsFrontAlloy,
-                imageUrls: carDetails.lhsFrontAlloyImages,
+                'LHS Front Wheel',
+                getFirstValidValueFromCarModel(
+                  values: [
+                    carDetails.lhsFrontWheelDropdownList,
+                    carDetails.lhsFrontAlloy,
+                  ],
+                  returnType: ReturnType.string,
+                ),
+                imageUrls: getFirstValidValueFromCarModel(
+                  values: [
+                    carDetails.lhsFrontWheelImages,
+                    carDetails.lhsFrontAlloyImages,
+                  ],
+                  returnType: ReturnType.list,
+                ),
               ),
               buildExteriorItem(
                 'LHS Front Tyre',
-                carDetails.lhsFrontTyre,
+                getFirstValidValueFromCarModel(
+                  values: [
+                    carDetails.lhsFrontTyreDropdownList,
+                    carDetails.lhsFrontTyre,
+                  ],
+                  returnType: ReturnType.string,
+                ),
                 imageUrls: carDetails.lhsFrontTyreImages,
               ),
               buildExteriorItem(
-                'LHS Rear Alloy',
-                carDetails.lhsRearAlloy,
-                imageUrls: carDetails.lhsRearAlloyImages,
+                'LHS Rear Wheel',
+                getFirstValidValueFromCarModel(
+                  values: [
+                    carDetails.lhsRearWheelDropdownList,
+                    carDetails.lhsRearAlloy,
+                  ],
+                  returnType: ReturnType.string,
+                ),
+                imageUrls: getFirstValidValueFromCarModel(
+                  values: [
+                    carDetails.lhsRearWheelImages,
+                    carDetails.lhsRearAlloyImages,
+                  ],
+                  returnType: ReturnType.list,
+                ),
               ),
               buildExteriorItem(
                 'LHS Rear Tyre',
-                carDetails.lhsRearTyre,
+                getFirstValidValueFromCarModel(
+                  values: [
+                    carDetails.lhsRearTyreDropdownList,
+                    carDetails.lhsRearTyre,
+                  ],
+                  returnType: ReturnType.string,
+                ),
                 imageUrls: carDetails.lhsRearTyreImages,
               ),
               buildExteriorItem(
                 'LHS Front Door',
-                carDetails.lhsFrontDoor,
+                getFirstValidValueFromCarModel(
+                  values: [
+                    carDetails.lhsFrontDoorDropdownList,
+                    carDetails.lhsFrontDoor,
+                  ],
+                  returnType: ReturnType.string,
+                ),
                 imageUrls: carDetails.lhsFrontDoorImages,
               ),
               buildExteriorItem(
                 'LHS Rear Door',
-                carDetails.lhsRearDoor,
+                getFirstValidValueFromCarModel(
+                  values: [
+                    carDetails.lhsRearDoorDropdownList,
+                    carDetails.lhsRearDoor,
+                  ],
+                  returnType: ReturnType.string,
+                ),
                 imageUrls: carDetails.lhsRearDoorImages,
               ),
               buildExteriorItem(
                 'LHS Running Border',
-                carDetails.lhsRunningBorder,
+                getFirstValidValueFromCarModel(
+                  values: [
+                    carDetails.lhsRunningBorderDropdownList,
+                    carDetails.lhsRunningBorder,
+                  ],
+                  returnType: ReturnType.string,
+                ),
                 imageUrls: carDetails.lhsRunningBorderImages,
               ),
               buildExteriorItem(
                 'LHS Quarter Panel',
-                carDetails.lhsQuarterPanel,
-                imageUrls: carDetails.lhsQuarterPanelImages,
+                getFirstValidValueFromCarModel(
+                  values: [
+                    carDetails.lhsQuarterPanelDropdownList,
+                    carDetails.lhsQuarterPanel,
+                  ],
+                  returnType: ReturnType.string,
+                ),
+                imageUrls: getFirstValidValueFromCarModel(
+                  values: [
+                    [
+                      ...carDetails.lhsQuarterPanelWithRearDoorOpenImages,
+                      ...carDetails.lhsQuarterPanelWithRearDoorClosedImages,
+                    ],
+                    carDetails.lhsQuarterPanelImages,
+                  ],
+                  returnType: ReturnType.list,
+                ),
                 isLast: true,
               ),
             ],
@@ -2360,33 +3143,105 @@ class _CarDetailsPageState extends State<CarDetailsPage> {
             itemsList: [
               buildExteriorItem(
                 'Rear Bumper',
-                carDetails.rearBumper,
-                imageUrls: carDetails.rearBumperImages,
+                getFirstValidValueFromCarModel(
+                  values: [
+                    carDetails.rearBumperDropdownList,
+                    carDetails.rearBumper,
+                  ],
+                  returnType: ReturnType.string,
+                ),
+                imageUrls: getFirstValidValueFromCarModel(
+                  values: [
+                    [
+                      ...carDetails.rearBumperLhs45DegreeImages,
+                      ...carDetails.rearBumperRhs45DegreeImages,
+                    ],
+                    carDetails.rearBumperImages,
+                  ],
+                  returnType: ReturnType.list,
+                ),
               ),
               buildExteriorItem(
                 'LHS Tail Lamp',
-                carDetails.lhsTailLamp,
+                getFirstValidValueFromCarModel(
+                  values: [
+                    carDetails.lhsTailLampDropdownList,
+                    carDetails.lhsTailLamp,
+                  ],
+                  returnType: ReturnType.string,
+                ),
                 imageUrls: carDetails.lhsTailLampImages,
               ),
               buildExteriorItem(
                 'RHS Tail Lamp',
-                carDetails.rhsTailLamp,
+                getFirstValidValueFromCarModel(
+                  values: [
+                    carDetails.rhsTailLampDropdownList,
+                    carDetails.rhsTailLamp,
+                  ],
+                  returnType: ReturnType.string,
+                ),
                 imageUrls: carDetails.rhsTailLampImages,
               ),
               buildExteriorItem(
                 'Rear Windshield',
-                carDetails.rearWindshield,
+                getFirstValidValueFromCarModel(
+                  values: [
+                    carDetails.rearWindshieldDropdownList,
+                    carDetails.rearWindshield,
+                  ],
+                  returnType: ReturnType.string,
+                ),
                 imageUrls: carDetails.rearWindshieldImages,
               ),
-              buildExteriorItem('Boot Door', carDetails.bootDoor),
+              buildExteriorItem(
+                'Boot Door',
+                getFirstValidValueFromCarModel(
+                  values: [
+                    carDetails.bootDoorDropdownList,
+                    carDetails.bootDoor,
+                  ],
+                  returnType: ReturnType.string,
+                ),
+                imageUrls: getFirstValidValueFromCarModel(
+                  values: [
+                    [
+                      ...carDetails.bootDoorOpenImages,
+                      ...carDetails.bootDoorClosedImages,
+                    ],
+                    carDetails.rearWithBootDoorOpen,
+                  ],
+                  returnType: ReturnType.list,
+                ),
+              ),
               buildExteriorItem(
                 'Spare Tyre',
-                carDetails.spareTyre,
+                getFirstValidValueFromCarModel(
+                  values: [
+                    carDetails.spareTyreDropdownList,
+                    carDetails.spareTyre,
+                  ],
+                  returnType: ReturnType.string,
+                ),
                 imageUrls: carDetails.spareTyreImages,
               ),
               buildExteriorItem(
+                'Spare Wheel',
+                getFirstValidValueFromCarModel(
+                  values: carDetails.spareWheelDropdownList,
+                  returnType: ReturnType.string,
+                ),
+                imageUrls: carDetails.spareWheelImages,
+              ),
+              buildExteriorItem(
                 'Boot Floor',
-                carDetails.bootFloor,
+                getFirstValidValueFromCarModel(
+                  values: [
+                    carDetails.bootFloorDropdownList,
+                    carDetails.bootFloor,
+                  ],
+                  returnType: ReturnType.string,
+                ),
                 imageUrls: carDetails.bootFloorImages,
                 isLast: true,
               ),
@@ -2397,68 +3252,164 @@ class _CarDetailsPageState extends State<CarDetailsPage> {
             title: 'Right',
             itemsList: [
               buildExteriorItem(
-                'RHS Rear Alloy',
-                carDetails.rhsRearAlloy,
-                imageUrls: carDetails.rhsRearAlloyImages,
+                'RHS Rear Wheel',
+                getFirstValidValueFromCarModel(
+                  values: [
+                    carDetails.rhsRearWheelDropdownList,
+                    carDetails.rhsRearAlloy,
+                  ],
+                  returnType: ReturnType.string,
+                ),
+                imageUrls: getFirstValidValueFromCarModel(
+                  values: [
+                    carDetails.rhsRearWheelImages,
+                    carDetails.rhsRearAlloyImages,
+                  ],
+                  returnType: ReturnType.list,
+                ),
               ),
               buildExteriorItem(
                 'RHS Rear Tyre',
-                carDetails.rhsRearTyre,
+                getFirstValidValueFromCarModel(
+                  values: [
+                    carDetails.rhsRearTyreDropdownList,
+                    carDetails.rhsRearTyre,
+                  ],
+                  returnType: ReturnType.string,
+                ),
                 imageUrls: carDetails.rhsRearTyreImages,
               ),
               buildExteriorItem(
-                'RHS Front Alloy',
-                carDetails.rhsFrontAlloy,
-                imageUrls: carDetails.rhsFrontAlloyImages,
+                'RHS Front Wheel',
+                getFirstValidValueFromCarModel(
+                  values: [
+                    carDetails.rhsFrontWheelDropdownList,
+                    carDetails.rhsFrontAlloy,
+                  ],
+                  returnType: ReturnType.string,
+                ),
+                imageUrls: getFirstValidValueFromCarModel(
+                  values: [
+                    carDetails.rhsFrontWheelImages,
+                    carDetails.rhsFrontAlloyImages,
+                  ],
+                  returnType: ReturnType.list,
+                ),
               ),
               buildExteriorItem(
                 'RHS Front Tyre',
-                carDetails.rhsFrontTyre,
+                getFirstValidValueFromCarModel(
+                  values: [
+                    carDetails.rhsFrontTyreDropdownList,
+                    carDetails.rhsFrontTyre,
+                  ],
+                  returnType: ReturnType.string,
+                ),
                 imageUrls: carDetails.rhsFrontTyreImages,
               ),
               buildExteriorItem(
                 'RHS Quarter Panel',
-                carDetails.rhsQuarterPanel,
-                imageUrls: carDetails.rhsQuarterPanelImages,
+                getFirstValidValueFromCarModel(
+                  values: [
+                    carDetails.rhsQuarterPanelDropdownList,
+                    carDetails.rhsQuarterPanel,
+                  ],
+                  returnType: ReturnType.string,
+                ),
+                imageUrls: getFirstValidValueFromCarModel(
+                  values: [
+                    [
+                      ...carDetails.rhsQuarterPanelWithRearDoorOpenImages,
+                      ...carDetails.rhsQuarterPanelWithRearDoorClosedImages,
+                    ],
+                    carDetails.rhsQuarterPanelImages,
+                  ],
+                  returnType: ReturnType.list,
+                ),
               ),
               buildExteriorItem(
                 'RHS A Pillar',
-                carDetails.rhsAPillar,
+                getFirstValidValueFromCarModel(
+                  values: [
+                    carDetails.rhsAPillarDropdownList,
+                    carDetails.rhsAPillar,
+                  ],
+                  returnType: ReturnType.string,
+                ),
                 imageUrls: carDetails.rhsAPillarImages,
               ),
               buildExteriorItem(
                 'RHS B Pillar',
-                carDetails.rhsBPillar,
+                getFirstValidValueFromCarModel(
+                  values: [
+                    carDetails.rhsBPillarDropdownList,
+                    carDetails.rhsBPillar,
+                  ],
+                  returnType: ReturnType.string,
+                ),
                 imageUrls: carDetails.rhsBPillarImages,
               ),
               buildExteriorItem(
                 'RHS C Pillar',
-                carDetails.rhsCPillar,
+                getFirstValidValueFromCarModel(
+                  values: [
+                    carDetails.rhsCPillarDropdownList,
+                    carDetails.rhsCPillar,
+                  ],
+                  returnType: ReturnType.string,
+                ),
                 imageUrls: carDetails.rhsCPillarImages,
               ),
               buildExteriorItem(
                 'RHS Running Border',
-                carDetails.rhsRunningBorder,
+                getFirstValidValueFromCarModel(
+                  values: [
+                    carDetails.rhsRunningBorderDropdownList,
+                    carDetails.rhsRunningBorder,
+                  ],
+                  returnType: ReturnType.string,
+                ),
                 imageUrls: carDetails.rhsRunningBorderImages,
               ),
               buildExteriorItem(
                 'RHS Rear Door',
-                carDetails.rhsRearDoor,
+                getFirstValidValueFromCarModel(
+                  values: [
+                    carDetails.rhsRearDoorDropdownList,
+                    carDetails.rhsRearDoor,
+                  ],
+                  returnType: ReturnType.string,
+                ),
                 imageUrls: carDetails.rhsRearDoorImages,
               ),
               buildExteriorItem(
                 'RHS Front Door',
-                carDetails.rhsFrontDoor,
+                getFirstValidValueFromCarModel(
+                  values: [
+                    carDetails.rhsFrontDoorDropdownList,
+                    carDetails.rhsFrontDoor,
+                  ],
+                  returnType: ReturnType.string,
+                ),
                 imageUrls: carDetails.rhsFrontDoorImages,
               ),
               buildExteriorItem(
                 'RHS ORVM',
-                carDetails.rhsOrvm,
+                getFirstValidValueFromCarModel(
+                  values: [carDetails.rhsOrvmDropdownList, carDetails.rhsOrvm],
+                  returnType: ReturnType.string,
+                ),
                 imageUrls: carDetails.rhsOrvmImages,
               ),
               buildExteriorItem(
                 'RHS Fender',
-                carDetails.rhsFender,
+                getFirstValidValueFromCarModel(
+                  values: [
+                    carDetails.rhsFenderDropdownList,
+                    carDetails.rhsFender,
+                  ],
+                  returnType: ReturnType.string,
+                ),
                 imageUrls: carDetails.rhsFenderImages,
                 isLast: true,
               ),

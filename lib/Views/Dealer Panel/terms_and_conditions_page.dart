@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:otobix/Utils/app_colors.dart';
+import 'package:otobix/Widgets/app_bar_widget.dart';
 import 'package:otobix/Widgets/empty_page_widget.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:otobix/Controllers/terms_and_conditions_controller.dart';
@@ -15,26 +16,27 @@ class TermsAndConditionsPage extends StatelessWidget {
     );
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Terms & Conditions',
-          style: TextStyle(fontSize: 16, color: AppColors.white),
-        ),
-        backgroundColor: AppColors.green,
-        iconTheme: const IconThemeData(color: AppColors.white),
-        // actions: [
-        //   Obx(
-        //     () => IconButton(
-        //       icon: const Icon(Icons.refresh),
-        //       onPressed:
-        //           termsAndConditionsController.isLoading.value
-        //               ? null
-        //               : termsAndConditionsController.reload,
-        //       tooltip: 'Reload',
-        //     ),
-        //   ),
-        // ],
-      ),
+      // appBar: AppBar(
+      //   title: const Text(
+      //     'Terms & Conditions',
+      //     style: TextStyle(fontSize: 16, color: AppColors.white),
+      //   ),
+      //   backgroundColor: AppColors.green,
+      //   iconTheme: const IconThemeData(color: AppColors.white),
+      //   // actions: [
+      //   //   Obx(
+      //   //     () => IconButton(
+      //   //       icon: const Icon(Icons.refresh),
+      //   //       onPressed:
+      //   //           termsAndConditionsController.isLoading.value
+      //   //               ? null
+      //   //               : termsAndConditionsController.reload,
+      //   //       tooltip: 'Reload',
+      //   //     ),
+      //   //   ),
+      //   // ],
+      // ),
+      appBar: AppBarWidget(title: 'Terms & Conditions'),
 
       body: Obx(() {
         if (termsAndConditionsController.isLoading.value) {

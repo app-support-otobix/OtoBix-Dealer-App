@@ -15,10 +15,13 @@ class CarsListModel {
   final String variant;
   final double priceDiscovery;
   final DateTime? yearMonthOfManufacture;
+  final DateTime? yearAndMonthOfManufacture;
   final int odometerReadingInKms;
+  final int odometerReadingBeforeTestDrive;
   final int ownerSerialNumber;
   final String fuelType;
   final String commentsOnTransmission;
+  final List<String> transmissionTypeDropdownList;
   final String roadTaxValidity;
   final DateTime? taxValidTill;
   final String registrationNumber;
@@ -26,6 +29,8 @@ class CarsListModel {
   final String registrationState;
   final DateTime? registrationDate;
   final String inspectionLocation;
+  final String inspectionCity;
+  final String city;
   final bool isInspected;
   final int cubicCapacity;
   final RxDouble highestBid;
@@ -54,10 +59,13 @@ class CarsListModel {
     required this.variant,
     required this.priceDiscovery,
     required this.yearMonthOfManufacture,
+    required this.yearAndMonthOfManufacture,
     required this.odometerReadingInKms,
+    required this.odometerReadingBeforeTestDrive,
     required this.ownerSerialNumber,
     required this.fuelType,
     required this.commentsOnTransmission,
+    required this.transmissionTypeDropdownList,
     required this.roadTaxValidity,
     required this.taxValidTill,
     required this.registrationNumber,
@@ -65,6 +73,8 @@ class CarsListModel {
     required this.registrationState,
     required this.registrationDate,
     required this.inspectionLocation,
+    required this.inspectionCity,
+    required this.city,
     required this.isInspected,
     required this.cubicCapacity,
     required this.highestBid,
@@ -102,16 +112,31 @@ class CarsListModel {
               : double.tryParse(data['priceDiscovery']?.toString() ?? '0') ??
                   0.0,
       yearMonthOfManufacture: parseMongoDbDate(data["yearMonthOfManufacture"]),
+      yearAndMonthOfManufacture: parseMongoDbDate(
+        data["yearAndMonthOfManufacture"],
+      ),
       odometerReadingInKms:
           data['odometerReadingInKms'] is int
               ? data['odometerReadingInKms']
               : int.tryParse(data['odometerReadingInKms']?.toString() ?? '0'),
+      odometerReadingBeforeTestDrive:
+          data['odometerReadingBeforeTestDrive'] is int
+              ? data['odometerReadingBeforeTestDrive']
+              : int.tryParse(
+                data['odometerReadingBeforeTestDrive']?.toString() ?? '0',
+              ),
       ownerSerialNumber:
           data['ownerSerialNumber'] is int
               ? data['ownerSerialNumber']
               : int.tryParse(data['ownerSerialNumber']?.toString() ?? ''),
       fuelType: data['fuelType'] ?? '',
       commentsOnTransmission: data['commentsOnTransmission'] ?? '',
+      transmissionTypeDropdownList:
+          (data['transmissionTypeDropdownList'] as List?)
+              ?.where((e) => e != null)
+              .map((e) => e.toString())
+              .toList() ??
+          [],
       roadTaxValidity: data['roadTaxValidity'] ?? '',
       taxValidTill: parseMongoDbDate(data["taxValidTill"]),
       registrationNumber: data['registrationNumber'],
@@ -119,6 +144,8 @@ class CarsListModel {
       registrationState: data["registrationState"] ?? 'N/A',
       registrationDate: parseMongoDbDate(data["registrationDate"]),
       inspectionLocation: data['inspectionLocation'],
+      inspectionCity: data['inspectionCity'] ?? '',
+      city: data['city'] ?? '',
       isInspected: data['isInspected'] ?? false,
       cubicCapacity: data['cubicCapacity'] ?? 0,
       highestBid: RxDouble(
@@ -163,10 +190,13 @@ class CarsListModel {
       'variant': variant,
       'priceDiscovery': priceDiscovery,
       'yearMonthOfManufacture': yearMonthOfManufacture,
+      'yearAndMonthOfManufacture': yearAndMonthOfManufacture,
       'odometerReadingInKms': odometerReadingInKms,
+      'odometerReadingBeforeTestDrive': odometerReadingBeforeTestDrive,
       'ownerSerialNumber': ownerSerialNumber,
       'fuelType': fuelType,
       'commentsOnTransmission': commentsOnTransmission,
+      'transmissionTypeDropdownList': transmissionTypeDropdownList,
       'roadTaxValidity': roadTaxValidity,
       'taxValidTill': taxValidTill,
       'registrationNumber': registrationNumber,
@@ -174,6 +204,8 @@ class CarsListModel {
       'registrationState': registrationState,
       'registrationDate': registrationDate,
       'inspectionLocation': inspectionLocation,
+      'inspectionCity': inspectionCity,
+      'city': city,
       'isInspected': isInspected,
       'cubicCapacity': cubicCapacity,
       'highestBid': highestBid.value,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:otobix/Widgets/app_bar_widget.dart';
 import 'package:video_player/video_player.dart';
 
 class VideoPlayerPage extends StatefulWidget {
@@ -109,7 +110,8 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
   Widget build(BuildContext context) {
     if (_hasError) {
       return Scaffold(
-        appBar: AppBar(title: Text(widget.videoLabel ?? "Video Preview")),
+        // appBar: AppBar(title: Text(widget.videoLabel ?? "Video Preview")),
+        appBar: AppBarWidget(title: widget.videoLabel ?? "Video Preview"),
         body: const Center(
           child: Text("Video not available", style: TextStyle(fontSize: 16)),
         ),
@@ -117,7 +119,8 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text(widget.videoLabel ?? "Video Preview")),
+      // appBar: AppBar(title: Text(widget.videoLabel ?? "Video Preview")),
+      appBar: AppBarWidget(title: widget.videoLabel ?? "Video Preview"),
       body: Center(
         child:
             _isInitialized

@@ -73,7 +73,7 @@ class CarModel {
   final String bootDoor; // changed to bootDoorDropdownList
   final String spareTyre; // changed to spareTyreDropdownList
   final String bootFloor; // changed to bootFloorDropdownList
-  final String rhsRearAlloy; // renamed to rhsRearWheelDropdownList6n
+  final String rhsRearAlloy; // renamed to rhsRearWheelDropdownList
   final String rhsRearTyre; // changed to rhsRearTyreDropdownList
   final String rhsFrontAlloy; // renamed to rhsFrontWheelDropdownList
   final String rhsFrontTyre; // changed to rhsFrontTyreDropdownList
@@ -1978,4 +1978,112 @@ List<String> parseStringList(dynamic value) {
   //   if (value is String) return [value];
   if (value is String && value.trim().isNotEmpty) return [value];
   return [];
+}
+
+enum ReturnType { string, number, boolean, list, datetime, raw }
+
+dynamic getFirstValidValueFromCarModel({
+  required List<dynamic> values,
+  ReturnType returnType = ReturnType.raw,
+  dynamic defaultValue,
+}) {
+  dynamic result;
+
+  for (final value in values) {
+    bool isValid = true;
+
+    if (value == null) {
+      isValid = false;
+    } else if (value is String) {
+      final normalized = value.trim().toLowerCase();
+      isValid =
+          normalized.isNotEmpty &&
+          normalized != 'null' &&
+          normalized != 'undefined' &&
+          normalized != 'n/a' &&
+          normalized != 'na';
+    }
+    // LIST
+    else if (value is List) {
+      isValid = value.isNotEmpty;
+    }
+    // NUMBER
+    else if (value is num) {
+      isValid = value != 0; // <-- important decision
+    }
+    // MAP / OBJECT
+    else if (value is Map) {
+      isValid = value.isNotEmpty;
+    }
+    // EVERYTHING ELSE
+    else {
+      isValid = true;
+    }
+
+    if (isValid) {
+      result = value;
+      break;
+    }
+  }
+
+  // Auto default values
+  result ??=
+      defaultValue ??
+      switch (returnType) {
+        ReturnType.string => 'NA',
+        ReturnType.number => 0,
+        ReturnType.boolean => false,
+        ReturnType.list => [],
+        ReturnType.datetime => null,
+        ReturnType.raw => null,
+      };
+
+  switch (returnType) {
+    case ReturnType.string:
+      if (result is List) {
+        return result.join(', ');
+      }
+      return result.toString();
+
+    case ReturnType.number:
+      if (result is num) return result;
+      return num.tryParse(result.toString()) ?? 0;
+
+    case ReturnType.boolean:
+      if (result is bool) return result;
+
+      final value = result.toString().toLowerCase();
+
+      return ['true', '1', 'yes', 'y'].contains(value);
+
+    case ReturnType.list:
+      if (result is List) {
+        return result
+            .where((item) {
+              if (item == null) return false;
+              if (item is String) {
+                final normalized = item.trim().toLowerCase();
+                return normalized.isNotEmpty &&
+                    normalized != 'null' &&
+                    normalized != 'undefined' &&
+                    normalized != 'n/a' &&
+                    normalized != 'na';
+              }
+              return true;
+            })
+            .map((e) => e.toString())
+            .toList();
+      }
+      return [result.toString()];
+
+    case ReturnType.datetime:
+      if (result is DateTime) return result;
+      if (result is String) {
+        return DateTime.tryParse(result);
+      }
+      return null;
+
+    case ReturnType.raw:
+      return result;
+  }
 }

@@ -91,15 +91,34 @@ class CarImagesGalleryController extends GetxController {
     await onChipTap(index);
   }
 
+  List<String> cleanImages(List<String> images) {
+    return images.where((e) => e.trim().isNotEmpty).toList();
+  }
+
   // Seed demo data for car sections (replace with real data from API)
   void _seedDemoData() {
     sections.value = [
       CarGallerySectionsModel(
         id: AppConstants.imagesSectionIds.exterior,
         title: 'Exterior',
-        images: [
-          ...car.bonnetImages,
-          ...car.frontBumperImages,
+        images: cleanImages([
+          ...getFirstValidValueFromCarModel(
+            values: [
+              [...car.bonnetClosedImages, ...car.bonnetOpenImages],
+              car.bonnetImages,
+            ],
+            returnType: ReturnType.list,
+          ),
+          ...getFirstValidValueFromCarModel(
+            values: [
+              [
+                ...car.frontBumperLhs45DegreeImages,
+                ...car.frontBumperRhs45DegreeImages,
+              ],
+              car.frontBumperImages,
+            ],
+            returnType: ReturnType.list,
+          ),
           ...car.lhsHeadlampImages,
           ...car.rhsHeadlampImages,
           ...car.frontWindshieldImages,
@@ -109,41 +128,80 @@ class CarImagesGalleryController extends GetxController {
           ...car.rhsFrontDoorImages,
           ...car.lhsOrvmImages,
           ...car.rhsOrvmImages,
-        ],
+          ...getFirstValidValueFromCarModel(
+            values: [
+              [...car.bootDoorOpenImages, ...car.bootDoorClosedImages],
+              car.rearWithBootDoorOpen,
+            ],
+            returnType: ReturnType.list,
+          ),
+        ]),
       ),
       CarGallerySectionsModel(
         id: AppConstants.imagesSectionIds.interior,
         title: 'Interior',
-        images: [
-          ...car.frontSeatsFromDriverSideDoorOpen,
-          ...car.rearSeatsFromRightSideDoorOpen,
-          ...car.dashboardFromRearSeat,
-          ...car
-              .additionalImages2, // Additional Images 2 Column is for Interior Images
-        ],
+        images: cleanImages([
+          ...getFirstValidValueFromCarModel(
+            values: [car.airbagImages, car.airbags],
+            returnType: ReturnType.list,
+          ),
+          ...getFirstValidValueFromCarModel(
+            values: [
+              car.frontSeatsFromDriverSideImages,
+              car.frontSeatsFromDriverSideDoorOpen,
+            ],
+            returnType: ReturnType.list,
+          ),
+          ...getFirstValidValueFromCarModel(
+            values: [
+              car.rearSeatsFromRightSideImages,
+              car.rearSeatsFromRightSideDoorOpen,
+            ],
+            returnType: ReturnType.list,
+          ),
+          ...getFirstValidValueFromCarModel(
+            values: [car.dashboardImages, car.dashboardFromRearSeat],
+            returnType: ReturnType.list,
+          ),
+          ...getFirstValidValueFromCarModel(
+            values: [car.additionalInteriorImages, car.additionalImages2],
+            returnType: ReturnType.list,
+          ),
+        ]),
       ),
 
       CarGallerySectionsModel(
         id: AppConstants.imagesSectionIds.engine,
         title: 'Engine',
-        images: [
-          ...car.engineBay,
+        images: cleanImages([
+          ...getFirstValidValueFromCarModel(
+            values: [car.engineBayImages, car.engineBay],
+            returnType: ReturnType.list,
+          ),
           ...car.batteryImages,
-          ...car.apronLhsRhs,
-          ...car
-              .additionalImages, // Additional Images 1 Column is for Engine Images
-        ],
+          ...getFirstValidValueFromCarModel(
+            values: [
+              [...car.lhsApronImages, ...car.rhsApronImages],
+              car.apronLhsRhs,
+            ],
+            returnType: ReturnType.list,
+          ),
+          ...getFirstValidValueFromCarModel(
+            values: [car.additionalEngineImages, car.additionalImages],
+            returnType: ReturnType.list,
+          ),
+        ]),
       ),
       CarGallerySectionsModel(
         id: AppConstants.imagesSectionIds.tyres,
         title: 'Tyres',
-        images: [
+        images: cleanImages([
           ...car.spareTyreImages,
           ...car.lhsRearTyreImages,
           ...car.rhsRearTyreImages,
           ...car.lhsFrontTyreImages,
           ...car.rhsFrontTyreImages,
-        ],
+        ]),
       ),
 
       // CarGallerySectionsModel(
@@ -164,7 +222,7 @@ class CarImagesGalleryController extends GetxController {
         id: AppConstants.imagesSectionIds.damages,
         title: 'Damages',
         // images: [...car.damangesImages],
-        images: _collectDamageImages(),
+        images: cleanImages(_collectDamageImages()),
       ),
     ];
   }
@@ -331,14 +389,37 @@ class CarImagesGalleryController extends GetxController {
     // Build your parts matrix once from CarModel → status + images
     final parts = <_DamagedPartModel>[
       // ---- Exterior (Front / Left / Rear / Right) ----
-      _DamagedPartModel('Bonnet', car.bonnet, car.bonnetImages),
+      _DamagedPartModel(
+        'Bonnet',
+        car.bonnet,
+        getFirstValidValueFromCarModel(
+          values: [
+            [...car.bonnetOpenImages, ...car.bonnetClosedImages],
+            car.bonnetImages,
+          ],
+          returnType: ReturnType.list,
+        ),
+      ),
       _DamagedPartModel(
         'Front Windshield',
         car.frontWindshield,
         car.frontWindshieldImages,
       ),
       _DamagedPartModel('Roof', car.roof, car.roofImages),
-      _DamagedPartModel('Front Bumper', car.frontBumper, car.frontBumperImages),
+      _DamagedPartModel(
+        'Front Bumper',
+        car.frontBumper,
+        getFirstValidValueFromCarModel(
+          values: [
+            [
+              ...car.frontBumperLhs45DegreeImages,
+              ...car.frontBumperRhs45DegreeImages,
+            ],
+            car.frontBumperImages,
+          ],
+          returnType: ReturnType.list,
+        ),
+      ),
 
       _DamagedPartModel('LHS Headlamp', car.lhsHeadlamp, car.lhsHeadlampImages),
       _DamagedPartModel('LHS Foglamp', car.lhsFoglamp, car.lhsFoglampImages),
@@ -353,13 +434,19 @@ class CarImagesGalleryController extends GetxController {
       _DamagedPartModel(
         'LHS Front Alloy',
         car.lhsFrontAlloy,
-        car.lhsFrontAlloyImages,
+        getFirstValidValueFromCarModel(
+          values: [car.lhsFrontWheelImages, car.lhsFrontAlloyImages],
+          returnType: ReturnType.list,
+        ),
       ),
 
       _DamagedPartModel(
         'LHS Rear Alloy',
         car.lhsRearAlloy,
-        car.lhsRearAlloyImages,
+        getFirstValidValueFromCarModel(
+          values: [car.lhsRearWheelImages, car.lhsRearAlloyImages],
+          returnType: ReturnType.list,
+        ),
       ),
 
       _DamagedPartModel(
@@ -380,10 +467,32 @@ class CarImagesGalleryController extends GetxController {
       _DamagedPartModel(
         'LHS Quarter Panel',
         car.lhsQuarterPanel,
-        car.lhsQuarterPanelImages,
+        getFirstValidValueFromCarModel(
+          values: [
+            [
+              ...car.lhsQuarterPanelWithRearDoorOpenImages,
+              ...car.lhsQuarterPanelWithRearDoorClosedImages,
+            ],
+            car.lhsQuarterPanelImages,
+          ],
+          returnType: ReturnType.list,
+        ),
       ),
 
-      _DamagedPartModel('Rear Bumper', car.rearBumper, car.rearBumperImages),
+      _DamagedPartModel(
+        'Rear Bumper',
+        car.rearBumper,
+        getFirstValidValueFromCarModel(
+          values: [
+            [
+              ...car.rearBumperLhs45DegreeImages,
+              ...car.rearBumperRhs45DegreeImages,
+            ],
+            car.rearBumperImages,
+          ],
+          returnType: ReturnType.list,
+        ),
+      ),
       _DamagedPartModel(
         'LHS Tail Lamp',
         car.lhsTailLamp,
@@ -402,26 +511,44 @@ class CarImagesGalleryController extends GetxController {
       _DamagedPartModel(
         'Boot Door',
         car.bootDoor,
-        car.rearMain /* fallback main rear shots */,
+        getFirstValidValueFromCarModel(
+          values: [car.rearMainImages, car.rearMain],
+          returnType: ReturnType.list,
+        ),
       ),
       _DamagedPartModel('Boot Floor', car.bootFloor, car.bootFloorImages),
 
       _DamagedPartModel(
         'RHS Rear Alloy',
         car.rhsRearAlloy,
-        car.rhsRearAlloyImages,
+        getFirstValidValueFromCarModel(
+          values: [car.rhsRearWheelImages, car.rhsRearAlloyImages],
+          returnType: ReturnType.list,
+        ),
       ),
 
       _DamagedPartModel(
         'RHS Front Alloy',
         car.rhsFrontAlloy,
-        car.rhsFrontAlloyImages,
+        getFirstValidValueFromCarModel(
+          values: [car.rhsFrontWheelImages, car.rhsFrontAlloyImages],
+          returnType: ReturnType.list,
+        ),
       ),
 
       _DamagedPartModel(
         'RHS Quarter Panel',
         car.rhsQuarterPanel,
-        car.rhsQuarterPanelImages,
+        getFirstValidValueFromCarModel(
+          values: [
+            [
+              ...car.rhsQuarterPanelWithRearDoorOpenImages,
+              ...car.rhsQuarterPanelWithRearDoorClosedImages,
+            ],
+            car.rhsQuarterPanelImages,
+          ],
+          returnType: ReturnType.list,
+        ),
       ),
       _DamagedPartModel('RHS A Pillar', car.rhsAPillar, car.rhsAPillarImages),
       _DamagedPartModel('RHS B Pillar', car.rhsBPillar, car.rhsBPillarImages),
@@ -468,28 +595,52 @@ class CarImagesGalleryController extends GetxController {
       _DamagedPartModel(
         'Electricals',
         car.electricals,
-        car.meterConsoleWithEngineOn,
+        getFirstValidValueFromCarModel(
+          values: [
+            car.meterConsoleWithEngineOnImages,
+            car.meterConsoleWithEngineOn,
+          ],
+          returnType: ReturnType.list,
+        ),
       ),
       _DamagedPartModel(
         'Airbags',
         '${car.noOfAirBags} | ${car.airbagFeaturesDriverSide} | ${car.airbagFeaturesCoDriverSide}',
-        car.airbags,
+        getFirstValidValueFromCarModel(
+          values: [car.airbagImages, car.airbags],
+          returnType: ReturnType.list,
+        ),
       ),
       _DamagedPartModel('Sunroof', car.sunroof, car.sunroofImages),
       _DamagedPartModel(
         'Front Seats',
         car.commentOnInterior,
-        car.frontSeatsFromDriverSideDoorOpen,
+        getFirstValidValueFromCarModel(
+          values: [
+            car.frontSeatsFromDriverSideImages,
+            car.frontSeatsFromDriverSideDoorOpen,
+          ],
+          returnType: ReturnType.list,
+        ),
       ),
       _DamagedPartModel(
         'Rear Seats',
         car.commentOnInterior,
-        car.rearSeatsFromRightSideDoorOpen,
+        getFirstValidValueFromCarModel(
+          values: [
+            car.rearSeatsFromRightSideImages,
+            car.rearSeatsFromRightSideDoorOpen,
+          ],
+          returnType: ReturnType.list,
+        ),
       ),
       _DamagedPartModel(
         'Dashboard',
         car.commentOnInterior,
-        car.dashboardFromRearSeat,
+        getFirstValidValueFromCarModel(
+          values: [car.dashboardImages, car.dashboardFromRearSeat],
+          returnType: ReturnType.list,
+        ),
       ),
     ];
 

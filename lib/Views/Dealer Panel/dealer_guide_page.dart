@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:otobix/Controllers/dealer_guide_controller.dart';
 import 'package:otobix/Utils/app_colors.dart';
+import 'package:otobix/Widgets/app_bar_widget.dart';
 import 'package:otobix/Widgets/empty_page_widget.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -13,26 +14,27 @@ class DealerGuidePage extends StatelessWidget {
     final dealerGuideController = Get.put(DealerGuideController());
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Dealer Guide',
-          style: TextStyle(fontSize: 16, color: AppColors.white),
-        ),
-        backgroundColor: AppColors.green,
-        iconTheme: const IconThemeData(color: AppColors.white),
-        // actions: [
-        //   Obx(
-        //     () => IconButton(
-        //       icon: const Icon(Icons.refresh),
-        //       onPressed:
-        //           dealerGuideController.isLoading.value
-        //               ? null
-        //               : dealerGuideController.reload,
-        //       tooltip: 'Reload',
-        //     ),
-        //   ),
-        // ],
-      ),
+      // appBar: AppBar(
+      //   title: const Text(
+      //     'Dealer Guide',
+      //     style: TextStyle(fontSize: 16, color: AppColors.white),
+      //   ),
+      //   backgroundColor: AppColors.green,
+      //   iconTheme: const IconThemeData(color: AppColors.white),
+      //   // actions: [
+      //   //   Obx(
+      //   //     () => IconButton(
+      //   //       icon: const Icon(Icons.refresh),
+      //   //       onPressed:
+      //   //           dealerGuideController.isLoading.value
+      //   //               ? null
+      //   //               : dealerGuideController.reload,
+      //   //       tooltip: 'Reload',
+      //   //     ),
+      //   //   ),
+      //   // ],
+      // ),
+      appBar: AppBarWidget(title: 'Dealer Guide'),
 
       body: Obx(() {
         if (dealerGuideController.isLoading.value) {
