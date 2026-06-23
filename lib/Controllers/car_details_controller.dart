@@ -297,7 +297,7 @@ class CarDetailsController extends GetxController {
 
   bool isValidComment(String? comment) {
     final val = comment?.trim().toLowerCase() ?? '';
-    return val.isNotEmpty && val != 'n/a';
+    return val.isNotEmpty && val != 'n/a' && val != 'na';
   }
 
   void scrollToSection(String key) {

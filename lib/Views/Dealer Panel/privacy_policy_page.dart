@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:otobix/Controllers/privacy_policy_controller.dart';
 import 'package:otobix/Utils/app_colors.dart';
+import 'package:otobix/Widgets/app_bar_widget.dart';
 import 'package:otobix/Widgets/empty_page_widget.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -13,26 +14,27 @@ class PrivacyPolicyPage extends StatelessWidget {
     final privacyPolicyController = Get.put(PrivacyPolicyController());
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Privacy Policy',
-          style: TextStyle(fontSize: 16, color: AppColors.white),
-        ),
-        backgroundColor: AppColors.green,
-        iconTheme: const IconThemeData(color: AppColors.white),
-        // actions: [
-        //   Obx(
-        //     () => IconButton(
-        //       icon: const Icon(Icons.refresh),
-        //       onPressed:
-        //           privacyPolicyController.isLoading.value
-        //               ? null
-        //               : privacyPolicyController.reload,
-        //       tooltip: 'Reload',
-        //     ),
-        //   ),
-        // ],
-      ),
+      // appBar: AppBar(
+      //   title: const Text(
+      //     'Privacy Policy',
+      //     style: TextStyle(fontSize: 16, color: AppColors.white),
+      //   ),
+      //   backgroundColor: AppColors.green,
+      //   iconTheme: const IconThemeData(color: AppColors.white),
+      //   // actions: [
+      //   //   Obx(
+      //   //     () => IconButton(
+      //   //       icon: const Icon(Icons.refresh),
+      //   //       onPressed:
+      //   //           privacyPolicyController.isLoading.value
+      //   //               ? null
+      //   //               : privacyPolicyController.reload,
+      //   //       tooltip: 'Reload',
+      //   //     ),
+      //   //   ),
+      //   // ],
+      // ),
+      appBar: AppBarWidget(title: 'Privacy Policy'),
 
       body: Obx(() {
         if (privacyPolicyController.isLoading.value) {
