@@ -155,13 +155,15 @@ class GlobalFunctions {
     return rounded as T;
   }
 
-  // Convert UTC to Indian Time (IST)
-  static DateTime convertDateTimeToIndianUtc(DateTime utcDateTime) {
-    return utcDateTime.add(const Duration(hours: 5, minutes: 30));
+  // Convert Local Time to UTC
+  static DateTime convertDateTimeToUtc(DateTime dateTime) {
+    // return dateTime.subtract(const Duration(hours: 5, minutes: 30));
+    return dateTime.toUtc();
   }
 
-  // Convert Indian Time to UTC
-  static DateTime convertDateTimeToIndianLocal(DateTime indianDateTime) {
-    return indianDateTime.subtract(const Duration(hours: 5, minutes: 30));
+  // Convert UTC Time to Local
+  static DateTime convertDateTimeToLocal(DateTime dateTime) {
+    // return dateTime.add(const Duration(hours: 5, minutes: 30));
+    return dateTime.toLocal();
   }
 }

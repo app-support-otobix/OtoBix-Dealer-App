@@ -43,12 +43,19 @@ class SelfInspectedCarDetailsController extends GetxController {
 
   // Set your offer amount on start
   void setYourOfferAmount() {
+    final double priceDiscovery = carData.value!.priceDiscovery.toDouble();
     final double highestOfferAmount =
         carData.value!.highestOffer.value.toDouble();
     final double incrementDecrementStep = getIncrementDecrementStep(
-      carData.value!.priceDiscovery.toDouble(),
+      priceDiscovery,
     );
-    yourOfferAmount.value = highestOfferAmount + incrementDecrementStep;
+    final double amountIfHighestOfferIsNotZero =
+        highestOfferAmount + incrementDecrementStep;
+    final double amountIfHighestOfferIsZero = priceDiscovery * 0.75;
+    yourOfferAmount.value =
+        highestOfferAmount <= 0
+            ? amountIfHighestOfferIsZero
+            : amountIfHighestOfferIsNotZero;
   }
 
   Future<void> fetchSelfInspectedCarDetails() async {
@@ -141,7 +148,18 @@ class SelfInspectedCarDetailsController extends GetxController {
     required double decrementStep,
     required double highestOffer,
   }) {
-    if ((yourOfferAmount.value - decrementStep) <= highestOffer) {
+    final double priceDiscovery = carData.value!.priceDiscovery.toDouble();
+    final bool highestOfferIsZero = highestOffer == 0;
+    final bool highestOfferIsNotZero = highestOffer != 0;
+    if (yourOfferAmount.value <= 0) {
+      return;
+    }
+    if (highestOfferIsZero &&
+        (yourOfferAmount.value - decrementStep) <= priceDiscovery * 0.75) {
+      return;
+    }
+    if (highestOfferIsNotZero &&
+        (yourOfferAmount.value - decrementStep) <= highestOffer) {
       return;
     }
     yourOfferAmount.value = yourOfferAmount.value - decrementStep;

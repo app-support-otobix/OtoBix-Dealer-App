@@ -151,10 +151,25 @@ class SelfInspectedCarsListController extends GetxController {
           (c) => c.id == carId,
         );
 
+        // if (idx == -1) {
+        //   filteredSelfInspectedCarsList.add(incomingCar);
+        //   selfInspectedCarsCount.value++;
+        // } else {
+        //   filteredSelfInspectedCarsList[idx] = incomingCar;
+        // }
         if (idx == -1) {
-          filteredSelfInspectedCarsList.add(incomingCar);
+          selfInspectedCarsList.insert(0, incomingCar);
+          filteredSelfInspectedCarsList.insert(0, incomingCar);
           selfInspectedCarsCount.value++;
         } else {
+          final originalIndex = selfInspectedCarsList.indexWhere(
+            (c) => c.id == carId,
+          );
+
+          if (originalIndex != -1) {
+            selfInspectedCarsList[originalIndex] = incomingCar;
+          }
+
           filteredSelfInspectedCarsList[idx] = incomingCar;
         }
         return;

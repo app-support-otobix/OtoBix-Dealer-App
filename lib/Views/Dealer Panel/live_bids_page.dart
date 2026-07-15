@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:otobix/Controllers/home_controller.dart';
 import 'package:otobix/Controllers/live_bids_controller.dart';
+import 'package:otobix/Models/car_model.dart';
 import 'package:otobix/Models/cars_list_model.dart';
 import 'package:otobix/Utils/app_colors.dart';
 import 'package:otobix/Utils/app_images.dart';
@@ -192,7 +193,7 @@ class LiveBidsPage extends StatelessWidget {
           final car = carsList[index];
 
           final String yearofManufacture =
-              '${GlobalFunctions.getFormattedDate(date: car.yearMonthOfManufacture, type: GlobalFunctions.year)} ';
+              '${GlobalFunctions.getFormattedDate(date: getFirstValidValueFromCarModel(values: [car.yearAndMonthOfManufacture, car.yearMonthOfManufacture], returnType: ReturnType.datetime), type: GlobalFunctions.year)} ';
 
           return InkWell(
             onTap: () {
@@ -486,7 +487,7 @@ class LiveBidsPage extends StatelessWidget {
       iconDetail(
         Icons.speed,
         'Odometer Reading in Kms',
-        '${NumberFormat.decimalPattern('en_IN').format(car.odometerReadingInKms)} km',
+        '${NumberFormat.decimalPattern('en_IN').format(getFirstValidValueFromCarModel(values: [car.odometerReadingBeforeTestDrive, car.odometerReadingInKms], returnType: ReturnType.number))} km',
       ),
       iconDetail(Icons.local_gas_station, 'Fuel Type', car.fuelType),
 
@@ -499,7 +500,17 @@ class LiveBidsPage extends StatelessWidget {
       //       ) ??
       //       'N/A',
       // ),
-      iconDetail(Icons.settings, 'Transmission', car.commentsOnTransmission),
+      iconDetail(
+        Icons.settings,
+        'Transmission',
+        getFirstValidValueFromCarModel(
+          values: [
+            car.transmissionTypeDropdownList,
+            car.commentsOnTransmission,
+          ],
+          returnType: ReturnType.string,
+        ),
+      ),
       iconDetail(
         Icons.person,
         'Owner Serial Number',
@@ -527,7 +538,10 @@ class LiveBidsPage extends StatelessWidget {
       iconDetail(
         Icons.location_on,
         'Inspection Location',
-        car.inspectionLocation,
+        getFirstValidValueFromCarModel(
+          values: [car.inspectionCity, car.city],
+          returnType: ReturnType.string,
+        ),
       ),
       iconDetail(
         Icons.directions_car_filled,
