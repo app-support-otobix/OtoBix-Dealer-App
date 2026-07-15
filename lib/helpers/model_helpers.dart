@@ -91,12 +91,12 @@ class ModelHelpers {
       if (value is String) {
         final parsed = DateTime.tryParse(value);
         if (parsed != null) {
-          return GlobalFunctions.convertDateTimeToIndianLocal(parsed);
+          return GlobalFunctions.convertDateTimeToLocal(parsed);
         }
         return null;
       }
       if (value is int) {
-        return GlobalFunctions.convertDateTimeToIndianLocal(
+        return GlobalFunctions.convertDateTimeToLocal(
           DateTime.fromMillisecondsSinceEpoch(value),
         );
       }
@@ -126,7 +126,7 @@ class ModelHelpers {
     DateTime? value,
   ) {
     if (value != null) {
-      final utcDateTime = GlobalFunctions.convertDateTimeToIndianUtc(value);
+      final utcDateTime = GlobalFunctions.convertDateTimeToUtc(value);
       map[key] = utcDateTime.toIso8601String();
     }
   }
