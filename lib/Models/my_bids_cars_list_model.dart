@@ -8,14 +8,19 @@ class MyBidsCarsListModel {
   final String variant;
   final double priceDiscovery;
   final DateTime? yearMonthOfManufacture;
+  final DateTime? yearAndMonthOfManufacture;
   final int odometerReadingInKms;
+  final int odometerReadingBeforeTestDrive;
   final String fuelType;
   final String inspectionLocation;
+  final String inspectionCity;
+  final String city;
   final bool isInspected;
   final String roadTaxValidity;
   final DateTime? taxValidTill;
   final int ownerSerialNumber;
   final String commentsOnTransmission;
+  final List<String> transmissionTypeDropdownList;
   final String registrationNumber;
   final String registeredRto;
 
@@ -27,14 +32,19 @@ class MyBidsCarsListModel {
     required this.variant,
     required this.priceDiscovery,
     required this.yearMonthOfManufacture,
+    required this.yearAndMonthOfManufacture,
     required this.odometerReadingInKms,
+    required this.odometerReadingBeforeTestDrive,
     required this.fuelType,
     required this.inspectionLocation,
+    required this.inspectionCity,
+    required this.city,
     required this.isInspected,
     required this.roadTaxValidity,
     required this.taxValidTill,
     required this.ownerSerialNumber,
     required this.commentsOnTransmission,
+    required this.transmissionTypeDropdownList,
     required this.registrationNumber,
     required this.registeredRto,
   });
@@ -56,12 +66,23 @@ class MyBidsCarsListModel {
               : double.tryParse(data['priceDiscovery']?.toString() ?? '0') ??
                   0.0,
       yearMonthOfManufacture: parseMongoDbDate(data["yearMonthOfManufacture"]),
+      yearAndMonthOfManufacture: parseMongoDbDate(
+        data["yearAndMonthOfManufacture"],
+      ),
       odometerReadingInKms:
           data['odometerReadingInKms'] is int
               ? data['odometerReadingInKms']
-              : int.tryParse(data['odometerReadingInKms']?.toString() ?? ''),
+              : int.tryParse(data['odometerReadingInKms']?.toString() ?? '0'),
+      odometerReadingBeforeTestDrive:
+          data['odometerReadingBeforeTestDrive'] is int
+              ? data['odometerReadingBeforeTestDrive']
+              : int.tryParse(
+                data['odometerReadingBeforeTestDrive']?.toString() ?? '0',
+              ),
       fuelType: data['fuelType'] ?? '',
       inspectionLocation: data['inspectionLocation'],
+      inspectionCity: data['inspectionCity'] ?? '',
+      city: data['city'] ?? '',
       isInspected: data['isInspected'] ?? false,
       roadTaxValidity: data['roadTaxValidity'] ?? '',
       taxValidTill: parseMongoDbDate(data["taxValidTill"]),
@@ -70,6 +91,12 @@ class MyBidsCarsListModel {
               ? data['ownerSerialNumber']
               : int.tryParse(data['ownerSerialNumber']?.toString() ?? ''),
       commentsOnTransmission: data['commentsOnTransmission'] ?? '',
+      transmissionTypeDropdownList:
+          (data['transmissionTypeDropdownList'] as List?)
+              ?.where((e) => e != null)
+              .map((e) => e.toString())
+              .toList() ??
+          [],
       registrationNumber: data['registrationNumber'] ?? '',
       registeredRto: data['registeredRto'] ?? '',
     );
@@ -84,14 +111,19 @@ class MyBidsCarsListModel {
       'variant': variant,
       'priceDiscovery': priceDiscovery,
       'yearMonthOfManufacture': yearMonthOfManufacture,
+      'yearAndMonthOfManufacture': yearAndMonthOfManufacture,
       'odometerReadingInKms': odometerReadingInKms,
+      'odometerReadingBeforeTestDrive': odometerReadingBeforeTestDrive,
       'fuelType': fuelType,
       'inspectionLocation': inspectionLocation,
+      'inspectionCity': inspectionCity,
+      'city': city,
       'isInspected': isInspected,
       'roadTaxValidity': roadTaxValidity,
       'taxValidTill': taxValidTill,
       'ownerSerialNumber': ownerSerialNumber,
       'commentsOnTransmission': commentsOnTransmission,
+      'transmissionTypeDropdownList': transmissionTypeDropdownList,
       'registrationNumber': registrationNumber,
       'registeredRto': registeredRto,
     };

@@ -83,10 +83,10 @@ class AppConstants {
 
   static _EnvConfig get env =>
       deploymentEnvironment == DeploymentEnvironment.prod
-          ? _prodConfiguration
-          : deploymentEnvironment == DeploymentEnvironment.dev
-          ? _devConfiguration
-          : _localConfiguration;
+      ? _prodConfiguration
+      : deploymentEnvironment == DeploymentEnvironment.dev
+      ? _devConfiguration
+      : _localConfiguration;
 
   // convenience getters
   static String get envName => env.deploymentEnvironmentName; // 'dev' | 'prod'
