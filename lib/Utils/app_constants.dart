@@ -83,10 +83,10 @@ class AppConstants {
 
   static _EnvConfig get env =>
       deploymentEnvironment == DeploymentEnvironment.prod
-      ? _prodConfiguration
-      : deploymentEnvironment == DeploymentEnvironment.dev
-      ? _devConfiguration
-      : _localConfiguration;
+          ? _prodConfiguration
+          : deploymentEnvironment == DeploymentEnvironment.dev
+          ? _devConfiguration
+          : _localConfiguration;
 
   // convenience getters
   static String get envName => env.deploymentEnvironmentName; // 'dev' | 'prod'
@@ -169,6 +169,18 @@ class UserActivityLogEvents {
   // GENERAL
   final String appLaunched = 'app_launched';
   final String login = 'login';
+
+  // SERVICE HISTORY
+  final String serviceHistoryPageOpened = 'service_history.page_opened';
+  final String serviceHistoryPurchased = 'service_history.purchased';
+  final String serviceHistoryGetServiceHistoryClicked =
+      'service_history.get_service_history_clicked';
+
+  // CAR INSPECTION REPORT
+  final String carInspectionReportOpened = 'car_inspection_report.opened';
+
+  // PD
+  final String pdTapToMakeOfferClicked = 'pd.tap_to_make_offer_clicked';
 }
 
 // Environments Configuration class

@@ -83,10 +83,10 @@ class SelfInspectedCarDetailsPage extends StatelessWidget {
 
               // Make Offer Bottom Button
               Positioned(
-                bottom: 0,
                 left: 0,
                 right: 0,
-                child: _buildMakeOfferButton(car),
+                bottom: 0,
+                child: SafeArea(top: false, child: _buildMakeOfferButton(car)),
               ),
             ],
           ),

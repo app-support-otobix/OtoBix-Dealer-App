@@ -5,6 +5,8 @@ import 'package:get/get.dart';
 import 'package:otobix/Controllers/razorpay_payment_controller.dart';
 import 'package:otobix/Controllers/service_history_controller.dart';
 import 'package:otobix/Network/api_service.dart';
+import 'package:otobix/Services/user_activity_log_service.dart';
+import 'package:otobix/Utils/app_constants.dart';
 import 'package:otobix/Utils/app_urls.dart';
 import 'package:otobix/Widgets/toast_widget.dart';
 import 'package:otobix/helpers/shared_prefs_helper.dart';
@@ -141,7 +143,25 @@ class ServiceHistoryCheckoutController extends GetxController {
                 ? Get.find<ServiceHistoryController>()
                 : Get.put(ServiceHistoryController());
         serviceHistoryController.fetchServiceHistoryReportsList();
+
+        // Log event
+        UserActivityLogService.logEvent(
+          userId: userId,
+          event: AppConstants.userActivityLogEvents.serviceHistoryPurchased,
+          eventDetails: 'User purchased service history',
+          metadata: {
+            "paymentId": success.paymentId,
+            "registrationNumber": registrationNumber,
+            "make": make,
+            "model": model,
+            "rate": rate,
+            "gst": gst,
+            "total": total,
+          },
+        );
+
         Get.back();
+
         ToastWidget.show(
           context: Get.context!,
           title: 'Submitted',
@@ -154,7 +174,21 @@ class ServiceHistoryCheckoutController extends GetxController {
                 ? Get.find<ServiceHistoryController>()
                 : Get.put(ServiceHistoryController());
         serviceHistoryController.fetchServiceHistoryReportsList();
+
+        // Log event
+        UserActivityLogService.logEvent(
+          userId: userId,
+          event: AppConstants.userActivityLogEvents.serviceHistoryPurchased,
+          eventDetails: 'User already purchased service history',
+          metadata: {
+            "registrationNumber": registrationNumber,
+            "make": make,
+            "model": model,
+          },
+        );
+
         Get.back();
+
         ToastWidget.show(
           context: Get.context!,
           title: 'Already Submitted',
@@ -163,6 +197,18 @@ class ServiceHistoryCheckoutController extends GetxController {
           type: ToastType.success,
         );
       } else {
+        // Log event
+        UserActivityLogService.logEvent(
+          userId: userId,
+          event: AppConstants.userActivityLogEvents.serviceHistoryPurchased,
+          eventDetails: 'User failed to purchase service history',
+          metadata: {
+            "registrationNumber": registrationNumber,
+            "make": make,
+            "model": model,
+          },
+        );
+
         ToastWidget.show(
           context: Get.context!,
           title: 'Failed',
@@ -173,6 +219,22 @@ class ServiceHistoryCheckoutController extends GetxController {
       }
     } catch (error) {
       debugPrint('Error submitting service history request: $error');
+
+      String userId =
+          await SharedPrefsHelper.getString(SharedPrefsHelper.userIdKey) ?? "";
+      // Log event
+      UserActivityLogService.logEvent(
+        userId: userId,
+        event: AppConstants.userActivityLogEvents.serviceHistoryPurchased,
+        eventDetails: 'Error purchasing service history',
+        metadata: {
+          "registrationNumber": registrationNumber,
+          "make": make,
+          "model": model,
+          "error": error.toString(),
+        },
+      );
+
       ToastWidget.show(
         context: Get.context!,
         title: 'Error',

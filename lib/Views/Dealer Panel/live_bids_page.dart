@@ -6,7 +6,9 @@ import 'package:otobix/Controllers/home_controller.dart';
 import 'package:otobix/Controllers/live_bids_controller.dart';
 import 'package:otobix/Models/car_model.dart';
 import 'package:otobix/Models/cars_list_model.dart';
+import 'package:otobix/Services/user_activity_log_service.dart';
 import 'package:otobix/Utils/app_colors.dart';
+import 'package:otobix/Utils/app_constants.dart';
 import 'package:otobix/Utils/app_images.dart';
 import 'package:otobix/Utils/global_functions.dart';
 import 'package:otobix/Views/Dealer%20Panel/car_details_page.dart';
@@ -15,6 +17,7 @@ import 'package:otobix/Widgets/shimmer_widget.dart';
 import 'package:otobix/helpers/bid_color_change_helper.dart';
 import 'package:otobix/helpers/car_margin_helpers.dart';
 import 'package:otobix/helpers/dealer_home_search_sort_filter_helper.dart';
+import 'package:otobix/helpers/shared_prefs_helper.dart';
 
 class LiveBidsPage extends StatelessWidget {
   LiveBidsPage({super.key});
@@ -196,7 +199,7 @@ class LiveBidsPage extends StatelessWidget {
               '${GlobalFunctions.getFormattedDate(date: getFirstValidValueFromCarModel(values: [car.yearAndMonthOfManufacture, car.yearMonthOfManufacture], returnType: ReturnType.datetime), type: GlobalFunctions.year)} ';
 
           return InkWell(
-            onTap: () {
+            onTap: () async {
               Get.to(
                 () => CarDetailsPage(
                   carId: car.id,
@@ -205,6 +208,33 @@ class LiveBidsPage extends StatelessWidget {
                   remainingAuctionTime: getxController
                       .getCarRemainingTimeForNextScreen(car.id),
                 ),
+              );
+
+              final String userId =
+                  await SharedPrefsHelper.getString(
+                    SharedPrefsHelper.userIdKey,
+                  ) ??
+                  '';
+              // Log event
+              UserActivityLogService.logEvent(
+                userId: userId,
+                event:
+                    AppConstants
+                        .userActivityLogEvents
+                        .carInspectionReportOpened,
+                eventDetails: 'Clicked on car from live cars page',
+                metadata: {
+                  "screen": "live",
+                  "carId": car.id,
+                  "make": car.make,
+                  "model": car.model,
+                  "priceDiscovery": car.priceDiscovery,
+                  "highestBid": car.highestBid.value,
+                  "oneClickPrice": car.oneClickPrice.value,
+                  "customerExpectedPrice": car.customerExpectedPrice.value,
+                  "fixedMargin": car.fixedMargin.value,
+                  "variableMargin": car.variableMargin.value,
+                },
               );
             },
             child: Card(
