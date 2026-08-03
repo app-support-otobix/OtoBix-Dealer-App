@@ -1,3 +1,4 @@
+import 'package:get/get_rx/src/rx_types/rx_types.dart';
 import 'package:otobix/Models/car_model.dart';
 
 class MyBidsCarsListModel {
@@ -23,6 +24,11 @@ class MyBidsCarsListModel {
   final List<String> transmissionTypeDropdownList;
   final String registrationNumber;
   final String registeredRto;
+  final RxDouble highestBid;
+  final RxDouble oneClickPrice;
+  final RxDouble customerExpectedPrice;
+  final RxDouble fixedMargin;
+  final RxDouble variableMargin;
 
   MyBidsCarsListModel({
     this.id,
@@ -47,6 +53,11 @@ class MyBidsCarsListModel {
     required this.transmissionTypeDropdownList,
     required this.registrationNumber,
     required this.registeredRto,
+    required this.highestBid,
+    required this.oneClickPrice,
+    required this.customerExpectedPrice,
+    required this.fixedMargin,
+    required this.variableMargin,
   });
 
   // Factory constructor to create a Car from JSON map
@@ -99,6 +110,22 @@ class MyBidsCarsListModel {
           [],
       registrationNumber: data['registrationNumber'] ?? '',
       registeredRto: data['registeredRto'] ?? '',
+      highestBid: RxDouble(
+        double.tryParse(data['highestBid']?.toString() ?? '0') ?? 0.0,
+      ),
+      oneClickPrice: RxDouble(
+        double.tryParse(data['oneClickPrice']?.toString() ?? '0') ?? 0.0,
+      ),
+      customerExpectedPrice: RxDouble(
+        double.tryParse(data['customerExpectedPrice']?.toString() ?? '0') ??
+            0.0,
+      ),
+      fixedMargin: RxDouble(
+        double.tryParse(data['fixedMargin']?.toString() ?? '0') ?? 0.0,
+      ),
+      variableMargin: RxDouble(
+        double.tryParse(data['variableMargin']?.toString() ?? '0') ?? 0.0,
+      ),
     );
   }
 
@@ -126,6 +153,11 @@ class MyBidsCarsListModel {
       'transmissionTypeDropdownList': transmissionTypeDropdownList,
       'registrationNumber': registrationNumber,
       'registeredRto': registeredRto,
+      'highestBid': highestBid.value,
+      'oneClickPrice': oneClickPrice.value,
+      'customerExpectedPrice': customerExpectedPrice.value,
+      'fixedMargin': fixedMargin.value,
+      'variableMargin': variableMargin.value,
     };
   }
 }

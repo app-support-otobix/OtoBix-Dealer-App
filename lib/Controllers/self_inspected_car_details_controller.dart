@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:otobix/Models/self_inspected_cars_model.dart';
 import 'package:otobix/Network/api_service.dart';
+import 'package:otobix/Services/user_activity_log_service.dart';
+import 'package:otobix/Utils/app_constants.dart';
 import 'package:otobix/Utils/app_urls.dart';
 import 'package:otobix/Widgets/toast_widget.dart';
 import 'package:otobix/helpers/shared_prefs_helper.dart';
@@ -170,10 +172,11 @@ class SelfInspectedCarDetailsController extends GetxController {
     if (isMakeOfferLoading.value) return false;
 
     isMakeOfferLoading.value = true;
-    try {
-      final String userId =
-          await SharedPrefsHelper.getString(SharedPrefsHelper.userIdKey) ?? '';
 
+    final String userId =
+        await SharedPrefsHelper.getString(SharedPrefsHelper.userIdKey) ?? '';
+
+    try {
       final response = await ApiService.post(
         endpoint: AppUrls.makeOfferOnSelfInspectedCar,
         body: {
@@ -186,32 +189,72 @@ class SelfInspectedCarDetailsController extends GetxController {
       final responseBody = jsonDecode(response.body);
 
       if (response.statusCode == 200) {
+        // Log event
+        UserActivityLogService.logEvent(
+          userId: userId,
+          event: AppConstants.userActivityLogEvents.pdTapToMakeOfferClicked,
+          eventDetails: 'Offer placed successfully',
+          metadata: {"carId": carId, "offerAmount": yourOfferAmount.value},
+        );
+
         ToastWidget.show(
           context: Get.context!,
           title: 'Offer Placed',
           subtitle: 'Your offer has been placed.',
           type: ToastType.success,
         );
+
         return true;
       } else if (response.statusCode == 400) {
         final message = responseBody['message'];
+
+        // Log event
+        UserActivityLogService.logEvent(
+          userId: userId,
+          event: AppConstants.userActivityLogEvents.pdTapToMakeOfferClicked,
+          eventDetails: message ?? 'Failed to place offer',
+          metadata: {"carId": carId, "offerAmount": yourOfferAmount.value},
+        );
+
         ToastWidget.show(
           context: Get.context!,
           title: 'Failed',
           subtitle: message ?? 'Failed to place the offer.',
           type: ToastType.error,
         );
+
         return false;
       } else {
+        // Log event
+        UserActivityLogService.logEvent(
+          userId: userId,
+          event: AppConstants.userActivityLogEvents.pdTapToMakeOfferClicked,
+          eventDetails: 'Failed to place offer',
+          metadata: {"carId": carId, "offerAmount": yourOfferAmount.value},
+        );
+
         ToastWidget.show(
           context: Get.context!,
           title: 'Failed',
           subtitle: 'Failed to place the offer',
           type: ToastType.error,
         );
+
         return false;
       }
     } catch (error) {
+      // Log event
+      UserActivityLogService.logEvent(
+        userId: userId,
+        event: AppConstants.userActivityLogEvents.pdTapToMakeOfferClicked,
+        eventDetails: 'Error placing offer',
+        metadata: {
+          "carId": carId,
+          "offerAmount": yourOfferAmount.value,
+          "error": error.toString(),
+        },
+      );
+
       ToastWidget.show(
         context: Get.context!,
         title: 'Error',

@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:otobix/Controllers/home_controller.dart';
 import 'package:otobix/Controllers/purchased_cars_controller.dart';
+import 'package:otobix/Services/user_activity_log_service.dart';
+import 'package:otobix/Utils/app_constants.dart';
 import 'package:otobix/Views/Dealer%20Panel/car_details_page.dart';
 import 'package:otobix/Widgets/car_deck_view_for_mybids_and_wishlist_widget.dart';
 import 'package:otobix/Widgets/empty_data_widget.dart';
 import 'package:otobix/Widgets/shimmer_widget.dart';
+import 'package:otobix/helpers/shared_prefs_helper.dart';
 
 class PurchasedCarsPage extends StatelessWidget {
   PurchasedCarsPage({super.key});
@@ -56,7 +59,7 @@ class PurchasedCarsPage extends StatelessWidget {
           return CarDeckViewForMyBidsAndWishlistWidget(
             car: car,
             footer: SizedBox(),
-            onCarTap: () {
+            onCarTap: () async {
               Get.to(
                 () => CarDetailsPage(
                   carId: car.id,
@@ -64,6 +67,33 @@ class PurchasedCarsPage extends StatelessWidget {
                   currentOpenSection: homeController.defaultSectionScreen,
                   remainingAuctionTime: '00h : 00m : 00s'.obs,
                 ),
+              );
+
+              final String userId =
+                  await SharedPrefsHelper.getString(
+                    SharedPrefsHelper.userIdKey,
+                  ) ??
+                  '';
+              // Log event
+              UserActivityLogService.logEvent(
+                userId: userId,
+                event:
+                    AppConstants
+                        .userActivityLogEvents
+                        .carInspectionReportOpened,
+                eventDetails: 'Clicked on car from purchased cars page',
+                metadata: {
+                  "screen": "purchased",
+                  "carId": car.id,
+                  "make": car.make,
+                  "model": car.model,
+                  "priceDiscovery": car.priceDiscovery,
+                  "highestBid": car.highestBid.value,
+                  "oneClickPrice": car.oneClickPrice.value,
+                  "customerExpectedPrice": car.customerExpectedPrice.value,
+                  "fixedMargin": car.fixedMargin.value,
+                  "variableMargin": car.variableMargin.value,
+                },
               );
             },
             showAddToWishlistIcon: false,

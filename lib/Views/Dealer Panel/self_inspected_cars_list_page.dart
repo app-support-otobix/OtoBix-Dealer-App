@@ -5,7 +5,9 @@ import 'package:intl/intl.dart';
 import 'package:otobix/Controllers/home_controller.dart';
 import 'package:otobix/Controllers/self_inspected_cars_list_controller.dart';
 import 'package:otobix/Models/self_inspected_cars_model.dart';
+import 'package:otobix/Services/user_activity_log_service.dart';
 import 'package:otobix/Utils/app_colors.dart';
+import 'package:otobix/Utils/app_constants.dart';
 import 'package:otobix/Utils/app_images.dart';
 import 'package:otobix/Utils/global_functions.dart';
 import 'package:otobix/Views/Dealer%20Panel/self_inspected_car_details_page.dart';
@@ -13,6 +15,7 @@ import 'package:otobix/Widgets/empty_data_widget.dart';
 import 'package:otobix/Widgets/shimmer_widget.dart';
 import 'package:otobix/helpers/bid_color_change_helper.dart';
 import 'package:otobix/helpers/self_inspected_car_margin_helpers.dart';
+import 'package:otobix/helpers/shared_prefs_helper.dart';
 
 class SelfInspectedCarsListPage extends StatelessWidget {
   SelfInspectedCarsListPage({super.key});
@@ -78,8 +81,35 @@ class SelfInspectedCarsListPage extends StatelessWidget {
               '${GlobalFunctions.getFormattedDate(date: car.registrationDate, type: GlobalFunctions.year)} ';
 
           return InkWell(
-            onTap: () {
+            onTap: () async {
               Get.to(() => SelfInspectedCarDetailsPage(car: car));
+
+              final String userId =
+                  await SharedPrefsHelper.getString(
+                    SharedPrefsHelper.userIdKey,
+                  ) ??
+                  '';
+              // Log event
+              UserActivityLogService.logEvent(
+                userId: userId,
+                event:
+                    AppConstants
+                        .userActivityLogEvents
+                        .carInspectionReportOpened,
+                eventDetails: 'Clicked on car from pd cars page',
+                metadata: {
+                  "screen": "pd",
+                  "carId": car.id,
+                  "inspectionId": car.inspectionId,
+                  "make": car.make,
+                  "model": car.model,
+                  "priceDiscovery": car.priceDiscovery,
+                  "highestOffer": car.highestOffer.value,
+                  "expectedPrice": car.expectedPrice.value,
+                  "fixedMargin": car.fixedMargin.value,
+                  "variableMargin": car.variableMargin.value,
+                },
+              );
             },
             child: Card(
               elevation: 4,

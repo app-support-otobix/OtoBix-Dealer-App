@@ -4,7 +4,9 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:otobix/Controllers/oto_buy_controller.dart';
 import 'package:otobix/Models/cars_list_model.dart';
+import 'package:otobix/Services/user_activity_log_service.dart';
 import 'package:otobix/Utils/app_colors.dart';
+import 'package:otobix/Utils/app_constants.dart';
 import 'package:otobix/Utils/app_images.dart';
 import 'package:otobix/Utils/global_functions.dart';
 import 'package:otobix/Views/Dealer%20Panel/car_details_page.dart';
@@ -14,6 +16,7 @@ import 'package:otobix/Widgets/empty_data_widget.dart';
 import 'package:otobix/Widgets/shimmer_widget.dart';
 import 'package:otobix/helpers/car_margin_helpers.dart';
 import 'package:otobix/helpers/dealer_home_search_sort_filter_helper.dart';
+import 'package:otobix/helpers/shared_prefs_helper.dart';
 
 class OtoBuyPage extends StatelessWidget {
   OtoBuyPage({super.key});
@@ -190,7 +193,7 @@ class OtoBuyPage extends StatelessWidget {
           return CarDeckViewCardWidget(
             car: car,
             footer: _buildCarCardFooter(car),
-            onCarTap: () {
+            onCarTap: () async {
               Get.to(
                 () => CarDetailsPage(
                   carId: car.id,
@@ -198,6 +201,33 @@ class OtoBuyPage extends StatelessWidget {
                   currentOpenSection: homeController.otobuySectionScreen,
                   remainingAuctionTime: car.remainingAuctionTime,
                 ),
+              );
+
+              final String userId =
+                  await SharedPrefsHelper.getString(
+                    SharedPrefsHelper.userIdKey,
+                  ) ??
+                  '';
+              // Log event
+              UserActivityLogService.logEvent(
+                userId: userId,
+                event:
+                    AppConstants
+                        .userActivityLogEvents
+                        .carInspectionReportOpened,
+                eventDetails: 'Clicked on car from otobuy cars page',
+                metadata: {
+                  "screen": "otobuy",
+                  "carId": car.id,
+                  "make": car.make,
+                  "model": car.model,
+                  "priceDiscovery": car.priceDiscovery,
+                  "highestBid": car.highestBid.value,
+                  "oneClickPrice": car.oneClickPrice.value,
+                  "customerExpectedPrice": car.customerExpectedPrice.value,
+                  "fixedMargin": car.fixedMargin.value,
+                  "variableMargin": car.variableMargin.value,
+                },
               );
             },
           );

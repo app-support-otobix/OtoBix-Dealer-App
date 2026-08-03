@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:otobix/Controllers/my_bids_controller.dart';
+import 'package:otobix/Services/user_activity_log_service.dart';
 import 'package:otobix/Utils/app_colors.dart';
+import 'package:otobix/Utils/app_constants.dart';
 import 'package:otobix/Utils/global_functions.dart';
 import 'package:otobix/Widgets/car_deck_view_for_mybids_and_wishlist_widget.dart';
 import 'package:otobix/Widgets/empty_data_widget.dart';
 import 'package:otobix/Widgets/shimmer_widget.dart';
 import 'package:otobix/Widgets/toast_widget.dart';
+import 'package:otobix/helpers/shared_prefs_helper.dart';
 
 class MyBidsPage extends StatelessWidget {
   MyBidsPage({super.key});
@@ -54,8 +57,36 @@ class MyBidsPage extends StatelessWidget {
           return CarDeckViewForMyBidsAndWishlistWidget(
             car: car,
             footer: SizedBox(),
-            onCarTap:
-                () => _buildPreviousBidsSheet(context, car.id!, getxController),
+            onCarTap: () async {
+              _buildPreviousBidsSheet(context, car.id!, getxController);
+
+              final String userId =
+                  await SharedPrefsHelper.getString(
+                    SharedPrefsHelper.userIdKey,
+                  ) ??
+                  '';
+              // Log event
+              UserActivityLogService.logEvent(
+                userId: userId,
+                event:
+                    AppConstants
+                        .userActivityLogEvents
+                        .carInspectionReportOpened,
+                eventDetails: 'Clicked on car from my bids page',
+                metadata: {
+                  "screen": "my bids",
+                  "carId": car.id,
+                  "make": car.make,
+                  "model": car.model,
+                  "priceDiscovery": car.priceDiscovery,
+                  "highestBid": car.highestBid.value,
+                  "oneClickPrice": car.oneClickPrice.value,
+                  "customerExpectedPrice": car.customerExpectedPrice.value,
+                  "fixedMargin": car.fixedMargin.value,
+                  "variableMargin": car.variableMargin.value,
+                },
+              );
+            },
             showAddToWishlistIcon: false,
             toggleFavorite: () {},
           );

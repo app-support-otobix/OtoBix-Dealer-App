@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
+import 'package:otobix/Services/user_activity_log_service.dart';
 import 'package:otobix/Utils/app_colors.dart';
+import 'package:otobix/Utils/app_constants.dart';
 import 'package:otobix/Utils/app_images.dart';
 import 'package:otobix/Views/Dealer%20Panel/service_history_page.dart';
+import 'package:otobix/helpers/shared_prefs_helper.dart';
 
 class AddOnsPage extends StatelessWidget {
   const AddOnsPage({super.key});
@@ -47,7 +49,25 @@ class AddOnsPage extends StatelessWidget {
                   title: "Service History",
                   description:
                       "View your car’s previous service and maintenance records in one place.",
-                  onTap: () => Get.to(() => ServiceHistoryPage()),
+                  onTap: () async {
+                    Get.to(() => ServiceHistoryPage());
+
+                    // Log event
+                    final String userId =
+                        await SharedPrefsHelper.getString(
+                          SharedPrefsHelper.userIdKey,
+                        ) ??
+                        '';
+                    UserActivityLogService.logEvent(
+                      userId: userId,
+                      event:
+                          AppConstants
+                              .userActivityLogEvents
+                              .serviceHistoryPageOpened,
+                      eventDetails: 'User opened service history page',
+                      metadata: {},
+                    );
+                  },
                 ),
                 // AddOnCard(
                 //   icon: Icons.verified,

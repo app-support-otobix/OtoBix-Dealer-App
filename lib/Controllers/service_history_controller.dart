@@ -8,6 +8,8 @@ import 'package:intl/intl.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:otobix/Models/service_history_reports_model.dart';
 import 'package:otobix/Network/api_service.dart';
+import 'package:otobix/Services/user_activity_log_service.dart';
+import 'package:otobix/Utils/app_constants.dart';
 import 'package:otobix/Utils/app_urls.dart';
 import 'package:otobix/Views/Dealer Panel/service_history_checkout_page.dart';
 import 'package:otobix/Widgets/toast_widget.dart';
@@ -123,6 +125,19 @@ class ServiceHistoryController extends GetxController {
               message.isNotEmpty ? message : "Unable to get service history",
           type: ToastType.error,
         );
+
+        // Log event
+        UserActivityLogService.logEvent(
+          userId: userId,
+          event:
+              AppConstants
+                  .userActivityLogEvents
+                  .serviceHistoryGetServiceHistoryClicked,
+          eventDetails:
+              message.isNotEmpty ? message : "Unable to get service history",
+          metadata: {"registrationNumber": reg},
+        );
+
         return;
       }
 
@@ -170,7 +185,42 @@ class ServiceHistoryController extends GetxController {
             total: total,
           ),
         );
+
+        // Log event
+        UserActivityLogService.logEvent(
+          userId: userId,
+          event:
+              AppConstants
+                  .userActivityLogEvents
+                  .serviceHistoryGetServiceHistoryClicked,
+          eventDetails: "Service history details fetched successfully",
+          metadata: {
+            "registrationNumber": reg,
+            "make": make,
+            "model": model,
+            "chassisNumber": chassisNumber,
+            "engineNumber": engineNumber,
+            "registrationDate": registrationDate,
+            "bodyType": bodyType,
+            "fuelType": fuelType,
+            "ownerSerialNumber": ownerSerialNumber,
+            "rate": rate,
+            "gst": gst,
+            "total": total,
+          },
+        );
       } else {
+        // Log event
+        UserActivityLogService.logEvent(
+          userId: userId,
+          event:
+              AppConstants
+                  .userActivityLogEvents
+                  .serviceHistoryGetServiceHistoryClicked,
+          eventDetails: 'Failed to fetch service history details',
+          metadata: {"registrationNumber": reg},
+        );
+
         ToastWidget.show(
           context: Get.context!,
           title: "Failed",
@@ -180,6 +230,18 @@ class ServiceHistoryController extends GetxController {
       }
     } catch (e) {
       debugPrint(e.toString());
+
+      // Log event
+      UserActivityLogService.logEvent(
+        userId: userId,
+        event:
+            AppConstants
+                .userActivityLogEvents
+                .serviceHistoryGetServiceHistoryClicked,
+        eventDetails: 'Error fetching service history details',
+        metadata: {"registrationNumber": reg, "error": e.toString()},
+      );
+
       ToastWidget.show(
         context: Get.context!,
         title: 'Error',
