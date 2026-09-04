@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -26,15 +25,14 @@ Future<Widget> initializeApp() async {
 
   await FirebaseAppCheck.instance.activate(
     providerAndroid:
-        kDebugMode
-            ? const AndroidDebugProvider()
+        AppConstants.deploymentEnvironment != DeploymentEnvironment.prod
+            ? AndroidDebugProvider(debugToken: AppConstants.appCheckDebugToken)
             : const AndroidPlayIntegrityProvider(),
     providerApple:
-        kDebugMode
-            ? const AppleDebugProvider()
+        AppConstants.deploymentEnvironment != DeploymentEnvironment.prod
+            ? AppleDebugProvider(debugToken: AppConstants.appCheckDebugToken)
             : const AppleAppAttestProvider(),
   ); // To give a token to the public APIs so that they know they are being hit from our app
-  // 40f0156c-ad04-4c3f-9d83-59b1b38e79d0 // Firebase App Check Debug Token for this App (Temporary)
 
   await NotificationService.instance.init();
 
