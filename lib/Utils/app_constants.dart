@@ -14,6 +14,7 @@ class AppConstants {
   static final HomeScreenSections homeScreenSections = HomeScreenSections();
   static final UserActivityLogEvents userActivityLogEvents =
       UserActivityLogEvents();
+  static final OtpPurposes otpPurposes = OtpPurposes();
 
   // App Key for update app info
   static const String appKey = 'dealer';
@@ -64,7 +65,7 @@ class AppConstants {
   // ---- configuration per environment ----
   static const _localConfiguration = _EnvConfig(
     deploymentEnvironmentName: 'local',
-    renderBaseUrl: 'http://192.168.10.234:4000/api/',
+    renderBaseUrl: 'http://192.168.1.2:4000/api/',
     oneSignalAppId: 'a6697fe1-be34-420f-9aa7-1fa369e1b07c',
   );
 
@@ -181,6 +182,13 @@ class UserActivityLogEvents {
 
   // PD
   final String pdTapToMakeOfferClicked = 'pd.tap_to_make_offer_clicked';
+}
+
+// OTP Purposes class
+class OtpPurposes {
+  final String login = 'login';
+  final String register = 'register';
+  final String forgetPassword = 'forget_password';
 }
 
 // Environments Configuration class

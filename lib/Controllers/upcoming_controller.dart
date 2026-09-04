@@ -42,7 +42,7 @@ class UpcomingController extends GetxController {
 
     // Fetch cars then wishlist, then apply hearts
     await fetchUpcomingCarsList();
-    await _fetchAndApplyWishlist(userId: currentUserId!);
+    await _fetchAndApplyWishlist();
 
     // Listen to realtime wishlist updates
     _listenWishlistRealtime();
@@ -179,9 +179,9 @@ class UpcomingController extends GetxController {
     }
   }
 
-  Future<void> _fetchAndApplyWishlist({required String userId}) async {
+  Future<void> _fetchAndApplyWishlist() async {
     try {
-      final url = AppUrls.getUserWishlist(userId: userId);
+      final url = AppUrls.getUserWishlist;
       final response = await ApiService.get(endpoint: url);
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);

@@ -33,17 +33,11 @@ class UserNotificationsController extends GetxController {
 
   // FETCH NOTIFICATIONS LIST
   Future<void> fetchMore() async {
-    final userId =
-        await SharedPrefsHelper.getString(SharedPrefsHelper.userIdKey) ?? '';
     if (loading.value || !hasMore) return;
     loading.value = true;
     try {
       final response = await ApiService.get(
-        endpoint: AppUrls.userNotificationsList(
-          userId: userId,
-          page: page,
-          limit: limit,
-        ),
+        endpoint: AppUrls.userNotificationsList(page: page, limit: limit),
       );
 
       if (response.statusCode == 200) {
@@ -74,13 +68,8 @@ class UserNotificationsController extends GetxController {
   Future<UserNotificationsModel?> fetchNotificationDetails(
     String notificationId,
   ) async {
-    final userId =
-        await SharedPrefsHelper.getString(SharedPrefsHelper.userIdKey) ?? '';
     final response = await ApiService.get(
-      endpoint: AppUrls.userNotificationsDetail(
-        userId: userId,
-        notificationId: notificationId,
-      ),
+      endpoint: AppUrls.userNotificationsDetail(notificationId: notificationId),
     );
 
     if (response.statusCode == 200) {
@@ -96,11 +85,9 @@ class UserNotificationsController extends GetxController {
 
   // MARK NOTIFICATION AS READ
   Future<void> markNotificationAsRead(String notificationId) async {
-    final userId =
-        await SharedPrefsHelper.getString(SharedPrefsHelper.userIdKey) ?? '';
     final response = await ApiService.post(
       endpoint: AppUrls.userNotificationsMarkRead,
-      body: {'userId': userId, 'notificationId': notificationId},
+      body: {'notificationId': notificationId},
     );
     if (response.statusCode == 200) {
       final i = items.indexWhere((e) => e.id == notificationId);
@@ -123,11 +110,9 @@ class UserNotificationsController extends GetxController {
 
   // MARK ALL NOTIFICATIONS AS READ
   Future<void> markAllNotificationsAsRead() async {
-    final userId =
-        await SharedPrefsHelper.getString(SharedPrefsHelper.userIdKey) ?? '';
     final response = await ApiService.post(
       endpoint: AppUrls.userNotificationsMarkAllRead,
-      body: {'userId': userId},
+      body: {},
     );
     if (response.statusCode == 200) {
       for (var i = 0; i < items.length; i++) {

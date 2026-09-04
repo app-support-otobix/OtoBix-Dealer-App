@@ -596,12 +596,8 @@ class HomeController extends GetxController {
 
   // Unread Notifications Count
   Future<void> getUnreadNotificationsCount() async {
-    final userId =
-        await SharedPrefsHelper.getString(SharedPrefsHelper.userIdKey) ?? '';
     try {
-      final url = AppUrls.userNotificationsUnreadNotificationsCount(
-        userId: userId,
-      );
+      final url = AppUrls.userNotificationsUnreadNotificationsCount;
       final response = await ApiService.get(endpoint: url);
 
       if (response.statusCode == 200) {
@@ -697,7 +693,7 @@ class HomeController extends GetxController {
 
   Future<void> _fetchAndApplyWishlist({required String userId}) async {
     try {
-      final url = AppUrls.getUserWishlist(userId: userId);
+      final url = AppUrls.getUserWishlist;
       final response = await ApiService.get(endpoint: url);
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);

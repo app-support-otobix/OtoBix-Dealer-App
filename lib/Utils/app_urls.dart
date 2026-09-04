@@ -1,30 +1,25 @@
 import 'package:otobix/Utils/app_constants.dart';
 
 class AppUrls {
-  // static const String baseUrl = "http://localhost:4000/api/";
-  // static const String baseUrlOld = "https://otobix-app-backend.onrender.com/api/";
-  // static const String baseUrl =
-  //     "https://otobix-app-backend-rq8m.onrender.com/api/";
-  //   static const String baseUrl =
-  //   "http://192.168.100.99:4000/api/"; // For Mobile Testing
-
   static String get baseUrl => AppConstants.renderBaseUrl;
 
   static final String socketBaseUrl = _extractSocketBaseUrl(
     baseUrl,
   ); // Socket base URL
 
-  static String get sendOtp => "${baseUrl}otp/send-otp";
+  static String get sendOtp => "${baseUrl}otp/v2/send-otp";
 
-  static String get verifyOtp => "${baseUrl}otp/verify-otp";
+  static String get verifyOtp => "${baseUrl}otp/v2/verify-otp";
 
-  static String get fetchDetails => "${baseUrl}otp/fetch-details";
+  static String get login => "${baseUrl}auth/login";
 
-  static String get login => "${baseUrl}user/login";
+  static String get register => "${baseUrl}auth/register";
 
-  static String get register => "${baseUrl}user/register";
+  static String get forgetPassword => "${baseUrl}auth/forget-password";
 
-  static String get setNewPassword => "${baseUrl}user/set-new-password";
+  static String get logout => "${baseUrl}auth/logout";
+
+  static String get refreshAccessToken => "${baseUrl}auth/refresh-access-token";
 
   static String get allUsersList => "${baseUrl}user/all-users-list";
 
@@ -43,13 +38,14 @@ class AppUrls {
   static String checkUsernameExists(String username) =>
       "${baseUrl}user/check-username?username=$username";
 
-  static String updateUserStatus(String userId) =>
-      "${baseUrl}user/update-user-status/$userId";
+  static String get checkUserApprovalStatus =>
+      "${baseUrl}user/check-user-approval-status";
+
+  // static String updateUserStatus(String userId) =>
+  //     "${baseUrl}user/update-user-status/$userId";
 
   static String getUserStatus(String userId) =>
       "${baseUrl}user/user-status/$userId";
-
-  static String logout(String userId) => "${baseUrl}user/logout/$userId";
 
   static String getCarDetails(String carId) => "${baseUrl}car/details/$carId";
 
@@ -81,17 +77,13 @@ class AppUrls {
       "${baseUrl}user/notifications/create-notification";
 
   static String userNotificationsList({
-    required String userId,
     required int page,
     required int limit,
   }) =>
-      "${baseUrl}user/notifications/notifications-list?userId=$userId&page=$page&limit=$limit";
+      "${baseUrl}user/notifications/notifications-list?page=$page&limit=$limit";
 
-  static String userNotificationsDetail({
-    required String userId,
-    required String notificationId,
-  }) =>
-      "${baseUrl}user/notifications/notification-details?userId=$userId&notificationId=$notificationId";
+  static String userNotificationsDetail({required String notificationId}) =>
+      "${baseUrl}user/notifications/notification-details?notificationId=$notificationId";
 
   static String get userNotificationsMarkRead =>
       "${baseUrl}user/notifications/mark-notification-as-read";
@@ -99,41 +91,37 @@ class AppUrls {
   static String get userNotificationsMarkAllRead =>
       "${baseUrl}user/notifications/mark-all-notifications-as-read";
 
-  static String userNotificationsUnreadNotificationsCount({
-    required String userId,
-  }) =>
-      "${baseUrl}user/notifications/get-unread-notifications-count?userId=$userId";
+  static String get userNotificationsUnreadNotificationsCount =>
+      "${baseUrl}user/notifications/get-unread-notifications-count";
 
-  static String getUserWishlist({required String userId}) =>
-      "${baseUrl}user/get-user-wishlist?userId=$userId";
+  static String get getUserWishlist => "${baseUrl}user/get-user-wishlist";
 
   static String get addToWishlist => "${baseUrl}user/add-to-wishlist";
 
   static String get removeFromWishlist => "${baseUrl}user/remove-from-wishlist";
 
-  static String getUserWishlistCarsList({required String userId}) =>
-      "${baseUrl}user/get-user-wishlist-cars-list?userId=$userId";
+  static String get getUserWishlistCarsList =>
+      "${baseUrl}user/get-user-wishlist-cars-list";
 
-  static String getUserMyBidsList({required String userId}) =>
-      "${baseUrl}user/get-user-my-bids?userId=$userId";
+  static String get getUserMyBidsList => "${baseUrl}user/get-user-my-bids";
 
   static String get addToMyBids => "${baseUrl}user/add-to-my-bids";
 
   static String get removeFromMyBids => "${baseUrl}user/remove-from-my-bids";
 
-  static String getUserMyBidsCarsList({required String userId}) =>
-      "${baseUrl}user/get-user-my-bids-cars-list?userId=$userId";
+  static String get getUserMyBidsCarsList =>
+      "${baseUrl}user/get-user-my-bids-cars-list";
 
   static String getUserBidsForCar({
     required String userId,
     required String carId,
   }) => "${baseUrl}user/get-user-bids-for-car?userId=$userId&carId=$carId";
 
-  static String getUserPurchasedCarsCount({required String userId}) =>
-      "${baseUrl}user/get-user-purchased-cars-count?userId=$userId";
+  static String get getUserPurchasedCarsCount =>
+      "${baseUrl}user/get-user-purchased-cars-count";
 
-  static String getUserPurchasedCarsList({required String userId}) =>
-      "${baseUrl}user/get-user-purchased-cars-list?userId=$userId";
+  static String get getUserPurchasedCarsList =>
+      "${baseUrl}user/get-user-purchased-cars-list";
 
   static String get addUserActivityLog =>
       "${baseUrl}user/add-user-activity-log";
@@ -210,6 +198,8 @@ class AppUrls {
 
   static String get makeOfferOnSelfInspectedCar =>
       "${baseUrl}self-inspection/make-offer-on-self-inspected-car";
+
+  static String get createGuestUser => "${baseUrl}guest-user/create";
 
   // Socket URL Extraction
   static String _extractSocketBaseUrl(String url) {

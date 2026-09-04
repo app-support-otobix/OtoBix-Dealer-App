@@ -146,7 +146,6 @@ class CarDetailsController extends GetxController {
   }
 
   Future<void> fetchCarDetails({required String carId}) async {
-    // final carId = '68821747968635d593293346';
     isLoading.value = true;
     try {
       final url = AppUrls.getCarDetails(carId);
@@ -416,16 +415,16 @@ class CarDetailsController extends GetxController {
     try {
       isPlaceBidButtonLoading.value = true;
 
-      final currentUserId = await SharedPrefsHelper.getString(
-        SharedPrefsHelper.userIdKey,
-      );
+      // final currentUserId = await SharedPrefsHelper.getString(
+      //   SharedPrefsHelper.userIdKey,
+      // );
 
       final response = await ApiService.post(
         endpoint: AppUrls.updateCarBid,
         body: {
           'carId': carId,
           'newBidAmount': newBidAmount,
-          'userId': currentUserId,
+          // 'userId': currentUserId,
           'auctionSection':
               AppConstants.homeScreenSections.liveBidsSectionScreen,
         },
@@ -477,14 +476,14 @@ class CarDetailsController extends GetxController {
     final increment = 1000;
     try {
       Get.back();
-      final userId = await SharedPrefsHelper.getString(
-        SharedPrefsHelper.userIdKey,
-      );
+      // final userId = await SharedPrefsHelper.getString(
+      //   SharedPrefsHelper.userIdKey,
+      // );
       final res = await ApiService.post(
         endpoint: AppUrls.submitAutoBidForLiveSection,
         body: {
           'carId': carId,
-          'userId': userId,
+          // 'userId': userId,
           'autoBidAmount': maxAmount,
           'increment': increment,
           'auctionSection':
@@ -523,16 +522,16 @@ class CarDetailsController extends GetxController {
     try {
       isPreBidButtonLoading.value = true;
 
-      final currentUserId = await SharedPrefsHelper.getString(
-        SharedPrefsHelper.userIdKey,
-      );
+      // final currentUserId = await SharedPrefsHelper.getString(
+      //   SharedPrefsHelper.userIdKey,
+      // );
 
       final response = await ApiService.post(
         endpoint: AppUrls.updateCarBid,
         body: {
           'carId': carId,
           'newBidAmount': newBidAmount,
-          'userId': currentUserId,
+          // 'userId': currentUserId,
           'auctionSection':
               AppConstants.homeScreenSections.upcomingSectionScreen,
         },
@@ -588,14 +587,14 @@ class CarDetailsController extends GetxController {
     final increment = 1000;
     try {
       Get.back();
-      final userId = await SharedPrefsHelper.getString(
-        SharedPrefsHelper.userIdKey,
-      );
+      // final userId = await SharedPrefsHelper.getString(
+      //   SharedPrefsHelper.userIdKey,
+      // );
       final res = await ApiService.post(
         endpoint: AppUrls.submitAutoBidForLiveSection,
         body: {
           'carId': carId,
-          'userId': userId,
+          // 'userId': userId,
           'autoBidAmount': maxAmount,
           'increment': increment,
           'auctionSection':

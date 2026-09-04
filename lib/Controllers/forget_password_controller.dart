@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:otobix/Network/api_service.dart';
+import 'package:otobix/Utils/app_constants.dart';
 import 'package:otobix/Utils/app_urls.dart';
 import 'package:otobix/Views/Login/login_page.dart';
 import 'package:otobix/Widgets/toast_widget.dart';
@@ -11,6 +12,7 @@ class ForgetPasswordController extends GetxController {
 
   RxBool isFourDigit = false.obs; // 👈 Reactive toggle for OTP length
   String requestId = '';
+  String verificationToken = '';
 
   // Page control
   final pageController = PageController();
@@ -31,13 +33,11 @@ class ForgetPasswordController extends GetxController {
 
   // Send OTP
   Future<void> sendOTP() async {
+    if (isSendOtpLoading.value) return;
+
     isSendOtpLoading.value = true;
     try {
       final phoneNumber = phoneCtrl.text.trim();
-      // final formattedPhoneNumber =
-      //     phoneNumber.startsWith('0')
-      //         ? '+92${phoneNumber.substring(1)}'
-      //         : '+92$phoneNumber';
 
       // For indian numbers only
       final RegExp indianRegex = RegExp(r'^[6-9]\d{9}$');
@@ -52,60 +52,46 @@ class ForgetPasswordController extends GetxController {
         return;
       }
 
-      final requestBody = {"mobile": phoneNumber};
+      final requestBody = {
+        "mobile": phoneNumber,
+        "purpose": AppConstants.otpPurposes.forgetPassword,
+      };
 
       final response = await ApiService.post(
         endpoint: AppUrls.sendOtp,
         body: requestBody,
       );
 
-      final data = jsonDecode(response.body);
+      final responseBody = jsonDecode(response.body);
 
       if (response.statusCode == 200) {
-        requestId = data['data']['requestId'] ?? '';
-        final String internalStatusCode =
-            data['data']?['statusCode']?.toString() ?? '';
-
-        if (internalStatusCode == "101") {
-          // ✅ Success navigate to second page
-          goToPage(1);
-          ToastWidget.show(
-            context: Get.context!,
-            title: "OTP Sent Successfully",
-            type: ToastType.success,
-          );
-        } else if (internalStatusCode == "102") {
-          // ❌ Invalid details
-          ToastWidget.show(
-            context: Get.context!,
-            title: "Invalid Details",
-            subtitle: "Invalid ID or input combination.",
-            type: ToastType.error,
-          );
-        } else if (internalStatusCode == "104") {
-          // ❌ Retry limit exceeded
-          ToastWidget.show(
-            context: Get.context!,
-            title: "Retry Limit Exceeded",
-            subtitle: "You have reached maximum OTP attempts.",
-            type: ToastType.error,
-          );
-        } else {
-          // ❌ Unknown or unhandled code
-          ToastWidget.show(
-            context: Get.context!,
-            title: "Failed to send OTP",
-            subtitle: "Unexpected response code: $internalStatusCode",
-            type: ToastType.error,
-          );
-        }
-      } else {
-        debugPrint(
-          "Failed to send OTP: $data, status code ${response.statusCode}",
+        // ✅ Success navigate to second page
+        requestId = responseBody['data']['requestId'].toString();
+        goToPage(1);
+        ToastWidget.show(
+          context: Get.context!,
+          title: "Success",
+          subtitle: "OTP Sent Successfully",
+          type: ToastType.success,
         );
+      } else if (response.statusCode == 400) {
+        // ❌ Failed to send OTP
+        String errorMessage = responseBody['message'] ?? 'Please try again';
         ToastWidget.show(
           context: Get.context!,
           title: "Failed to send OTP",
+          subtitle: errorMessage,
+          toastDuration: 10,
+          type: ToastType.error,
+        );
+      } else {
+        debugPrint(
+          "Failed to send OTP: $responseBody, status code ${response.statusCode}",
+        );
+        ToastWidget.show(
+          context: Get.context!,
+          title: "Failed",
+          subtitle: "Failed to send OTP",
           type: ToastType.error,
         );
       }
@@ -113,7 +99,8 @@ class ForgetPasswordController extends GetxController {
       debugPrint(e.toString());
       ToastWidget.show(
         context: Get.context!,
-        title: "Error sending OTP",
+        title: "Error",
+        subtitle: "Error sending OTP",
         type: ToastType.error,
       );
     } finally {
@@ -123,57 +110,44 @@ class ForgetPasswordController extends GetxController {
 
   // Verify OTP
   Future<void> verifyOtp() async {
+    if (isVerifyOtpLoading.value) return;
+
+    isVerifyOtpLoading.value = true;
     try {
-      isVerifyOtpLoading.value = true;
       final response = await ApiService.post(
         endpoint: AppUrls.verifyOtp,
         body: {"requestId": requestId, "otp": otpCtrl.text.trim().toString()},
       );
 
-      final data = jsonDecode(response.body);
+      final responseBody = jsonDecode(response.body);
 
       if (response.statusCode == 200) {
-        final String internalStatusCode =
-            data['data']?['statusCode']?.toString() ?? '';
+        verificationToken =
+            responseBody['data']['verificationToken'].toString();
 
-        if (internalStatusCode == "101") {
-          // ✅ OTP verified successfully
-          ToastWidget.show(
-            context: Get.context!,
-            title: "OTP Verified Successfully",
-            type: ToastType.success,
-          );
-          goToPage(2);
-        } else if (internalStatusCode == "102") {
-          // ❌ Invalid OTP
-          ToastWidget.show(
-            context: Get.context!,
-            title: "Invalid OTP",
-            subtitle: "The OTP you entered is incorrect.",
-            type: ToastType.error,
-          );
-        } else if (internalStatusCode == "104") {
-          // ❌ Retry limit exceeded
-          ToastWidget.show(
-            context: Get.context!,
-            title: "Retry Limit Exceeded",
-            subtitle: "You have exceeded the maximum verification attempts.",
-            type: ToastType.error,
-          );
-        } else {
-          // ❌ Unknown internal code
-          ToastWidget.show(
-            context: Get.context!,
-            title: "Verification Failed",
-            subtitle: "Unexpected response code: $internalStatusCode",
-            type: ToastType.error,
-          );
-        }
-      } else {
-        debugPrint(data);
+        // ✅ OTP verified successfully
+        goToPage(2);
+        ToastWidget.show(
+          context: Get.context!,
+          title: "Success",
+          subtitle: "OTP Verified Successfully",
+          type: ToastType.success,
+        );
+      } else if (response.statusCode == 400) {
+        // ❌ Invalid OTP
+        final errorMessage = responseBody['message'] ?? 'Please try again';
         ToastWidget.show(
           context: Get.context!,
           title: "Failed to verify OTP",
+          subtitle: errorMessage,
+          toastDuration: 10,
+          type: ToastType.error,
+        );
+      } else {
+        ToastWidget.show(
+          context: Get.context!,
+          title: "Failed",
+          subtitle: "Failed to verify OTP",
           type: ToastType.error,
         );
       }
@@ -181,7 +155,8 @@ class ForgetPasswordController extends GetxController {
       debugPrint(e.toString());
       ToastWidget.show(
         context: Get.context!,
-        title: "Error Verifying OTP",
+        title: "Error",
+        subtitle: "Error verifying OTP",
         type: ToastType.error,
       );
     } finally {
@@ -191,21 +166,25 @@ class ForgetPasswordController extends GetxController {
 
   // Set new password
   Future<void> setNewPassword() async {
-    try {
-      isSetNewPasswordLoading.value = true;
+    if (isSetNewPasswordLoading.value) return;
 
+    isSetNewPasswordLoading.value = true;
+    try {
       final response = await ApiService.put(
-        endpoint: AppUrls.setNewPassword,
+        endpoint: AppUrls.forgetPassword,
         body: {
-          "phoneNumber": phoneCtrl.text.trim(),
+          "otpVerificationToken": verificationToken,
           "password": passwordCtrl.text.trim(),
         },
       );
-      debugPrint(response.body);
+
+      final responseBody = jsonDecode(response.body);
+
       if (response.statusCode == 200) {
         ToastWidget.show(
           context: Get.context!,
-          title: "Password Updated Successfully",
+          title: "Success",
+          subtitle: "Password updated successfully",
           type: ToastType.success,
         );
 
@@ -215,23 +194,36 @@ class ForgetPasswordController extends GetxController {
         otpCtrl.clear();
 
         Get.offAll(() => LoginPage());
+      } else if (response.statusCode == 400) {
+        final String errorMessage =
+            responseBody['message'] ?? 'Failed to update password';
+        ToastWidget.show(
+          context: Get.context!,
+          title: "Failed",
+          subtitle: errorMessage,
+          toastDuration: 10,
+          type: ToastType.error,
+        );
       } else if (response.statusCode == 404) {
         ToastWidget.show(
           context: Get.context!,
-          title: "No account associated with this phone number",
+          title: "Failed",
+          subtitle: "No account associated with this phone number",
           type: ToastType.error,
         );
       } else {
         ToastWidget.show(
           context: Get.context!,
-          title: "Failed to update password",
+          title: "Failed",
+          subtitle: "Failed to update password. Please try again",
           type: ToastType.error,
         );
       }
     } catch (e) {
       ToastWidget.show(
         context: Get.context!,
-        title: "Error updating password",
+        title: "Error",
+        subtitle: "Error updating password",
         type: ToastType.error,
       );
     } finally {

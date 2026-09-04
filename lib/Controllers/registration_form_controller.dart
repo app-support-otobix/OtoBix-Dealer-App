@@ -132,6 +132,7 @@ class RegistrationFormController extends GetxController {
   Future<void> submitForm({
     required String userRole,
     required String contactNumber,
+    required String verificationToken,
   }) async {
     try {
       // Trigger username check
@@ -192,11 +193,15 @@ class RegistrationFormController extends GetxController {
         updatedAt: DateTime.now(),
       );
 
-      // debugPrint("Sending payload → ${userModel.toJson()}");
+      // Add verification token to the request body
+      final requestBody = {
+        ...userModel.toJson(),
+        "otpVerificationToken": verificationToken,
+      };
 
       final response = await ApiService.post(
         endpoint: AppUrls.register,
-        body: userModel.toJson(),
+        body: requestBody,
       );
 
       // debugPrint("Status Code → ${response.statusCode}");
@@ -209,31 +214,22 @@ class RegistrationFormController extends GetxController {
           type: ToastType.success,
         );
         Get.offAll(() => LoginPage());
-        // Optional if want to navigate to waiting page
-        // final chosen = selectedEntityType ?? '';
-        // final docs = chosen.isNotEmpty ? await _fetchEntityDocuments(chosen) : const <String>[];
-        // Get.to(() => WaitingForApprovalPage(
-        //       documents: docs.isNotEmpty ? docs : const <String>['No documents found'],
-        //       userRole: userRole,
-        //     ));
       } else if (response.statusCode == 400) {
-        Map<String, dynamic> responseBody = json.decode(response.body);
-        String errorMessage = responseBody['message'];
-
+        Map<String, dynamic> responseBody = jsonDecode(response.body);
+        String errorMessage =
+            responseBody['message'] ?? 'Failed to register user';
         ToastWidget.show(
           context: Get.context!,
-          title:
-              errorMessage == "Phone Number already exists."
-                  ? "This phone number is already in use."
-                  : errorMessage == "Email already exists."
-                  ? "This email is already registered."
-                  : "User already exists.",
+          title: 'Failed',
+          subtitle: errorMessage,
+          toastDuration: 10,
           type: ToastType.error,
         );
       } else {
         ToastWidget.show(
           context: Get.context!,
-          title: "Failed to register user",
+          title: "Failed",
+          subtitle: "Failed to register user",
           type: ToastType.error,
         );
       }
@@ -242,7 +238,8 @@ class RegistrationFormController extends GetxController {
       debugPrint("Stacktrace → $stacktrace");
       ToastWidget.show(
         context: Get.context!,
-        title: e.toString(),
+        title: "Error",
+        subtitle: "Error registering user",
         type: ToastType.error,
       );
     } finally {
@@ -336,6 +333,7 @@ class RegistrationFormController extends GetxController {
   Future<void> showTermsAndConditionsThenSubmit({
     required String userRole,
     required String contactNumber,
+    required String verificationToken,
   }) async {
     // 1) run same validations you already have
     final okUser = await validateUsername();
@@ -389,7 +387,11 @@ class RegistrationFormController extends GetxController {
 
     // If no terms & conditions found in database, submit form directly
     if (html.trim().isEmpty) {
-      submitForm(userRole: userRole, contactNumber: contactNumber);
+      submitForm(
+        userRole: userRole,
+        contactNumber: contactNumber,
+        verificationToken: verificationToken,
+      );
       return;
     }
 
@@ -399,7 +401,11 @@ class RegistrationFormController extends GetxController {
         title: title,
         html: html,
         onAgree: () {
-          submitForm(userRole: userRole, contactNumber: contactNumber);
+          submitForm(
+            userRole: userRole,
+            contactNumber: contactNumber,
+            verificationToken: verificationToken,
+          );
         },
       ),
       isScrollControlled: true, // allow tall sheet

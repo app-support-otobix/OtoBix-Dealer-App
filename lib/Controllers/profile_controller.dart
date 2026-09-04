@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -15,11 +15,10 @@ import 'package:otobix/Utils/app_constants.dart';
 import 'package:otobix/Views/Login/login_page.dart';
 import 'package:otobix/Widgets/toast_widget.dart';
 import 'package:otobix/helpers/shared_prefs_helper.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:otobix/Network/api_service.dart';
 import 'package:otobix/Utils/app_urls.dart';
 
-class AccountController extends GetxController {
+class ProfileController extends GetxController {
   // String userRoleFromSharedPrefs = '';
   final RxString userRoleFromSharedPrefs = ''.obs;
   RxString userRole = ''.obs;
@@ -71,7 +70,7 @@ class AccountController extends GetxController {
       isLoading.value = true;
 
       final token = await SharedPrefsHelper.getString(
-        SharedPrefsHelper.tokenKey,
+        SharedPrefsHelper.accessTokenKey,
       );
       // debugPrint('Token: $token');
 
@@ -115,7 +114,7 @@ class AccountController extends GetxController {
         }
 
         SharedPrefsHelper.saveString(
-          SharedPrefsHelper.userTypeKey,
+          SharedPrefsHelper.userRoleKey,
           userRole.value,
         );
       } else {
@@ -156,8 +155,9 @@ class AccountController extends GetxController {
     try {
       isLoading.value = true;
 
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token');
+      final token = await SharedPrefsHelper.getString(
+        SharedPrefsHelper.accessTokenKey,
+      );
 
       if (token == null) {
         ToastWidget.show(
@@ -169,9 +169,16 @@ class AccountController extends GetxController {
         return;
       }
 
+      final appCheckToken = await FirebaseAppCheck.instance.getToken() ?? '';
+
       final uri = Uri.parse(AppUrls.updateProfile);
       final request = http.MultipartRequest('PUT', uri);
-      request.headers['Authorization'] = 'Bearer $token';
+
+      request.headers.addAll({
+        'Authorization': 'Bearer $token',
+        'X-Firebase-AppCheck': appCheckToken,
+        'Accept': 'application/json',
+      });
 
       // Add text fields
       request.fields.addAll({
@@ -256,47 +263,46 @@ class AccountController extends GetxController {
     }
   }
 
+  // Logout user
   Future<void> logout() async {
+    if (isLoading.value) return;
+
+    isLoading.value = true;
     try {
-      isLoading.value = true;
+      final response = await ApiService.post(endpoint: AppUrls.logout);
+      final responseBody = jsonDecode(response.body);
+      final String message =
+          responseBody['message'] ?? 'Please try again later.';
 
-      final userId = await SharedPrefsHelper.getString(
-        SharedPrefsHelper.userIdKey,
-      );
-      if (userId == null) {
-        ToastWidget.show(
-          context: Get.context!,
-          title: 'Error',
-          subtitle: 'User ID not found',
-          type: ToastType.error,
-        );
-        return;
-      }
-
-      final endpoint = AppUrls.logout(userId);
-      final response = await ApiService.post(endpoint: endpoint, body: {});
-      final data = jsonDecode(response.body);
-
-      if (response.statusCode == 200 && data['success'] == true) {
+      if (response.statusCode == 200) {
         // unlink the device from the current user (call on sign-out)
-        NotificationService.instance.logout();
-        await SharedPrefsHelper.remove(SharedPrefsHelper.tokenKey);
-        await SharedPrefsHelper.remove(SharedPrefsHelper.userKey);
-        await SharedPrefsHelper.remove(SharedPrefsHelper.userTypeKey);
-        await SharedPrefsHelper.remove(SharedPrefsHelper.userIdKey);
+        await NotificationService.instance.logout();
+        await SharedPrefsHelper.clearUserData();
 
-        ToastWidget.show(
-          context: Get.context!,
-          title: 'Logout successful',
-          type: ToastType.success,
-        );
         Get.delete<LoginController>();
         Get.offAll(() => LoginPage());
-      } else {
+
+        ToastWidget.show(
+          context: Get.context!,
+          title: 'Success',
+          subtitle: 'Logout successful',
+          type: ToastType.success,
+        );
+      } else if (response.statusCode == 500) {
         ToastWidget.show(
           context: Get.context!,
           title: 'Logout Failed',
-          subtitle: data['message'] ?? 'Server error',
+          subtitle:
+              'We couldn\'t complete your logout right now. Please try again in a moment.',
+          toastDuration: 5,
+          type: ToastType.error,
+        );
+      } else {
+        ToastWidget.show(
+          context: Get.context!,
+          title: 'Failed',
+          subtitle: message,
+          toastDuration: 10,
           type: ToastType.error,
         );
       }
@@ -305,7 +311,7 @@ class AccountController extends GetxController {
       ToastWidget.show(
         context: Get.context!,
         title: 'Error',
-        subtitle: 'Something went wrong',
+        subtitle: 'Something went wrong, please try again.',
         type: ToastType.error,
       );
     } finally {

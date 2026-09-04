@@ -1,10 +1,9 @@
 import 'package:get/get.dart';
-import 'package:otobix/Controllers/account_controller.dart';
+import 'package:otobix/Controllers/profile_controller.dart';
 import 'package:otobix/Controllers/bottom_navigation_controller.dart';
 import 'package:otobix/Controllers/car_details_controller.dart';
 import 'package:otobix/Controllers/home_controller.dart';
 import 'package:otobix/Controllers/login_controller.dart';
-import 'package:otobix/Controllers/login_pin_code_controller.dart';
 import 'package:otobix/Controllers/my_cars_controller.dart';
 import 'package:otobix/Controllers/register_controller.dart';
 import 'package:otobix/Controllers/register_pin_code_controller.dart';
@@ -17,12 +16,12 @@ class AppBindings extends Bindings {
   @override
   void dependencies() {
     // Get.put(FirstController());
-    Get.lazyPut(() => AccountController());
+    Get.lazyPut(() => ProfileController());
     Get.lazyPut(() => BottomNavigationController());
     Get.lazyPut(() => CarDetailsController(''));
     Get.lazyPut(() => HomeController());
     Get.lazyPut(() => LoginController());
-    Get.lazyPut(() => LoginPinCodeController());
+    // Get.lazyPut(() => LoginPinCodeController());
     Get.lazyPut(() => MyCarsController());
     Get.lazyPut(() => RegisterController());
     Get.lazyPut(() => RegisterPinCodeController());

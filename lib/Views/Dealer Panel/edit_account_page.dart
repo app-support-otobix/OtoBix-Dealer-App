@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:otobix/Controllers/account_controller.dart';
+import 'package:otobix/Controllers/profile_controller.dart';
 import 'package:otobix/Utils/app_colors.dart';
 import 'package:otobix/Utils/app_constants.dart';
 
@@ -8,7 +8,7 @@ class EditProfileScreen extends StatelessWidget {
   EditProfileScreen({super.key});
 
   final _formKey = GlobalKey<FormState>();
-  final controller = Get.put(AccountController());
+  final controller = Get.put(ProfileController());
 
   @override
   Widget build(BuildContext context) {
@@ -195,7 +195,7 @@ class EditProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildAddressList(AccountController controller) {
+  Widget _buildAddressList(ProfileController controller) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

@@ -14,8 +14,8 @@ class SplashController extends GetxController {
   }
 
   void checkToken() async {
-    token = await SharedPrefsHelper.getString(SharedPrefsHelper.tokenKey);
-    userType = await SharedPrefsHelper.getString(SharedPrefsHelper.userTypeKey);
+    token = await SharedPrefsHelper.getString(SharedPrefsHelper.accessTokenKey);
+    userType = await SharedPrefsHelper.getString(SharedPrefsHelper.userRoleKey);
 
     // debugPrint("token: $token");
     // debugPrint("userType: $userType");

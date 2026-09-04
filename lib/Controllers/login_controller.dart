@@ -25,82 +25,67 @@ class LoginController extends GetxController {
   final phoneNumberController = TextEditingController();
   final passwordController = TextEditingController();
 
+  // Login User
   Future<void> loginUser() async {
+    if (isLoading.value) return;
+
     isLoading.value = true;
     try {
-      String dealerName = userNameController.text.trim();
+      String userName = userNameController.text.trim();
       String contactNumber = phoneNumberController.text.trim();
+      String password = passwordController.text.trim();
+
       final requestBody = {
-        "userName": dealerName,
+        "userName": userName,
         "phoneNumber": contactNumber,
-        "password": passwordController.text.trim(),
+        "password": password,
       };
-      // debugPrint("Sending body: $requestBody");
+
       final response = await ApiService.post(
         endpoint: AppUrls.login,
         body: requestBody,
       );
-      final data = jsonDecode(response.body);
-      // debugPrint("Status Code: ${response.statusCode}");
+
+      final responseBody = jsonDecode(response.body);
+
       if (response.statusCode == 200) {
-        final token = data['token'];
-        final user = data['user'];
-        final userType = user['userType'];
-        final userId = user['id'];
-        final phoneNumber = user['phoneNumber'];
-        final email = user['email'];
-        final approvalStatus = user['approvalStatus'];
-        final entityType = user['entityType'] ?? "";
-        // debugPrint("userType: $userType");
-        // debugPrint("token: $token");
-        // debugPrint("approvalStatus: $approvalStatus");
+        final accessToken = responseBody['accessToken'] ?? '';
+        final refreshToken = responseBody['refreshToken'] ?? '';
+
+        final user = responseBody['user'] ?? {};
+
+        final userId = user['id'] ?? '';
+        final userName = user['userName'] ?? '';
+        final imageUrl = user['imageUrl'] ?? '';
+        final userRole = user['userRole'] ?? '';
+        final approvalStatus = user['approvalStatus'] ?? '';
+        final phoneNumber = user['phoneNumber'] ?? '';
+        final email = user['email'] ?? '';
+        final entityType = user['entityType'] ?? '';
 
         // Link current userid in OneSignal to receive push notifications
         await NotificationService.instance.login(userId);
 
-        if (approvalStatus == AppConstants.roles.userStatusApproved) {
-          await SharedPrefsHelper.saveString(SharedPrefsHelper.tokenKey, token);
-          await SharedPrefsHelper.saveString(
-            SharedPrefsHelper.userApprovalStatusKey,
-            approvalStatus,
+        // Check if not dealer
+        if (userRole != AppConstants.roles.dealer) {
+          ToastWidget.show(
+            context: Get.context!,
+            title: "Failed",
+            subtitle: "No account found for this user.",
+            toastDuration: 5,
+            type: ToastType.error,
           );
+          return;
         }
 
-        // debugPrint("Token saved in local: $token");
         await SharedPrefsHelper.saveString(
-          SharedPrefsHelper.userKey,
-          jsonEncode(user),
+          SharedPrefsHelper.userApprovalStatusKey,
+          approvalStatus,
         );
-        await SharedPrefsHelper.saveString(
-          SharedPrefsHelper.userTypeKey,
-          userType,
-        );
-        await SharedPrefsHelper.saveString(
-          SharedPrefsHelper.userPhoneNumberKey,
-          phoneNumber,
-        );
-        await SharedPrefsHelper.saveString(
-          SharedPrefsHelper.userEmailKey,
-          email,
-        );
-        await SharedPrefsHelper.saveString(SharedPrefsHelper.userIdKey, userId);
-        await SharedPrefsHelper.saveString(
-          SharedPrefsHelper.entityTypeKey,
-          entityType,
-        );
-        // debugPrint("userId: $userId");
-        // if (userType == AppConstants.roles.admin) {
-        //   Get.offAll(() => AdminDashboard());
-        // } else {
+
+        // Check if user is Pending
         if (approvalStatus == AppConstants.roles.userStatusPending) {
-          final entityType = (user['entityType'] as String?)?.trim();
-          final entityDocuments = await _fetchEntityDocuments(entityType);
-          Get.to(
-            () => WaitingForApprovalPage(
-              documents: entityDocuments,
-              userRole: userType,
-            ),
-          );
+          Get.to(() => WaitingForApprovalPage(entityType: entityType));
 
           // Log event
           UserActivityLogService.logEvent(
@@ -109,31 +94,12 @@ class LoginController extends GetxController {
             eventDetails: 'User status was pending',
             metadata: {'approvalStatus': approvalStatus},
           );
-        } else if (approvalStatus == AppConstants.roles.userStatusApproved) {
-          // if (userType == AppConstants.roles.customer) {
-          //   Get.offAll(() => CustomerHomepage());
-          // } else if (userType == AppConstants.roles.salesManager) {
-          //   Get.offAll(() => SalesManagerHomepage());
-          // } else
-          if (userType == AppConstants.roles.dealer) {
-            Get.offAll(() => BottomNavigationPage());
+          return;
+        }
 
-            // Log event
-            UserActivityLogService.logEvent(
-              userId: userId,
-              event: AppConstants.userActivityLogEvents.login,
-              eventDetails: 'Logged in successfully',
-              metadata: {'approvalStatus': approvalStatus},
-            );
-          } else {
-            ToastWidget.show(
-              context: Get.context!,
-              title: "No Account associated with these credentials.",
-              type: ToastType.error,
-            );
-          }
-        } else if (approvalStatus == AppConstants.roles.userStatusRejected) {
-          Get.to(() => RejectedScreen(userId: user['id']));
+        // Check if user is Rejected
+        if (approvalStatus == AppConstants.roles.userStatusRejected) {
+          Get.to(() => RejectedScreen(userId: userId));
 
           // Log event
           UserActivityLogService.logEvent(
@@ -142,19 +108,89 @@ class LoginController extends GetxController {
             eventDetails: 'User status was rejected',
             metadata: {'approvalStatus': approvalStatus},
           );
-        } else {
-          ToastWidget.show(
-            context: Get.context!,
-            title: "Invalid approval status. Please contact admin.",
-            type: ToastType.error,
+          return;
+        }
+
+        // Check if user is Approved
+        if (approvalStatus == AppConstants.roles.userStatusApproved) {
+          await SharedPrefsHelper.saveString(
+            SharedPrefsHelper.accessTokenKey,
+            accessToken,
+          );
+
+          await SharedPrefsHelper.saveString(
+            SharedPrefsHelper.refreshTokenKey,
+            refreshToken,
+          );
+
+          await SharedPrefsHelper.saveString(
+            SharedPrefsHelper.userKey,
+            jsonEncode(user),
+          );
+
+          await SharedPrefsHelper.saveString(
+            SharedPrefsHelper.userIdKey,
+            userId,
+          );
+
+          await SharedPrefsHelper.saveString(
+            SharedPrefsHelper.userNameKey,
+            userName,
+          );
+
+          await SharedPrefsHelper.saveString(
+            SharedPrefsHelper.userImageUrlKey,
+            imageUrl,
+          );
+
+          await SharedPrefsHelper.saveString(
+            SharedPrefsHelper.userRoleKey,
+            userRole,
+          );
+
+          await SharedPrefsHelper.saveString(
+            SharedPrefsHelper.userPhoneNumberKey,
+            phoneNumber,
+          );
+
+          await SharedPrefsHelper.saveString(
+            SharedPrefsHelper.userEmailKey,
+            email,
+          );
+
+          await SharedPrefsHelper.saveString(
+            SharedPrefsHelper.entityTypeKey,
+            entityType,
+          );
+
+          ApiService.resetAuthenticationFailure(); // To prevent multiple token failure toasts
+
+          Get.offAll(() => BottomNavigationPage());
+
+          // Log event
+          UserActivityLogService.logEvent(
+            userId: userId,
+            event: AppConstants.userActivityLogEvents.login,
+            eventDetails: 'Logged in successfully',
+            metadata: {'approvalStatus': approvalStatus},
           );
         }
-        // }
-      } else {
-        debugPrint("data: $data");
+      } else if (response.statusCode == 400) {
+        final String message = responseBody['message'] ?? "Failed to login.";
+        debugPrint("message: $message");
         ToastWidget.show(
           context: Get.context!,
-          title: data['message'] ?? "Invalid credentials",
+          title: "Failed",
+          subtitle: message,
+          toastDuration: 10,
+          type: ToastType.error,
+        );
+      } else {
+        debugPrint("responseBody: $responseBody");
+        ToastWidget.show(
+          context: Get.context!,
+          title: "Failed",
+          subtitle: "Failed to login, please try again later.",
           type: ToastType.error,
         );
       }
@@ -162,7 +198,8 @@ class LoginController extends GetxController {
       debugPrint("Error: $e");
       ToastWidget.show(
         context: Get.context!,
-        title: "Something went wrong. Please try again.",
+        title: "Something went wrong",
+        subtitle: "Please try again later.",
         type: ToastType.error,
       );
     } finally {
@@ -185,35 +222,6 @@ class LoginController extends GetxController {
       return "At least one special character required.";
     }
     return null;
-  }
-
-  // Fetch entity documents
-  Future<List<String>> _fetchEntityDocuments(String? entityType) async {
-    final fallback = <String>[
-      // optional: keep empty list if you don't want a fallback
-      'No documents found',
-    ];
-
-    if (entityType == null || entityType.trim().isEmpty) return fallback;
-
-    try {
-      final response = await ApiService.get(
-        endpoint: AppUrls.getEntityDocumentsByName(
-          entityName: entityType.trim(),
-        ),
-      );
-
-      if (response.statusCode == 200) {
-        final json = jsonDecode(response.body) as Map<String, dynamic>;
-        final data = (json['data'] ?? {}) as Map<String, dynamic>;
-        final docs = (data['documents'] ?? []) as List;
-        return docs.map((e) => '$e').toList();
-      }
-    } catch (error) {
-      // ignore and use fallback
-      debugPrint("Error: $error");
-    }
-    return fallback;
   }
 
   // Clear fields

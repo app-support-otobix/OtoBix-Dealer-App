@@ -3,7 +3,8 @@ import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
 import 'package:otobix/Controllers/rejection_controller.dart';
 import 'package:otobix/Utils/app_images.dart';
-import 'package:otobix/helpers/shared_prefs_helper.dart';
+import 'package:otobix/Views/Login/login_page.dart';
+import 'package:otobix/Widgets/app_bar_widget.dart';
 
 class RejectedScreen extends StatefulWidget {
   final String userId;
@@ -22,12 +23,7 @@ class _RejectedScreenState extends State<RejectedScreen> {
   @override
   void initState() {
     super.initState();
-    _deleteToken();
     _fetchComment();
-  }
-
-  Future<void> _deleteToken() async {
-    await SharedPrefsHelper.remove('token');
   }
 
   Future<void> _fetchComment() async {
@@ -37,6 +33,12 @@ class _RejectedScreenState extends State<RejectedScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBarWidget(
+        title: 'Account Rejected',
+        onBackPressed: () {
+          Get.offAll(() => LoginPage());
+        },
+      ),
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Obx(() {
@@ -66,6 +68,20 @@ class _RejectedScreenState extends State<RejectedScreen> {
               ),
 
               const SizedBox(height: 20),
+              if (rejectionController.rejectionComment.value.isNotEmpty)
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 16, bottom: 5),
+                    child: Text(
+                      'Reason:',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: Container(
@@ -102,7 +118,7 @@ class _RejectedScreenState extends State<RejectedScreen> {
                 style: TextStyle(fontSize: 14, color: Colors.black54),
               ),
               const Text(
-                "support@otobix.com",
+                "app.support@otobix.in",
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,

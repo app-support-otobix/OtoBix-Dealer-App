@@ -44,7 +44,7 @@ class MyBidsController extends GetxController {
   Future<void> refreshMyBidsIdsFromServer() async {
     try {
       if (_userId.isEmpty) return;
-      final url = AppUrls.getUserMyBidsList(userId: _userId);
+      final url = AppUrls.getUserMyBidsList;
       final res = await ApiService.get(endpoint: url);
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
@@ -66,7 +66,7 @@ class MyBidsController extends GetxController {
       if (_userId.isEmpty) {
         myBidCarsList.clear();
       } else {
-        final url = AppUrls.getUserMyBidsCarsList(userId: _userId);
+        final url = AppUrls.getUserMyBidsCarsList;
         final res = await ApiService.get(endpoint: url);
         if (res.statusCode == 200) {
           final json = jsonDecode(res.body);
@@ -142,7 +142,7 @@ class MyBidsController extends GetxController {
           isCurrentlyFav ? AppUrls.removeFromMyBids : AppUrls.addToMyBids;
       final res = await ApiService.post(
         endpoint: endpoint,
-        body: {'userId': _userId, 'carId': id},
+        body: {'carId': id},
       );
       if (res.statusCode != 200) throw Exception(res.body);
 
