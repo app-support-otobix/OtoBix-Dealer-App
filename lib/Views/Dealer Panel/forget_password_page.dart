@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:otobix/Controllers/forget_password_controller.dart';
 import 'package:otobix/Utils/app_images.dart';
+import 'package:otobix/Widgets/app_bar_widget.dart';
 import 'package:otobix/Widgets/button_widget.dart';
 import 'package:otobix/Widgets/toast_widget.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
@@ -16,18 +17,7 @@ class ForgetPasswordPage extends StatelessWidget {
     final forgetPasswordController = Get.put(ForgetPasswordController());
 
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: AppColors.white,
-        iconTheme: const IconThemeData(color: AppColors.green),
-        title: const Text(
-          'Forget Password',
-          style: TextStyle(
-            color: AppColors.green,
-            fontSize: 15,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
+      appBar: AppBarWidget(title: 'Forget Password'),
       body: Obx(() {
         return Stack(
           children: [
@@ -74,7 +64,6 @@ class ForgetPasswordPage extends StatelessWidget {
                 onPressed: () {
                   forgetPasswordController.unfocusKeyBoardOnApiCall();
                   forgetPasswordController.sendOTP();
-                  // forgetPasswordController.goToPage(1);
                 },
               ),
               const SizedBox(height: 30),
@@ -116,7 +105,6 @@ class ForgetPasswordPage extends StatelessWidget {
                 onPressed: () {
                   forgetPasswordController.unfocusKeyBoardOnApiCall();
                   forgetPasswordController.verifyOtp();
-                  // forgetPasswordController.goToPage(2);
                 },
                 isLoading: forgetPasswordController.isVerifyOtpLoading,
               ),
@@ -182,7 +170,6 @@ class ForgetPasswordPage extends StatelessWidget {
                       }
                       forgetPasswordController.unfocusKeyBoardOnApiCall();
                       forgetPasswordController.setNewPassword();
-                      // forgetPasswordController.goToPage(0);
                     }
                   },
 

@@ -1,23 +1,12 @@
-import 'dart:async';
-
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:otobix/Network/socket_service.dart';
 import 'package:otobix/Services/app_update_service.dart';
-import 'package:otobix/Services/notification_sevice.dart';
-import 'package:otobix/Services/user_activity_log_service.dart';
 import 'package:otobix/Utils/app_colors.dart';
+import 'package:otobix/app_initialization.dart';
 import 'package:otobix/Utils/app_constants.dart';
-import 'package:otobix/Utils/app_urls.dart';
-import 'package:otobix/Views/Dealer%20Panel/bottom_navigation_page.dart';
-import 'package:otobix/Views/Login/login_page.dart';
-import 'package:otobix/firebase_options.dart';
-import 'package:otobix/helpers/shared_prefs_helper.dart';
 
 void main() async {
-  final start = await init();
+  final start = await initializeApp();
   runApp(MyApp(home: start));
 }
 
@@ -67,45 +56,59 @@ class _MyAppState extends State<MyApp> {
   }
 }
 
-// Initialize important services and return first screen
-Future<Widget> init() async {
-  Get.config(enableLog: false);
-  WidgetsFlutterBinding.ensureInitialized();
+// // Initialize important services and return first screen
+// Future<Widget> init() async {
+//   Get.config(enableLog: false);
+//   WidgetsFlutterBinding.ensureInitialized();
 
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+//   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  await NotificationService.instance.init();
+//   await FirebaseAppCheck.instance.activate(
+//     providerAndroid:
+//         kDebugMode
+//             ? const AndroidDebugProvider()
+//             : const AndroidPlayIntegrityProvider(),
+//     providerApple:
+//         kDebugMode
+//             ? const AppleDebugProvider()
+//             : const AppleAppAttestProvider(),
+//   ); // To give a token to the public APIs so that they know they are being hit from our app
+//   // 40f0156c-ad04-4c3f-9d83-59b1b38e79d0 // Firebase App Check Debug Token for this App (Temporary)
 
-  await SharedPrefsHelper.init();
+//   await NotificationService.instance.init();
 
-  final userId = await SharedPrefsHelper.getString(SharedPrefsHelper.userIdKey);
-  if (userId != null && userId.isNotEmpty) {
-    await NotificationService.instance.login(userId);
-    // Save App Version On App Launch -> (do NOT await)
-    unawaited(UserActivityLogService.logAppLaunchEvent(userId: userId));
-  }
+//   SharedPrefsHelper.init();
 
-  // Initialize socket connection globally
-  SocketService.instance.initSocket(AppUrls.socketBaseUrl);
-  // // await Get.putAsync<ConnectivityService>(() => ConnectivityService().init());
+//   final userId = await SharedPrefsHelper.getString(SharedPrefsHelper.userIdKey);
+//   if (userId != null && userId.isNotEmpty) {
+//     await NotificationService.instance.login(userId);
+//     // Save App Version On App Launch -> (do NOT await)
+//     unawaited(UserActivityLogService.logAppLaunchEvent(userId: userId));
+//   }
 
-  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+//   // Initialize socket connection globally
+//   SocketService.instance.initSocket(AppUrls.socketBaseUrl);
+//   // // await Get.putAsync<ConnectivityService>(() => ConnectivityService().init());
 
-  final token = await SharedPrefsHelper.getString(SharedPrefsHelper.tokenKey);
-  final userType = await SharedPrefsHelper.getString(
-    SharedPrefsHelper.userTypeKey,
-  );
+//   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
-  Widget start;
+//   final token = await SharedPrefsHelper.getString(
+//     SharedPrefsHelper.accessTokenKey,
+//   );
+//   final userType = await SharedPrefsHelper.getString(
+//     SharedPrefsHelper.userRoleKey,
+//   );
 
-  if (token != null && token.isNotEmpty) {
-    if (userType == AppConstants.roles.dealer) {
-      start = BottomNavigationPage();
-    } else {
-      start = LoginPage();
-    }
-  } else {
-    start = LoginPage();
-  }
-  return start;
-}
+//   Widget start;
+
+//   if (token != null && token.isNotEmpty) {
+//     if (userType == AppConstants.roles.dealer) {
+//       start = BottomNavigationPage();
+//     } else {
+//       start = LoginPage();
+//     }
+//   } else {
+//     start = LoginPage();
+//   }
+//   return start;
+// }

@@ -42,7 +42,7 @@ class PurchasedCarsController extends GetxController {
   Future<void> refreshPurchasedCarsIdsFromServer() async {
     try {
       if (_userId.isEmpty) return;
-      final url = AppUrls.getUserPurchasedCarsCount(userId: _userId);
+      final url = AppUrls.getUserPurchasedCarsCount;
       final res = await ApiService.get(endpoint: url);
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
@@ -65,7 +65,7 @@ class PurchasedCarsController extends GetxController {
       if (_userId.isEmpty) {
         carsList.clear();
       } else {
-        final url = AppUrls.getUserPurchasedCarsList(userId: _userId);
+        final url = AppUrls.getUserPurchasedCarsList;
         final res = await ApiService.get(endpoint: url);
         if (res.statusCode == 200) {
           final json = jsonDecode(res.body);

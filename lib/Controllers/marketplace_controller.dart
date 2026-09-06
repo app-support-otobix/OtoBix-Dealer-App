@@ -21,12 +21,10 @@ class MarketplaceController extends GetxController {
   @override
   void onInit() async {
     super.onInit();
-    final userId =
-        await SharedPrefsHelper.getString(SharedPrefsHelper.userIdKey) ?? '';
 
     // Fetch cars then wishlist, then apply hearts
     await fetchMarketplaceCarsList();
-    await _fetchAndApplyWishlist(userId: userId);
+    await _fetchAndApplyWishlist();
 
     // Listen to realtime wishlist updates
     _listenWishlistRealtime();
@@ -157,9 +155,9 @@ class MarketplaceController extends GetxController {
     }
   }
 
-  Future<void> _fetchAndApplyWishlist({required String userId}) async {
+  Future<void> _fetchAndApplyWishlist() async {
     try {
-      final url = AppUrls.getUserWishlist(userId: userId);
+      final url = AppUrls.getUserWishlist;
       final response = await ApiService.get(endpoint: url);
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);

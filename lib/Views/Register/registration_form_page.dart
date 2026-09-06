@@ -11,10 +11,13 @@ import 'package:otobix/Widgets/dropdown_widget.dart';
 class RegistrationFormPage extends StatelessWidget {
   final String userRole;
   final String phoneNumber;
+  final String verificationToken;
+
   RegistrationFormPage({
     super.key,
     required this.userRole,
     required this.phoneNumber,
+    required this.verificationToken,
   });
 
   final RegistrationFormController getxController = Get.put(
@@ -876,6 +879,7 @@ class RegistrationFormPage extends StatelessWidget {
         () => getxController.showTermsAndConditionsThenSubmit(
           userRole: userRole,
           contactNumber: phoneNumber,
+          verificationToken: verificationToken,
         ),
     height: 40,
     width: 150,

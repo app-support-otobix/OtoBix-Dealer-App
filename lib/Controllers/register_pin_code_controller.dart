@@ -24,56 +24,42 @@ class RegisterPinCodeController extends GetxController {
         body: {"requestId": requestId, "otp": otp},
       );
 
-      final data = jsonDecode(response.body);
+      final responseBody = jsonDecode(response.body);
 
       if (response.statusCode == 200) {
-        final String internalStatusCode =
-            data['data']?['statusCode']?.toString() ?? '';
+        final String verificationToken =
+            responseBody['data']['verificationToken'].toString();
 
-        if (internalStatusCode == "101") {
-          // ✅ OTP verified successfully
-          ToastWidget.show(
-            context: Get.context!,
-            title: "OTP Verified Successfully",
-            type: ToastType.success,
-          );
-          Get.delete<RegistrationFormController>();
-          Get.to(
-            () => RegistrationFormPage(
-              userRole: AppConstants.roles.dealer,
-              phoneNumber: phoneNumber,
-            ),
-          );
-        } else if (internalStatusCode == "102") {
-          // ❌ Invalid OTP
-          ToastWidget.show(
-            context: Get.context!,
-            title: "Invalid OTP",
-            subtitle: "The OTP you entered is incorrect.",
-            type: ToastType.error,
-          );
-        } else if (internalStatusCode == "104") {
-          // ❌ Retry limit exceeded
-          ToastWidget.show(
-            context: Get.context!,
-            title: "Retry Limit Exceeded",
-            subtitle: "You have exceeded the maximum verification attempts.",
-            type: ToastType.error,
-          );
-        } else {
-          // ❌ Unknown internal code
-          ToastWidget.show(
-            context: Get.context!,
-            title: "Verification Failed",
-            subtitle: "Unexpected response code: $internalStatusCode",
-            type: ToastType.error,
-          );
-        }
-      } else {
-        debugPrint(data);
+        // ✅ OTP verified successfully
+        ToastWidget.show(
+          context: Get.context!,
+          title: "Success",
+          subtitle: "OTP Verified Successfully",
+          type: ToastType.success,
+        );
+        Get.delete<RegistrationFormController>();
+        Get.to(
+          () => RegistrationFormPage(
+            userRole: AppConstants.roles.dealer,
+            phoneNumber: phoneNumber,
+            verificationToken: verificationToken,
+          ),
+        );
+      } else if (response.statusCode == 400) {
+        // ❌ Invalid OTP
+        final errorMessage = responseBody['message'] ?? 'Please try again';
         ToastWidget.show(
           context: Get.context!,
           title: "Failed to verify OTP",
+          subtitle: errorMessage,
+          toastDuration: 10,
+          type: ToastType.error,
+        );
+      } else {
+        ToastWidget.show(
+          context: Get.context!,
+          title: "Failed",
+          subtitle: "Failed to verify OTP",
           type: ToastType.error,
         );
       }
@@ -81,26 +67,10 @@ class RegisterPinCodeController extends GetxController {
       debugPrint(e.toString());
       ToastWidget.show(
         context: Get.context!,
-        title: "Error Verifying OTP",
+        title: "Error",
+        subtitle: "Error verifying OTP",
         type: ToastType.error,
       );
     }
   }
-
-  // // Dummy verify OTP
-  // Future<void> dummyVerifyOtp({
-  //   required String phoneNumber,
-  //   required String otp,
-  //   required String userType,
-  // }) async {
-  //   ToastWidget.show(
-  //     context: Get.context!,
-  //     title: "OTP Verified Successfully",
-  //     type: ToastType.success,
-  //   );
-  //   Get.delete<RegistrationFormController>();
-  //   Get.to(
-  //     () => RegistrationFormPage(userRole: userType, phoneNumber: phoneNumber),
-  //   );
-  // }
 }

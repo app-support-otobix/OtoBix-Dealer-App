@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:otobix/Controllers/tab_bar_widget_controller.dart';
-import 'package:otobix/Controllers/account_controller.dart';
+import 'package:otobix/Controllers/profile_controller.dart';
 import 'package:otobix/Controllers/bottom_navigation_controller.dart';
 import 'package:otobix/Services/user_activity_log_service.dart';
 import 'package:otobix/Utils/app_colors.dart';
@@ -12,21 +12,15 @@ import 'package:otobix/Views/Dealer%20Panel/edit_account_page.dart';
 import 'package:otobix/Views/Dealer%20Panel/privacy_policy_page.dart';
 import 'package:otobix/Views/Dealer%20Panel/terms_and_conditions_page.dart';
 
-class AccountPage extends StatefulWidget {
-  const AccountPage({super.key});
+class ProfilePage extends StatefulWidget {
+  const ProfilePage({super.key});
 
   @override
-  State<AccountPage> createState() => _AccountPageState();
+  State<ProfilePage> createState() => _ProfilePageState();
 }
 
-class _AccountPageState extends State<AccountPage> {
-  final AccountController accountController = Get.put(AccountController());
-
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   accountController.getUserProfile();
-  // }
+class _ProfilePageState extends State<ProfilePage> {
+  final ProfileController accountController = Get.put(ProfileController());
 
   @override
   Widget build(BuildContext context) {
@@ -198,8 +192,8 @@ class _AccountPageState extends State<AccountPage> {
                     color: Colors.red,
                     title: "Logout",
                     description: "Sign out of your account securely.",
-                    onTap: () {
-                      accountController.logout();
+                    onTap: () async {
+                      await accountController.logout();
                     },
                   ),
                   const SizedBox(height: 15),

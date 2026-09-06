@@ -1,45 +1,54 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
-import 'package:otobix/Models/user_model.dart';
+import 'package:otobix/Network/api_service.dart';
 import 'package:otobix/Utils/app_animations.dart';
 import 'package:otobix/Utils/app_colors.dart';
-import 'package:otobix/Utils/app_constants.dart';
-import 'package:otobix/helpers/shared_prefs_helper.dart';
+import 'package:otobix/Utils/app_urls.dart';
+import 'package:otobix/Views/Login/login_page.dart';
+import 'package:otobix/Widgets/app_bar_widget.dart';
 
 class WaitingForApprovalPage extends StatefulWidget {
-  final List<String> documents;
-  final String userRole;
-
-  const WaitingForApprovalPage({
-    super.key,
-    required this.documents,
-    required this.userRole,
-  });
+  final String entityType;
+  const WaitingForApprovalPage({super.key, required this.entityType});
 
   @override
   State<WaitingForApprovalPage> createState() => _WaitingForApprovalPageState();
 }
 
 class _WaitingForApprovalPageState extends State<WaitingForApprovalPage> {
+  List<String> documents = [];
+
   @override
-  initState() {
+  void initState() {
     super.initState();
+    _loadDocuments();
   }
 
-  Future<void> deletetoken() async {
-    await SharedPrefsHelper.remove('token');
+  // Load documents
+  Future<void> _loadDocuments() async {
+    final fetchedDocuments = await _fetchEntityDocuments(
+      entityType: widget.entityType,
+    );
+
+    if (!mounted) return;
+
+    setState(() {
+      documents = fetchedDocuments;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.white,
-      appBar: AppBar(
-        title: const Text('Approval Status'),
-        centerTitle: true,
-        automaticallyImplyLeading: false,
-        backgroundColor: AppColors.white,
-        elevation: 4,
+      appBar: AppBarWidget(
+        title: 'Approval Status',
+        onBackPressed: () {
+          Get.offAll(() => LoginPage());
+        },
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -52,36 +61,32 @@ class _WaitingForApprovalPageState extends State<WaitingForApprovalPage> {
             Lottie.asset(AppAnimations.waitingAnimation, height: 100),
             const SizedBox(height: 20),
 
-            // Main Title
+            // Title
             Text(
               'Waiting for Approval',
-              // _buildTitleForRole(widget.userRole),
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: AppColors.green,
               ),
             ),
-
             const SizedBox(height: 10),
-            // Subtitle
-            _buildSubtitleForRole(widget.userRole),
 
+            // Subtitle
+            _buildSubtitle(),
             const SizedBox(height: 30),
 
             // Documents List
-            if (widget.userRole == AppConstants.roles.dealer)
-              ListView.separated(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: widget.documents.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 10),
-                itemBuilder: (context, index) {
-                  final doc = widget.documents[index];
-                  return _buildDocumentCard(doc);
-                },
-              ),
-
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: documents.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 10),
+              itemBuilder: (context, index) {
+                final doc = documents[index];
+                return _buildDocumentCard(doc);
+              },
+            ),
             const SizedBox(height: 20),
 
             const Text(
@@ -89,7 +94,7 @@ class _WaitingForApprovalPageState extends State<WaitingForApprovalPage> {
               style: TextStyle(fontSize: 14, color: Colors.black54),
             ),
             const Text(
-              "support@otobix.com",
+              "app.support@otobix.in",
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -103,6 +108,7 @@ class _WaitingForApprovalPageState extends State<WaitingForApprovalPage> {
     );
   }
 
+  /// Builds a document card widget
   Widget _buildDocumentCard(String docName) {
     return Container(
       decoration: BoxDecoration(
@@ -128,73 +134,60 @@ class _WaitingForApprovalPageState extends State<WaitingForApprovalPage> {
     );
   }
 
-  // String _buildTitleForRole(String role) {
-  //   switch (role.toLowerCase()) {
-  //     case UserModel.customer:
-  //       return 'Customer Approval Pending';
-  //     case UserModel.salesManager:
-  //       return 'Sales Manager Review';
-  //     case UserModel.dealer:
-  //       return 'Waiting for Approval';
-  //     default:
-  //       return 'Waiting for Approval';
-  //   }
-  // }
-
-  Widget _buildSubtitleForRole(String role) {
-    switch (role.toLowerCase()) {
-      // case AppConstants.roles.customer:
-      case var s
-          when s.toLowerCase() == AppConstants.roles.customer.toLowerCase():
-        return const Text(
-          'Thank you for registering. Your account is being reviewed. You will receive an email once approved.',
-          style: TextStyle(fontSize: 13, color: Colors.black87, height: 1.4),
-          textAlign: TextAlign.center,
-        );
-
-      // case AppConstants.roles.salesManager:
-      case var s
-          when s.toLowerCase() == AppConstants.roles.salesManager.toLowerCase():
-        return const Text(
-          'Your registration is under review. Please wait while the admin verifies your information.',
-          style: TextStyle(fontSize: 13, color: Colors.black87, height: 1.4),
-          textAlign: TextAlign.center,
-        );
-      // case AppConstants.roles.dealer:
-      case var s
-          when s.toLowerCase() == AppConstants.roles.dealer.toLowerCase():
-        return RichText(
-          text: TextSpan(
-            children: [
-              TextSpan(
-                text:
-                    'Your account is currently under review. '
-                    'Please check your email for details to pay the required security deposit. '
-                    'After completing the payment, ',
-                style: TextStyle(fontSize: 13, color: Colors.black87),
-              ),
-              TextSpan(
-                text:
-                    'kindly submit the following documents along with your payment receipt for verification.',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
-            ],
-            style: TextStyle(fontSize: 12, color: Colors.black87, height: 1.3),
+  // Subtitle
+  Widget _buildSubtitle() {
+    return RichText(
+      text: TextSpan(
+        children: [
+          TextSpan(
+            text:
+                'Your account is currently under review. '
+                'Please check your email for details to pay the required security deposit. '
+                'After completing the payment, ',
+            style: TextStyle(fontSize: 13, color: Colors.black87),
           ),
+          TextSpan(
+            text:
+                'kindly submit the following documents along with your payment receipt for verification.',
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
+        ],
+        style: TextStyle(fontSize: 12, color: Colors.black87, height: 1.3),
+      ),
 
-          textAlign: TextAlign.center,
-        );
-      default:
-        return const Text(
-          'Your account is currently under review. '
-          'Please check again after some time.',
-          style: TextStyle(fontSize: 13, color: Colors.black87, height: 1.4),
-          textAlign: TextAlign.center,
-        );
+      textAlign: TextAlign.center,
+    );
+  }
+
+  // Fetch entity documents
+  Future<List<String>> _fetchEntityDocuments({
+    required String entityType,
+  }) async {
+    final fallback = <String>['No documents found'];
+
+    if (entityType.isEmpty) return fallback;
+
+    try {
+      final response = await ApiService.get(
+        endpoint: AppUrls.getEntityDocumentsByName(
+          entityName: entityType.trim(),
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body) as Map<String, dynamic>;
+        final data = (json['data'] ?? {}) as Map<String, dynamic>;
+        final docs = (data['documents'] ?? []) as List;
+        return docs.map((e) => '$e').toList();
+      }
+    } catch (error) {
+      // ignore and use fallback
+      debugPrint("Error: $error");
     }
+    return fallback;
   }
 }

@@ -5,6 +5,9 @@ class AppConstants {
   static const DeploymentEnvironment deploymentEnvironment =
       DeploymentEnvironment.prod;
 
+  static const String appCheckDebugToken =
+      '3DD4FF19-5B1F-41EF-9CA4-28AA9FB0AC21';
+
   // Other constant classes
   static final Roles roles = Roles();
   static final AuctionStatuses auctionStatuses = AuctionStatuses();
@@ -14,6 +17,7 @@ class AppConstants {
   static final HomeScreenSections homeScreenSections = HomeScreenSections();
   static final UserActivityLogEvents userActivityLogEvents =
       UserActivityLogEvents();
+  static final OtpPurposes otpPurposes = OtpPurposes();
 
   // App Key for update app info
   static const String appKey = 'dealer';
@@ -21,6 +25,9 @@ class AppConstants {
   // App pkg and Display name
   static const String appPkgName = 'com.otobix.auctionapp';
   static const String appDisplayName = 'OtoBix Dealer App';
+  static const String dealerAppTestRequestId =
+      'dealer-app-test-request-id-vdgf97dsaf';
+  static const String dealerAppTestPhoneNumber = '8888888888';
 
   static const List<String> indianStates = [
     "Andhra Pradesh",
@@ -64,7 +71,7 @@ class AppConstants {
   // ---- configuration per environment ----
   static const _localConfiguration = _EnvConfig(
     deploymentEnvironmentName: 'local',
-    renderBaseUrl: 'http://192.168.10.234:4000/api/',
+    renderBaseUrl: 'http://192.168.1.2:4000/api/',
     oneSignalAppId: 'a6697fe1-be34-420f-9aa7-1fa369e1b07c',
   );
 
@@ -181,6 +188,13 @@ class UserActivityLogEvents {
 
   // PD
   final String pdTapToMakeOfferClicked = 'pd.tap_to_make_offer_clicked';
+}
+
+// OTP Purposes class
+class OtpPurposes {
+  final String login = 'login';
+  final String register = 'register';
+  final String forgetPassword = 'forget_password';
 }
 
 // Environments Configuration class

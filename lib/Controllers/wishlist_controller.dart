@@ -42,7 +42,7 @@ class WishlistController extends GetxController {
   Future<void> refreshWishlistIdsFromServer() async {
     try {
       if (_userId.isEmpty) return;
-      final url = AppUrls.getUserWishlist(userId: _userId);
+      final url = AppUrls.getUserWishlist;
       final res = await ApiService.get(endpoint: url);
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
@@ -64,7 +64,7 @@ class WishlistController extends GetxController {
       if (_userId.isEmpty) {
         carsList.clear();
       } else {
-        final url = AppUrls.getUserWishlistCarsList(userId: _userId);
+        final url = AppUrls.getUserWishlistCarsList;
         final res = await ApiService.get(endpoint: url);
         if (res.statusCode == 200) {
           final json = jsonDecode(res.body);
@@ -145,7 +145,7 @@ class WishlistController extends GetxController {
           isCurrentlyFav ? AppUrls.removeFromWishlist : AppUrls.addToWishlist;
       final res = await ApiService.post(
         endpoint: endpoint,
-        body: {'userId': _userId, 'carId': id},
+        body: {'carId': id},
       );
       if (res.statusCode != 200) throw Exception(res.body);
 

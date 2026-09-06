@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:otobix/Controllers/login_controller.dart';
 import 'package:otobix/Utils/app_colors.dart';
 import 'package:otobix/Utils/app_images.dart';
-import 'package:otobix/Views/Dealer%20Panel/forget_password_page.dart';
 import 'package:otobix/Views/Login/login_page.dart';
 import 'package:otobix/Controllers/register_controller.dart';
 import 'package:get/get.dart';
@@ -27,16 +26,16 @@ class RegisterPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   _buildAppLogo(),
-                  SizedBox(height: 20),
+                  // SizedBox(height: 20),
                   _buildWelcomeText(),
                   SizedBox(height: 40),
                   // _buildRoleSelection(),
                   // SizedBox(height: 30),
                   _buildPhoneNumberField(context),
-                  SizedBox(height: 10),
-                  _buildForgetPasswordButton(),
-                  SizedBox(height: 15),
-                  _buildContinueButton(context),
+                  // SizedBox(height: 10),
+                  // _buildForgetPasswordButton(),
+                  SizedBox(height: 30),
+                  _buildSendOtpButton(context),
                   SizedBox(height: 50),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -77,8 +76,20 @@ class RegisterPage extends StatelessWidget {
   }
 
   // App Logo
-  Widget _buildAppLogo() =>
-      Image.asset(AppImages.otobixLogo, height: 150, width: 150);
+  // Widget _buildAppLogo() =>
+  //     Image.asset(AppImages.otobixLogo, height: 150, width: 150);
+  Widget _buildAppLogo() {
+    return ClipRect(
+      child: SizedBox(
+        height: 180,
+        width: 250,
+        child: Transform.scale(
+          scale: 1.4,
+          child: Image.asset(AppImages.appLogo, fit: BoxFit.contain),
+        ),
+      ),
+    );
+  }
 
   //Welcome Text
   Widget _buildWelcomeText() => Column(
@@ -248,28 +259,28 @@ class RegisterPage extends StatelessWidget {
     );
   }
 
-  // Forget Password Button
-  Widget _buildForgetPasswordButton() {
-    return Align(
-      alignment: Alignment.centerRight,
-      child: Padding(
-        padding: const EdgeInsets.only(right: 8.0),
-        child: GestureDetector(
-          onTap: () {
-            Get.to(() => ForgetPasswordPage());
-          },
-          child: Text(
-            'Forgot Password?',
-            style: TextStyle(color: AppColors.red, fontWeight: FontWeight.w600),
-          ),
-        ),
-      ),
-    );
-  }
+  // // Forget Password Button
+  // Widget _buildForgetPasswordButton() {
+  //   return Align(
+  //     alignment: Alignment.centerRight,
+  //     child: Padding(
+  //       padding: const EdgeInsets.only(right: 8.0),
+  //       child: GestureDetector(
+  //         onTap: () {
+  //           Get.to(() => ForgetPasswordPage());
+  //         },
+  //         child: Text(
+  //           'Forgot Password?',
+  //           style: TextStyle(color: AppColors.red, fontWeight: FontWeight.w600),
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
 
-  //Continue Button
-  Widget _buildContinueButton(BuildContext context) => ButtonWidget(
-    text: 'Continue',
+  // Send OTP Button
+  Widget _buildSendOtpButton(BuildContext context) => ButtonWidget(
+    text: 'Send OTP',
     isLoading: getxController.isLoading,
     onTap:
         () => getxController.sendOTP(
