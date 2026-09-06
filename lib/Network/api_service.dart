@@ -5,10 +5,10 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:otobix/Services/notification_sevice.dart';
 import 'package:otobix/Utils/app_constants.dart';
+import 'package:otobix/Utils/app_urls.dart';
 import 'package:otobix/Views/Login/login_page.dart';
+import 'package:otobix/Widgets/toast_widget.dart';
 import 'package:otobix/helpers/shared_prefs_helper.dart';
-import 'package:otobix/utils/app_urls.dart';
-import 'package:otobix/widgets/toast_widget.dart';
 
 class ApiService {
   static int _requestCounter = 0; // Temporary For Testing
