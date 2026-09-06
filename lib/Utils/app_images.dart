@@ -2,6 +2,7 @@ class AppImages {
   static const String otobixLogo = 'lib/assets/images/otobixLogo.png';
   static const String appLogo = 'lib/assets/images/appLogo.png';
   static const String splashLogo = 'lib/assets/images/splashLogo.png';
+  static const String whatsappIcon = 'lib/assets/icons/whatsappIcon.png';
 
   // static const String customerIcon = 'lib/assets/images/customer.png';
   // static const String dealerIcon = 'lib/assets/images/dealer.png';

@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:otobix/Controllers/register_pin_code_controller.dart';
 import 'package:otobix/Utils/app_colors.dart';
 import 'package:otobix/Utils/app_images.dart';
+import 'package:otobix/Widgets/app_bar_widget.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 
 class RegisterPinCodePage extends StatelessWidget {
@@ -26,13 +27,7 @@ class RegisterPinCodePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.white,
-      appBar: AppBar(
-        title: const Text('Verify Phone'),
-        centerTitle: true,
-        automaticallyImplyLeading: false,
-        backgroundColor: AppColors.white,
-        elevation: 4,
-      ),
+      appBar: AppBarWidget(title: 'Verify Phone', showBackButton: false),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
@@ -70,7 +65,7 @@ class RegisterPinCodePage extends StatelessWidget {
 
   // App Logo
   Widget _buildAppLogo() =>
-      Image.asset(AppImages.otobixLogo, height: 150, width: 150);
+      Image.asset(AppImages.appLogo, height: 150, width: 150);
 
   Widget _buildOtpMessageText() => Column(
     children: [

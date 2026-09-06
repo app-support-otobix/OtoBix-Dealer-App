@@ -11,7 +11,8 @@ class AppUrls {
 
   static String get verifyOtp => "${baseUrl}otp/v2/verify-otp";
 
-  static String get login => "${baseUrl}auth/login";
+  static String get loginOrRegisterUsingOtp =>
+      "${baseUrl}auth/login-or-register-using-otp";
 
   static String get register => "${baseUrl}auth/register";
 

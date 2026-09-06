@@ -55,8 +55,9 @@ class SharedPrefsHelper {
 
   /// Clear all user data (e.g., on logout)
   static Future<void> clearUserData() async {
-    // Fetch guest ID
-    final String guestId = await getString(guestIdKey) ?? '';
+    final String guestId = await getString(guestIdKey) ?? ''; // Fetch guest ID
+    final String phoneNumber =
+        await getString(userPhoneNumberKey) ?? ''; // Fetch phone number
 
     // Clear all data
     await _storage.deleteAll();
@@ -64,6 +65,11 @@ class SharedPrefsHelper {
     // Restore guest ID
     if (guestId.isNotEmpty) {
       await saveString(guestIdKey, guestId);
+    }
+
+    // Restore phone number
+    if (phoneNumber.isNotEmpty) {
+      await saveString(userPhoneNumberKey, phoneNumber);
     }
   }
 

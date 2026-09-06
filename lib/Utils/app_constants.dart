@@ -3,7 +3,7 @@ enum DeploymentEnvironment { local, dev, prod }
 class AppConstants {
   // ---- Deploy on Production or Development by changing this ----
   static const DeploymentEnvironment deploymentEnvironment =
-      DeploymentEnvironment.dev;
+      DeploymentEnvironment.prod;
 
   static const String appCheckDebugToken =
       '3DD4FF19-5B1F-41EF-9CA4-28AA9FB0AC21';
@@ -25,6 +25,9 @@ class AppConstants {
   // App pkg and Display name
   static const String appPkgName = 'com.otobix.auctionapp';
   static const String appDisplayName = 'OtoBix Dealer App';
+  static const String dealerAppTestRequestId =
+      'dealer-app-test-request-id-vdgf97dsaf';
+  static const String dealerAppTestPhoneNumber = '8888888888';
 
   static const List<String> indianStates = [
     "Andhra Pradesh",
