@@ -1,4 +1,5 @@
 import 'package:otobix/Utils/socket_events.dart';
+import 'package:otobix/helpers/shared_prefs_helper.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:flutter/foundation.dart';
 
@@ -47,6 +48,27 @@ class SocketService {
     debugPrint('Joined room: $roomId');
   }
 
+  // Join this dealer's private room. The server only admits the owner of a
+  // valid access token, and it is re-joined after every reconnect.
+  bool _dealerRoomWanted = false;
+
+  Future<void> joinDealerRoom() async {
+    _dealerRoomWanted = true;
+    final token =
+        await SharedPrefsHelper.getString(SharedPrefsHelper.accessTokenKey) ??
+        '';
+    if (token.isEmpty) return;
+    socket.emitWithAck(
+      SocketEvents.dealerJoin,
+      {'token': token},
+      ack: (response) {
+        if (response is Map && response['ok'] != true) {
+          debugPrint('Dealer room join refused: ${response['code']}');
+        }
+      },
+    );
+  }
+
   // Leave a room
   void leaveRoom(String roomId) {
     socket.emit(SocketEvents.leaveRoom, roomId);
@@ -89,6 +111,7 @@ class SocketService {
       SocketEvents.joinRoom,
       SocketEvents.auctionCompletedCarsSectionRoom,
     );
+    if (_dealerRoomWanted) joinDealerRoom();
 
     // ✅ Let the app know socket is reconnected (e.g., via callback or stream)
     debugPrint('🔄 Socket reconnected, rooms rejoined');

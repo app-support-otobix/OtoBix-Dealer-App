@@ -202,6 +202,37 @@ class AppUrls {
 
   static String get createGuestUser => "${baseUrl}guest-user/create";
 
+  // ---------------- Dealer Membership ----------------
+  static String get _dealerMembership => "${baseUrl}dealer-membership/";
+
+  static String get dealerMembershipConfig => "${_dealerMembership}config";
+
+  static String get dealerMembershipHome => "${_dealerMembership}home";
+
+  static String get dealerMembership => "${_dealerMembership}membership";
+
+  static String get dealerMembershipRegister =>
+      "${_dealerMembership}membership/register";
+
+  static String dealerMembershipLedger({
+    required String type,
+    required int page,
+    required int limit,
+  }) =>
+      "${_dealerMembership}membership/ledger?type=$type&page=$page&limit=$limit";
+
+  static String get dealerMembershipApplyPromo =>
+      "${_dealerMembership}membership/apply-promo";
+
+  static String get dealerMembershipCreateOrder =>
+      "${_dealerMembership}membership/create-order";
+
+  static String get dealerMembershipVerifyPayment =>
+      "${_dealerMembership}membership/verify-payment";
+
+  static String dealerActivity({required int page, required int limit}) =>
+      "${_dealerMembership}activity?page=$page&limit=$limit";
+
   // Socket URL Extraction
   static String _extractSocketBaseUrl(String url) {
     final uri = Uri.parse(url);

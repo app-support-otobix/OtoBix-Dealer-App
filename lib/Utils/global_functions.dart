@@ -166,4 +166,23 @@ class GlobalFunctions {
     // return dateTime.add(const Duration(hours: 5, minutes: 30));
     return dateTime.toLocal();
   }
+
+  // 73,972
+  static String formatNumber(num value) =>
+      NumberFormat.decimalPattern('en_IN').format(value.round());
+
+  // ₹3,25,000
+  static String formatRupees(num value) => '₹${formatNumber(value)}';
+
+  // 12m ago, 3h ago, yesterday, 12 Sep
+  static String timeAgo(DateTime? date) {
+    if (date == null) return '';
+    final diff = DateTime.now().difference(date.toLocal());
+    if (diff.inMinutes < 1) return 'just now';
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+    if (diff.inHours < 24) return '${diff.inHours}h ago';
+    if (diff.inDays == 1) return 'yesterday';
+    if (diff.inDays < 7) return '${diff.inDays}d ago';
+    return DateFormat('d MMM').format(date.toLocal());
+  }
 }

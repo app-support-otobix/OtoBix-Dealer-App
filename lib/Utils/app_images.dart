@@ -14,6 +14,11 @@ class AppImages {
   static const String filterIcon = 'lib/assets/images/sort.png';
   static const String rejectedIcon = 'lib/assets/animations/Rejected.json';
 
+  // Dealer Membership - Home module tiles
+  static const String dealerModuleBuy = 'lib/assets/images/dealerModuleBuy.png';
+  static const String dealerModuleMembership =
+      'lib/assets/images/dealerModuleMembership.png';
+
   // Temporary car images
   // static const String hondaCity1 = 'lib/assets/images/hondaCity1.jpg';
   // static const String hyundaiCreta1 = 'lib/assets/images/hyundaiCreta1.jpg';
