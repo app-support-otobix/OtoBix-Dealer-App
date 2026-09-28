@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:otobix/Controllers/marketplace_controller.dart';
+import 'package:otobix/Models/car_model.dart';
 import 'package:otobix/Models/cars_list_model.dart';
 import 'package:otobix/Utils/app_colors.dart';
 import 'package:otobix/Utils/app_images.dart';
@@ -330,7 +331,10 @@ class MarketplacePage extends StatelessWidget {
                                       ),
                                       const SizedBox(width: 4),
                                       Text(
-                                        car.inspectionLocation,
+                                         getFirstValidValueFromCarModel(
+          values: [car.inspectionCity, car.city],
+          returnType: ReturnType.string,
+        ),
                                         style: const TextStyle(fontSize: 12),
                                       ),
                                     ],

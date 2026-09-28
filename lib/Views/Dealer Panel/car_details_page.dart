@@ -485,61 +485,61 @@ class _CarDetailsPageState extends State<CarDetailsPage> {
     );
   }
 
-  Widget _buildCarDetails({
-    required CarModel carDetails,
-    required CarDetailsController getxController,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Column(
-        children: [
-          // _buildMainDetails(carDetails: carDetails),
-          // const SizedBox(height: 20),
-          // _buildIconAndTextDetails(carDetails: carDetails),
-          // const SizedBox(height: 20),
-          // _buildBasicDetails(carDetails: carDetails),
-          // const SizedBox(height: 10),
-          _buildDocumentDetails(
-            carDetails: carDetails,
-            getxController: getxController,
-          ),
-          const SizedBox(height: 5),
-          _buildExterior(
-            carDetails: carDetails,
-            getxController: getxController,
-          ),
-          const SizedBox(height: 5),
-          _buildEngineBay(
-            carDetails: carDetails,
-            getxController: getxController,
-          ),
-          const SizedBox(height: 5),
-          _buildSteeringBrackesAndSuspension(carDetails: carDetails),
-          const SizedBox(height: 5),
-          _buildInteriorAndElectricals(
-            carDetails: carDetails,
-            getxController: getxController,
-          ),
-          const SizedBox(height: 5),
-          _buildAirCondition(
-            carDetails: carDetails,
-            getxController: getxController,
-          ),
-          const SizedBox(height: 5),
-          // _buildSafetyAndAirbags(carDetails: carDetails),
-          // const SizedBox(height: 15),
-          // _buildExteriorImages(),
-          // const SizedBox(height: 10),
-          // _buildStructuralAndUnderbody(carDetails: carDetails),
-          // const SizedBox(height: 5),
-          // _buildDashboardAndSeating(carDetails: carDetails),
-          // const SizedBox(height: 10),
-          // _buildAdminAndApprovalInfo(carDetails: carDetails),
-          // const SizedBox(height: 20),
-        ],
-      ),
-    );
-  }
+  // Widget _buildCarDetails({
+  //   required CarModel carDetails,
+  //   required CarDetailsController getxController,
+  // }) {
+  //   return Padding(
+  //     padding: const EdgeInsets.symmetric(horizontal: 20),
+  //     child: Column(
+  //       children: [
+  //         // _buildMainDetails(carDetails: carDetails),
+  //         // const SizedBox(height: 20),
+  //         // _buildIconAndTextDetails(carDetails: carDetails),
+  //         // const SizedBox(height: 20),
+  //         // _buildBasicDetails(carDetails: carDetails),
+  //         // const SizedBox(height: 10),
+  //         _buildDocumentDetails(
+  //           carDetails: carDetails,
+  //           getxController: getxController,
+  //         ),
+  //         const SizedBox(height: 5),
+  //         _buildExterior(
+  //           carDetails: carDetails,
+  //           getxController: getxController,
+  //         ),
+  //         const SizedBox(height: 5),
+  //         _buildEngineBay(
+  //           carDetails: carDetails,
+  //           getxController: getxController,
+  //         ),
+  //         const SizedBox(height: 5),
+  //         _buildSteeringBrackesAndSuspension(carDetails: carDetails),
+  //         const SizedBox(height: 5),
+  //         _buildInteriorAndElectricals(
+  //           carDetails: carDetails,
+  //           getxController: getxController,
+  //         ),
+  //         const SizedBox(height: 5),
+  //         _buildAirCondition(
+  //           carDetails: carDetails,
+  //           getxController: getxController,
+  //         ),
+  //         const SizedBox(height: 5),
+  //         // _buildSafetyAndAirbags(carDetails: carDetails),
+  //         // const SizedBox(height: 15),
+  //         // _buildExteriorImages(),
+  //         // const SizedBox(height: 10),
+  //         // _buildStructuralAndUnderbody(carDetails: carDetails),
+  //         // const SizedBox(height: 5),
+  //         // _buildDashboardAndSeating(carDetails: carDetails),
+  //         // const SizedBox(height: 10),
+  //         // _buildAdminAndApprovalInfo(carDetails: carDetails),
+  //         // const SizedBox(height: 20),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   Widget _buildMainDetails({
     required CarModel carDetails,
@@ -841,86 +841,86 @@ class _CarDetailsPageState extends State<CarDetailsPage> {
   //   );
   // }
 
-  Widget _buildBasicDetails({required CarModel carDetails}) {
-    // Mask Registration Number
-    String maskRegistrationNumber(String? input) {
-      if (input == null || input.length <= 5) return '*****';
-      final visible = input.substring(0, input.length - 5);
-      return '$visible*****';
-    }
+  // Widget _buildBasicDetails({required CarModel carDetails}) {
+  //   // Mask Registration Number
+  //   String maskRegistrationNumber(String? input) {
+  //     if (input == null || input.length <= 5) return '*****';
+  //     final visible = input.substring(0, input.length - 5);
+  //     return '$visible*****';
+  //   }
 
-    return Column(
-      children: [
-        const SizedBox(height: 10),
-        Row(
-          children: [
-            const Icon(
-              Icons.directions_car_filled_outlined,
-              color: AppColors.grey,
-              size: 20,
-            ),
-            const SizedBox(width: 5),
-            Text(
-              'Basic Details',
-              style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-        Divider(color: AppColors.grey.withValues(alpha: 0.5)),
-        const SizedBox(height: 3),
-        _buildDetailRowForOtherDetails('Make', carDetails.make),
-        _buildDetailRowForOtherDetails('Model', carDetails.model),
-        _buildDetailRowForOtherDetails('Variant', carDetails.variant),
-        _buildDetailRowForOtherDetails(
-          'Registration Number',
-          maskRegistrationNumber(carDetails.registrationNumber),
-        ),
-        _buildDetailRowForOtherDetails(
-          'Registration Date',
-          GlobalFunctions.getFormattedDate(
-                date: carDetails.registrationDate,
-                type: GlobalFunctions.date,
-              ) ??
-              'N/A',
-        ),
-        _buildDetailRowForOtherDetails(
-          'Manufacture Year',
-          GlobalFunctions.getFormattedDate(
-                date: carDetails.yearMonthOfManufacture,
-                type: GlobalFunctions.year,
-              ) ??
-              'N/A',
-        ),
-        _buildDetailRowForOtherDetails(
-          'Odometer Reading',
-          '${NumberFormat.decimalPattern('en_IN').format(carDetails.odometerReadingInKms)} kms',
-        ),
-        _buildDetailRowForOtherDetails('Fuel Type', carDetails.fuelType),
-        _buildDetailRowForOtherDetails(
-          'Cubic Capacity',
-          '${carDetails.cubicCapacity} cc',
-        ),
-        _buildDetailRowForOtherDetails('City', carDetails.city),
-        _buildDetailRowForOtherDetails('Status', carDetails.status),
-        _buildDetailRowForOtherDetails('Budget', carDetails.budgetCar),
-      ],
-    );
-  }
+  //   return Column(
+  //     children: [
+  //       const SizedBox(height: 10),
+  //       Row(
+  //         children: [
+  //           const Icon(
+  //             Icons.directions_car_filled_outlined,
+  //             color: AppColors.grey,
+  //             size: 20,
+  //           ),
+  //           const SizedBox(width: 5),
+  //           Text(
+  //             'Basic Details',
+  //             style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+  //           ),
+  //         ],
+  //       ),
+  //       Divider(color: AppColors.grey.withValues(alpha: 0.5)),
+  //       const SizedBox(height: 3),
+  //       _buildDetailRowForOtherDetails('Make', carDetails.make),
+  //       _buildDetailRowForOtherDetails('Model', carDetails.model),
+  //       _buildDetailRowForOtherDetails('Variant', carDetails.variant),
+  //       _buildDetailRowForOtherDetails(
+  //         'Registration Number',
+  //         maskRegistrationNumber(carDetails.registrationNumber),
+  //       ),
+  //       _buildDetailRowForOtherDetails(
+  //         'Registration Date',
+  //         GlobalFunctions.getFormattedDate(
+  //               date: carDetails.registrationDate,
+  //               type: GlobalFunctions.date,
+  //             ) ??
+  //             'N/A',
+  //       ),
+  //       _buildDetailRowForOtherDetails(
+  //         'Manufacture Year',
+  //         GlobalFunctions.getFormattedDate(
+  //               date: carDetails.yearMonthOfManufacture,
+  //               type: GlobalFunctions.year,
+  //             ) ??
+  //             'N/A',
+  //       ),
+  //       _buildDetailRowForOtherDetails(
+  //         'Odometer Reading',
+  //         '${NumberFormat.decimalPattern('en_IN').format(carDetails.odometerReadingInKms)} kms',
+  //       ),
+  //       _buildDetailRowForOtherDetails('Fuel Type', carDetails.fuelType),
+  //       _buildDetailRowForOtherDetails(
+  //         'Cubic Capacity',
+  //         '${carDetails.cubicCapacity} cc',
+  //       ),
+  //       _buildDetailRowForOtherDetails('City', carDetails.city),
+  //       _buildDetailRowForOtherDetails('Status', carDetails.status),
+  //       _buildDetailRowForOtherDetails('Budget', carDetails.budgetCar),
+  //     ],
+  //   );
+  // }
 
-  Widget _buildDetailRowForOtherDetails(String title, String value) {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(title, style: const TextStyle(fontSize: 12)),
-            Text(value, style: const TextStyle(fontSize: 12)),
-          ],
-        ),
-        Divider(color: AppColors.grey.withValues(alpha: 0.1)),
-      ],
-    );
-  }
+  // Widget _buildDetailRowForOtherDetails(String title, String value) {
+  //   return Column(
+  //     children: [
+  //       Row(
+  //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //         children: [
+  //           Text(title, style: const TextStyle(fontSize: 12)),
+  //           Text(value, style: const TextStyle(fontSize: 12)),
+  //         ],
+  //       ),
+  //       Divider(color: AppColors.grey.withValues(alpha: 0.1)),
+  //     ],
+  //   );
+  // }
 
   Widget _buildDocumentDetails({
     required CarModel carDetails,
@@ -1835,100 +1835,100 @@ class _CarDetailsPageState extends State<CarDetailsPage> {
     );
   }
 
-  // Safety & Airbags
-  Widget _buildSafetyAndAirbags({required CarModel carDetails}) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(7),
-        border: Border.all(color: AppColors.green),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                Icons.shield,
-                size: 20,
-                color: AppColors.blue.withValues(alpha: 0.7),
-              ),
-              SizedBox(width: 8),
-              Text(
-                'Safety & Airbags',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.blue,
-                ),
-              ),
-            ],
-          ),
-          Divider(color: AppColors.grey.withValues(alpha: 0.5)),
-          SizedBox(height: 5),
-          _buildDetailRowForInspectionReport(
-            Icons.date_range,
-            'No. of Airbags',
-            carDetails.noOfAirBags.toString(),
-          ),
-          Divider(color: AppColors.grey.withValues(alpha: 0.1)),
-          const SizedBox(height: 5),
-          _buildDetailRowForInspectionReport(
-            Icons.description_outlined,
-            'Airbag Features',
-            carDetails.airbagFeaturesDriverSide.toString(),
-          ),
-          Divider(color: AppColors.grey.withValues(alpha: 0.1)),
-          const SizedBox(height: 5),
-          _buildDetailRowForInspectionReport(
-            Icons.shield,
-            'ABS',
-            carDetails.abs,
-          ),
+  // // Safety & Airbags
+  // Widget _buildSafetyAndAirbags({required CarModel carDetails}) {
+  //   return Container(
+  //     padding: const EdgeInsets.all(16),
+  //     decoration: BoxDecoration(
+  //       color: AppColors.white,
+  //       borderRadius: BorderRadius.circular(7),
+  //       border: Border.all(color: AppColors.green),
+  //     ),
+  //     child: Column(
+  //       crossAxisAlignment: CrossAxisAlignment.start,
+  //       children: [
+  //         Row(
+  //           children: [
+  //             Icon(
+  //               Icons.shield,
+  //               size: 20,
+  //               color: AppColors.blue.withValues(alpha: 0.7),
+  //             ),
+  //             SizedBox(width: 8),
+  //             Text(
+  //               'Safety & Airbags',
+  //               style: TextStyle(
+  //                 fontSize: 14,
+  //                 fontWeight: FontWeight.bold,
+  //                 color: AppColors.blue,
+  //               ),
+  //             ),
+  //           ],
+  //         ),
+  //         Divider(color: AppColors.grey.withValues(alpha: 0.5)),
+  //         SizedBox(height: 5),
+  //         _buildDetailRowForInspectionReport(
+  //           Icons.date_range,
+  //           'No. of Airbags',
+  //           carDetails.noOfAirBags.toString(),
+  //         ),
+  //         Divider(color: AppColors.grey.withValues(alpha: 0.1)),
+  //         const SizedBox(height: 5),
+  //         _buildDetailRowForInspectionReport(
+  //           Icons.description_outlined,
+  //           'Airbag Features',
+  //           carDetails.airbagFeaturesDriverSide.toString(),
+  //         ),
+  //         Divider(color: AppColors.grey.withValues(alpha: 0.1)),
+  //         const SizedBox(height: 5),
+  //         _buildDetailRowForInspectionReport(
+  //           Icons.shield,
+  //           'ABS',
+  //           carDetails.abs,
+  //         ),
 
-          Divider(color: AppColors.grey.withValues(alpha: 0.1)),
-          const SizedBox(height: 5),
-          _buildDetailRowForInspectionReport(
-            Icons.speed,
-            'Odometer Reading',
-            '${NumberFormat.decimalPattern().format(carDetails.odometerReadingInKms)} km',
-          ),
-          Divider(color: AppColors.grey.withValues(alpha: 0.1)),
-          const SizedBox(height: 5),
-          _buildDetailRowForInspectionReport(
-            Icons.local_gas_station,
-            'Fuel Level',
-            carDetails.fuelLevel,
-          ),
-        ],
-      ),
-    );
-  }
+  //         Divider(color: AppColors.grey.withValues(alpha: 0.1)),
+  //         const SizedBox(height: 5),
+  //         _buildDetailRowForInspectionReport(
+  //           Icons.speed,
+  //           'Odometer Reading',
+  //           '${NumberFormat.decimalPattern().format(carDetails.odometerReadingInKms)} km',
+  //         ),
+  //         Divider(color: AppColors.grey.withValues(alpha: 0.1)),
+  //         const SizedBox(height: 5),
+  //         _buildDetailRowForInspectionReport(
+  //           Icons.local_gas_station,
+  //           'Fuel Level',
+  //           carDetails.fuelLevel,
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
-  Widget _buildDetailRowForInspectionReport(
-    IconData icon,
-    String title,
-    String value,
-  ) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(icon, size: 20, color: Colors.blueGrey),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(title, style: const TextStyle(fontSize: 13)),
-              const SizedBox(height: 4),
-            ],
-          ),
-        ),
-        Text(value, style: const TextStyle(fontSize: 12)),
-      ],
-    );
-  }
+  // Widget _buildDetailRowForInspectionReport(
+  //   IconData icon,
+  //   String title,
+  //   String value,
+  // ) {
+  //   return Row(
+  //     crossAxisAlignment: CrossAxisAlignment.start,
+  //     children: [
+  //       Icon(icon, size: 20, color: Colors.blueGrey),
+  //       const SizedBox(width: 12),
+  //       Expanded(
+  //         child: Column(
+  //           crossAxisAlignment: CrossAxisAlignment.start,
+  //           children: [
+  //             Text(title, style: const TextStyle(fontSize: 13)),
+  //             const SizedBox(height: 4),
+  //           ],
+  //         ),
+  //       ),
+  //       Text(value, style: const TextStyle(fontSize: 12)),
+  //     ],
+  //   );
+  // }
 
   Widget _buildInteriorAndElectricals({
     required CarModel carDetails,
@@ -3648,461 +3648,461 @@ class _CarDetailsPageState extends State<CarDetailsPage> {
     );
   }
 
-  Widget _buildStructuralAndUnderbody({required CarModel carDetails}) {
-    Widget item({
-      required IconData icon,
-      required String label,
-      required Widget trailing,
-    }) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        child: Row(
-          children: [
-            Icon(icon, size: 20, color: Colors.black54),
-            const SizedBox(width: 10),
-            Expanded(child: Text(label, style: const TextStyle(fontSize: 13))),
-            trailing,
-          ],
-        ),
-      );
-    }
+  // Widget _buildStructuralAndUnderbody({required CarModel carDetails}) {
+  //   Widget item({
+  //     required IconData icon,
+  //     required String label,
+  //     required Widget trailing,
+  //   }) {
+  //     return Padding(
+  //       padding: const EdgeInsets.symmetric(vertical: 6),
+  //       child: Row(
+  //         children: [
+  //           Icon(icon, size: 20, color: Colors.black54),
+  //           const SizedBox(width: 10),
+  //           Expanded(child: Text(label, style: const TextStyle(fontSize: 13))),
+  //           trailing,
+  //         ],
+  //       ),
+  //     );
+  //   }
 
-    Widget structuralFieldValue(String? value) {
-      final status = value?.toLowerCase();
+  //   Widget structuralFieldValue(String? value) {
+  //     final status = value?.toLowerCase();
 
-      if (status == 'available' || status == 'okay') {
-        return Icon(Icons.check_circle, color: AppColors.green, size: 20);
-      } else if (status == 'not applicable' || status == 'not available') {
-        return Icon(Icons.cancel, color: AppColors.red, size: 20);
-      } else {
-        return Text(value.toString(), style: const TextStyle(fontSize: 13));
-      }
-    }
+  //     if (status == 'available' || status == 'okay') {
+  //       return Icon(Icons.check_circle, color: AppColors.green, size: 20);
+  //     } else if (status == 'not applicable' || status == 'not available') {
+  //       return Icon(Icons.cancel, color: AppColors.red, size: 20);
+  //     } else {
+  //       return Text(value.toString(), style: const TextStyle(fontSize: 13));
+  //     }
+  //   }
 
-    return AccordionWidget(
-      title: 'Structural & Underbody',
-      icon: Icons.car_repair,
-      contentSize: 300,
-      content: Column(
-        children: [
-          item(
-            icon: Icons.directions_car_outlined, // structure/frame
-            label: 'Upper Cross Member',
-            trailing: structuralFieldValue(carDetails.upperCrossMember),
-          ),
-          item(
-            icon: Icons.directions_car_filled, // lower structure/frame
-            label: 'Lower Cross Member',
-            trailing: structuralFieldValue(carDetails.lowerCrossMember),
-          ),
-          item(
-            icon: Icons.ac_unit, // radiator/cooling
-            label: 'Radiator Support',
-            trailing: structuralFieldValue(carDetails.radiatorSupport),
-          ),
-          item(
-            icon: Icons.lightbulb_outline, // headlight indicator
-            label: 'Headlight Support',
-            trailing: structuralFieldValue(carDetails.headlightSupport),
-          ),
-          item(
-            icon: Icons.swap_horizontal_circle_outlined, // left-hand structure
-            label: 'LHS Apron',
-            trailing: structuralFieldValue(carDetails.lhsApron),
-          ),
-          item(
-            icon: Icons.swap_horizontal_circle, // right-hand structure
-            label: 'RHS Apron',
-            trailing: structuralFieldValue(carDetails.rhsApron),
-          ),
-          item(
-            icon: Icons.shield_outlined, // firewall protection metaphor
-            label: 'Firewall',
-            trailing: structuralFieldValue(carDetails.firewall),
-          ),
-          item(
-            icon: Icons.view_day, // dashboard-top style, metaphor for cowl top
-            label: 'Cowl Top',
-            trailing: structuralFieldValue(carDetails.cowlTop),
-          ),
-          item(
-            icon: Icons.inventory_2_outlined, // flat structure, boot floor
-            label: 'Boot Floor',
-            trailing: structuralFieldValue(carDetails.bootFloor),
-          ),
-          // item(
-          //   icon: Icons.inventory_2, // second boot floor
-          //   label: 'Boot Floor 1',
-          //   trailing: structuralFieldValue(carDetails.bootFloor1),
-          // ),
-          item(
-            icon: Icons.circle_outlined, // spare tyre
-            label: 'Spare Tyre',
-            trailing: structuralFieldValue(carDetails.spareTyre),
-          ),
-          // item(
-          //   icon: Icons.circle, // secondary spare tyre
-          //   label: 'Spare Tyre 1',
-          //   trailing: structuralFieldValue(carDetails.spareTyre1),
-          // ),
-        ],
-      ),
-    );
-  }
+  //   return AccordionWidget(
+  //     title: 'Structural & Underbody',
+  //     icon: Icons.car_repair,
+  //     contentSize: 300,
+  //     content: Column(
+  //       children: [
+  //         item(
+  //           icon: Icons.directions_car_outlined, // structure/frame
+  //           label: 'Upper Cross Member',
+  //           trailing: structuralFieldValue(carDetails.upperCrossMember),
+  //         ),
+  //         item(
+  //           icon: Icons.directions_car_filled, // lower structure/frame
+  //           label: 'Lower Cross Member',
+  //           trailing: structuralFieldValue(carDetails.lowerCrossMember),
+  //         ),
+  //         item(
+  //           icon: Icons.ac_unit, // radiator/cooling
+  //           label: 'Radiator Support',
+  //           trailing: structuralFieldValue(carDetails.radiatorSupport),
+  //         ),
+  //         item(
+  //           icon: Icons.lightbulb_outline, // headlight indicator
+  //           label: 'Headlight Support',
+  //           trailing: structuralFieldValue(carDetails.headlightSupport),
+  //         ),
+  //         item(
+  //           icon: Icons.swap_horizontal_circle_outlined, // left-hand structure
+  //           label: 'LHS Apron',
+  //           trailing: structuralFieldValue(carDetails.lhsApron),
+  //         ),
+  //         item(
+  //           icon: Icons.swap_horizontal_circle, // right-hand structure
+  //           label: 'RHS Apron',
+  //           trailing: structuralFieldValue(carDetails.rhsApron),
+  //         ),
+  //         item(
+  //           icon: Icons.shield_outlined, // firewall protection metaphor
+  //           label: 'Firewall',
+  //           trailing: structuralFieldValue(carDetails.firewall),
+  //         ),
+  //         item(
+  //           icon: Icons.view_day, // dashboard-top style, metaphor for cowl top
+  //           label: 'Cowl Top',
+  //           trailing: structuralFieldValue(carDetails.cowlTop),
+  //         ),
+  //         item(
+  //           icon: Icons.inventory_2_outlined, // flat structure, boot floor
+  //           label: 'Boot Floor',
+  //           trailing: structuralFieldValue(carDetails.bootFloor),
+  //         ),
+  //         // item(
+  //         //   icon: Icons.inventory_2, // second boot floor
+  //         //   label: 'Boot Floor 1',
+  //         //   trailing: structuralFieldValue(carDetails.bootFloor1),
+  //         // ),
+  //         item(
+  //           icon: Icons.circle_outlined, // spare tyre
+  //           label: 'Spare Tyre',
+  //           trailing: structuralFieldValue(carDetails.spareTyre),
+  //         ),
+  //         // item(
+  //         //   icon: Icons.circle, // secondary spare tyre
+  //         //   label: 'Spare Tyre 1',
+  //         //   trailing: structuralFieldValue(carDetails.spareTyre1),
+  //         // ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
-  Widget _buildDashboardAndSeating({required CarModel carDetails}) {
-    final imageItems = [
-      {
-        'label': 'Dashboard View',
-        'path': carDetails.dashboardFromRearSeat[0],
-        // 'path': AppImages.hondaDashboardView,
-      },
-      {
-        'label': 'Front Seats View',
-        'path': carDetails.frontSeatsFromDriverSideDoorOpen[0],
-        // 'path': AppImages.hondaFrontSeatsView,
-      },
-      {
-        'label': 'Rear Seats View',
-        'path': carDetails.rearSeatsFromRightSideDoorOpen[0],
-        // 'path': AppImages.hondaRearSeatsView,
-      },
-    ];
+  // Widget _buildDashboardAndSeating({required CarModel carDetails}) {
+  //   final imageItems = [
+  //     {
+  //       'label': 'Dashboard View',
+  //       'path': carDetails.dashboardFromRearSeat[0],
+  //       // 'path': AppImages.hondaDashboardView,
+  //     },
+  //     {
+  //       'label': 'Front Seats View',
+  //       'path': carDetails.frontSeatsFromDriverSideDoorOpen[0],
+  //       // 'path': AppImages.hondaFrontSeatsView,
+  //     },
+  //     {
+  //       'label': 'Rear Seats View',
+  //       'path': carDetails.rearSeatsFromRightSideDoorOpen[0],
+  //       // 'path': AppImages.hondaRearSeatsView,
+  //     },
+  //   ];
 
-    Widget item({
-      required IconData icon,
-      required String label,
-      required Widget trailing,
-    }) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        child: Row(
-          children: [
-            Icon(icon, size: 20, color: Colors.black54),
-            const SizedBox(width: 10),
-            Expanded(child: Text(label, style: const TextStyle(fontSize: 13))),
-            trailing,
-          ],
-        ),
-      );
-    }
+  //   Widget item({
+  //     required IconData icon,
+  //     required String label,
+  //     required Widget trailing,
+  //   }) {
+  //     return Padding(
+  //       padding: const EdgeInsets.symmetric(vertical: 6),
+  //       child: Row(
+  //         children: [
+  //           Icon(icon, size: 20, color: Colors.black54),
+  //           const SizedBox(width: 10),
+  //           Expanded(child: Text(label, style: const TextStyle(fontSize: 13))),
+  //           trailing,
+  //         ],
+  //       ),
+  //     );
+  //   }
 
-    Widget seatFieldValue(String? value) {
-      final status = value?.toLowerCase();
+  //   Widget seatFieldValue(String? value) {
+  //     final status = value?.toLowerCase();
 
-      if (status == 'available' || status == 'okay') {
-        return Icon(Icons.check_circle, color: AppColors.green, size: 20);
-      } else if (status == 'not applicable' || status == 'not available') {
-        return Icon(Icons.cancel, color: AppColors.red, size: 20);
-      } else {
-        return Text(value.toString(), style: const TextStyle(fontSize: 13));
-      }
-    }
+  //     if (status == 'available' || status == 'okay') {
+  //       return Icon(Icons.check_circle, color: AppColors.green, size: 20);
+  //     } else if (status == 'not applicable' || status == 'not available') {
+  //       return Icon(Icons.cancel, color: AppColors.red, size: 20);
+  //     } else {
+  //       return Text(value.toString(), style: const TextStyle(fontSize: 13));
+  //     }
+  //   }
 
-    Widget imageCard({
-      required String label,
-      required String imageUrl,
-      required int imageIndex,
-    }) {
-      return InkWell(
-        onTap: () {
-          final List<String> imageLabels = [
-            'Dashboard View',
-            'Front Seats View',
-            'Rear Seats View',
-          ];
+  //   Widget imageCard({
+  //     required String label,
+  //     required String imageUrl,
+  //     required int imageIndex,
+  //   }) {
+  //     return InkWell(
+  //       onTap: () {
+  //         final List<String> imageLabels = [
+  //           'Dashboard View',
+  //           'Front Seats View',
+  //           'Rear Seats View',
+  //         ];
 
-          final List<String> dashboardAndSeatingImages = [
-            carDetails.dashboardFromRearSeat[0],
-            carDetails.frontSeatsFromDriverSideDoorOpen[0],
-            carDetails.rearSeatsFromRightSideDoorOpen[0],
-            // AppImages.hondaDashboardView,
-            // AppImages.hondaFrontSeatsView,
-            // AppImages.hondaRearSeatsView,
-          ];
-          Get.to(
-            () => CarImagesPage(
-              imageLabels: imageLabels,
-              imageUrls: dashboardAndSeatingImages,
-              initialIndex: imageIndex,
-            ),
-          );
-        },
-        borderRadius: BorderRadius.circular(5),
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(5),
-            border: Border.all(color: AppColors.grey.withValues(alpha: .5)),
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(5),
-            child: Column(
-              children: [
-                Expanded(
-                  child:
-                      imageUrl.isNotEmpty
-                          ? CachedNetworkImage(
-                            imageUrl: imageUrl,
-                            fit: BoxFit.cover,
-                            width: double.infinity,
-                            placeholder:
-                                (context, url) => const Center(
-                                  child: SizedBox(
-                                    height: 20,
-                                    width: 20,
-                                    child: CircularProgressIndicator(
-                                      color: AppColors.green,
-                                      strokeWidth: 1,
-                                    ),
-                                  ),
-                                ),
-                            errorWidget:
-                                (context, url, error) => const Icon(
-                                  Icons.image_not_supported,
-                                  size: 40,
-                                  color: AppColors.grey,
-                                ),
-                            //   loadingBuilder: (context, child, loadingProgress) {
-                            //     if (loadingProgress == null) {
-                            //       return child;
-                            //     }
-                            //     return Center(
-                            //       child: SizedBox(
-                            //         height: 20,
-                            //         width: 20,
-                            //         child: CircularProgressIndicator(
-                            //         value:
-                            //             loadingProgress.expectedTotalBytes !=
-                            //                     null
-                            //                 ? loadingProgress
-                            //                         .cumulativeBytesLoaded /
-                            //                     loadingProgress
-                            //                         .expectedTotalBytes!
-                            //                 : null,
+  //         final List<String> dashboardAndSeatingImages = [
+  //           carDetails.dashboardFromRearSeat[0],
+  //           carDetails.frontSeatsFromDriverSideDoorOpen[0],
+  //           carDetails.rearSeatsFromRightSideDoorOpen[0],
+  //           // AppImages.hondaDashboardView,
+  //           // AppImages.hondaFrontSeatsView,
+  //           // AppImages.hondaRearSeatsView,
+  //         ];
+  //         Get.to(
+  //           () => CarImagesPage(
+  //             imageLabels: imageLabels,
+  //             imageUrls: dashboardAndSeatingImages,
+  //             initialIndex: imageIndex,
+  //           ),
+  //         );
+  //       },
+  //       borderRadius: BorderRadius.circular(5),
+  //       child: Container(
+  //         decoration: BoxDecoration(
+  //           borderRadius: BorderRadius.circular(5),
+  //           border: Border.all(color: AppColors.grey.withValues(alpha: .5)),
+  //         ),
+  //         child: ClipRRect(
+  //           borderRadius: BorderRadius.circular(5),
+  //           child: Column(
+  //             children: [
+  //               Expanded(
+  //                 child:
+  //                     imageUrl.isNotEmpty
+  //                         ? CachedNetworkImage(
+  //                           imageUrl: imageUrl,
+  //                           fit: BoxFit.cover,
+  //                           width: double.infinity,
+  //                           placeholder:
+  //                               (context, url) => const Center(
+  //                                 child: SizedBox(
+  //                                   height: 20,
+  //                                   width: 20,
+  //                                   child: CircularProgressIndicator(
+  //                                     color: AppColors.green,
+  //                                     strokeWidth: 1,
+  //                                   ),
+  //                                 ),
+  //                               ),
+  //                           errorWidget:
+  //                               (context, url, error) => const Icon(
+  //                                 Icons.image_not_supported,
+  //                                 size: 40,
+  //                                 color: AppColors.grey,
+  //                               ),
+  //                           //   loadingBuilder: (context, child, loadingProgress) {
+  //                           //     if (loadingProgress == null) {
+  //                           //       return child;
+  //                           //     }
+  //                           //     return Center(
+  //                           //       child: SizedBox(
+  //                           //         height: 20,
+  //                           //         width: 20,
+  //                           //         child: CircularProgressIndicator(
+  //                           //         value:
+  //                           //             loadingProgress.expectedTotalBytes !=
+  //                           //                     null
+  //                           //                 ? loadingProgress
+  //                           //                         .cumulativeBytesLoaded /
+  //                           //                     loadingProgress
+  //                           //                         .expectedTotalBytes!
+  //                           //                 : null,
 
-                            //         color: AppColors.green,
-                            //         strokeWidth: 1,
-                            //       ),
-                            //     ),
-                            //   );
-                            // },
-                            // errorBuilder: (context, error, stackTrace) {
-                            //   return Icon(
-                            //     Icons.image_not_supported,
-                            //     size: 40,
-                            //     color: AppColors.grey,
-                            //   );
-                            // },
-                          )
-                          : Container(
-                            color: AppColors.grey.withValues(alpha: .2),
-                            child: Icon(
-                              Icons.image_not_supported,
-                              size: 40,
-                              color: AppColors.grey,
-                            ),
-                          ),
-                ),
-                Container(
-                  width: double.infinity,
-                  color: AppColors.grey.withValues(alpha: .5),
-                  padding: EdgeInsets.symmetric(vertical: 6),
+  //                           //         color: AppColors.green,
+  //                           //         strokeWidth: 1,
+  //                           //       ),
+  //                           //     ),
+  //                           //   );
+  //                           // },
+  //                           // errorBuilder: (context, error, stackTrace) {
+  //                           //   return Icon(
+  //                           //     Icons.image_not_supported,
+  //                           //     size: 40,
+  //                           //     color: AppColors.grey,
+  //                           //   );
+  //                           // },
+  //                         )
+  //                         : Container(
+  //                           color: AppColors.grey.withValues(alpha: .2),
+  //                           child: Icon(
+  //                             Icons.image_not_supported,
+  //                             size: 40,
+  //                             color: AppColors.grey,
+  //                           ),
+  //                         ),
+  //               ),
+  //               Container(
+  //                 width: double.infinity,
+  //                 color: AppColors.grey.withValues(alpha: .5),
+  //                 padding: EdgeInsets.symmetric(vertical: 6),
 
-                  child: Text(
-                    label,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: AppColors.white, fontSize: 13),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-    }
+  //                 child: Text(
+  //                   label,
+  //                   textAlign: TextAlign.center,
+  //                   style: TextStyle(color: AppColors.white, fontSize: 13),
+  //                 ),
+  //               ),
+  //             ],
+  //           ),
+  //         ),
+  //       ),
+  //     );
+  //   }
 
-    return AccordionWidget(
-      title: 'Dashboard & Seating',
-      icon: Icons.event_seat_outlined,
-      // contentSize: 370,
-      content: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            item(
-              icon: Icons.chair_alt,
-              label: 'Fabric Seats',
-              trailing: seatFieldValue(carDetails.fabricSeats),
-            ),
-            item(
-              icon: Icons.chair_outlined,
-              label: 'Leather Seats',
-              trailing: seatFieldValue(carDetails.leatherSeats),
-            ),
+  //   return AccordionWidget(
+  //     title: 'Dashboard & Seating',
+  //     icon: Icons.event_seat_outlined,
+  //     // contentSize: 370,
+  //     content: Padding(
+  //       padding: const EdgeInsets.all(12.0),
+  //       child: Column(
+  //         crossAxisAlignment: CrossAxisAlignment.start,
+  //         children: [
+  //           item(
+  //             icon: Icons.chair_alt,
+  //             label: 'Fabric Seats',
+  //             trailing: seatFieldValue(carDetails.fabricSeats),
+  //           ),
+  //           item(
+  //             icon: Icons.chair_outlined,
+  //             label: 'Leather Seats',
+  //             trailing: seatFieldValue(carDetails.leatherSeats),
+  //           ),
 
-            SizedBox(height: 10),
-            Divider(color: AppColors.green.withValues(alpha: .3)),
-            SizedBox(height: 10),
+  //           SizedBox(height: 10),
+  //           Divider(color: AppColors.green.withValues(alpha: .3)),
+  //           SizedBox(height: 10),
 
-            /// Photo Grid
-            GridView.builder(
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              itemCount: imageItems.length,
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-                childAspectRatio: 1.1,
-              ),
-              itemBuilder: (context, index) {
-                final item = imageItems[index];
-                // return Text(item['label']!);
-                return imageCard(
-                  label: item['label']!,
-                  imageUrl: item['path']!,
-                  imageIndex: index,
-                );
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  //           /// Photo Grid
+  //           GridView.builder(
+  //             shrinkWrap: true,
+  //             physics: NeverScrollableScrollPhysics(),
+  //             itemCount: imageItems.length,
+  //             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+  //               crossAxisCount: 2,
+  //               crossAxisSpacing: 12,
+  //               mainAxisSpacing: 12,
+  //               childAspectRatio: 1.1,
+  //             ),
+  //             itemBuilder: (context, index) {
+  //               final item = imageItems[index];
+  //               // return Text(item['label']!);
+  //               return imageCard(
+  //                 label: item['label']!,
+  //                 imageUrl: item['path']!,
+  //                 imageIndex: index,
+  //               );
+  //             },
+  //           ),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
 
-  Widget _buildAdminAndApprovalInfo({required CarModel carDetails}) {
-    Widget item({
-      required IconData icon,
-      required Color color,
-      required String label,
-      required String value,
-    }) {
-      return Container(
-        padding: EdgeInsets.only(left: 20, bottom: 15),
-        child: Row(
-          children: [
-            Icon(icon, color: color, size: 25),
-            SizedBox(width: 15),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                ),
-                SizedBox(width: 8),
-                Text(
-                  value.isNotEmpty ? value : 'N/A',
-                  style: TextStyle(fontSize: 13),
-                ),
-              ],
-            ),
-          ],
-        ),
-      );
-    }
+  // Widget _buildAdminAndApprovalInfo({required CarModel carDetails}) {
+  //   Widget item({
+  //     required IconData icon,
+  //     required Color color,
+  //     required String label,
+  //     required String value,
+  //   }) {
+  //     return Container(
+  //       padding: EdgeInsets.only(left: 20, bottom: 15),
+  //       child: Row(
+  //         children: [
+  //           Icon(icon, color: color, size: 25),
+  //           SizedBox(width: 15),
+  //           Column(
+  //             crossAxisAlignment: CrossAxisAlignment.start,
+  //             children: [
+  //               Text(
+  //                 label,
+  //                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+  //               ),
+  //               SizedBox(width: 8),
+  //               Text(
+  //                 value.isNotEmpty ? value : 'N/A',
+  //                 style: TextStyle(fontSize: 13),
+  //               ),
+  //             ],
+  //           ),
+  //         ],
+  //       ),
+  //     );
+  //   }
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(7),
-        border: Border.all(color: AppColors.green),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                Icons.admin_panel_settings,
-                size: 20,
-                color: AppColors.blue.withValues(alpha: 0.7),
-              ),
-              SizedBox(width: 8),
-              Text(
-                'Admin & Approval Info',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.blue,
-                ),
-              ),
-            ],
-          ),
-          Divider(color: AppColors.grey.withValues(alpha: 0.5)),
-          SizedBox(height: 5),
-          Column(
-            children: [
-              item(
-                icon: Icons.verified_user,
-                color: Colors.blue,
-                label: 'Approved By',
-                value:
-                    carDetails.approvedBy.isNotEmpty
-                        ? carDetails.approvedBy
-                        : 'N/A',
-              ),
-              item(
-                icon: Icons.date_range,
-                color: Colors.green,
-                label: 'Approval Date',
-                value: carDetails.approvalDate.toString().split(' ').first,
-              ),
-              item(
-                icon: Icons.access_time_filled,
-                color: Colors.orange,
-                label: 'Approval Time',
-                value:
-                    GlobalFunctions.getFormattedDate(
-                      date: carDetails.approvalTime,
-                      type: GlobalFunctions.time,
-                    ) ??
-                    'N/A',
-              ),
-              item(
-                icon: Icons.check_circle_outline,
-                color: Colors.purple,
-                label: 'Approval Status',
-                value: carDetails.approvalStatus,
-              ),
-              Divider(),
-              SizedBox(height: 5),
-              item(
-                icon: Icons.price_change,
-                color: Colors.indigo,
-                label: 'Price Discovery',
-                value:
-                    'Rs. ${NumberFormat.decimalPattern().format(carDetails.priceDiscovery)}/-',
-              ),
-              item(
-                icon: Icons.account_circle_outlined,
-                color: Colors.teal,
-                label: 'Price Discovery By',
-                value: carDetails.priceDiscoveryBy,
-              ),
-              item(
-                icon: Icons.person_pin_circle_outlined,
-                color: Colors.deepOrange,
-                label: 'Retail Associate',
-                value: carDetails.retailAssociate,
-              ),
-              Divider(),
-              SizedBox(height: 5),
-              item(
-                icon: Icons.phone_outlined,
-                color: Colors.black87,
-                label: 'Contact Number',
-                value: carDetails.contactNumber.toString(),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
+  //   return Container(
+  //     padding: const EdgeInsets.all(16),
+  //     decoration: BoxDecoration(
+  //       color: AppColors.white,
+  //       borderRadius: BorderRadius.circular(7),
+  //       border: Border.all(color: AppColors.green),
+  //     ),
+  //     child: Column(
+  //       crossAxisAlignment: CrossAxisAlignment.start,
+  //       children: [
+  //         Row(
+  //           children: [
+  //             Icon(
+  //               Icons.admin_panel_settings,
+  //               size: 20,
+  //               color: AppColors.blue.withValues(alpha: 0.7),
+  //             ),
+  //             SizedBox(width: 8),
+  //             Text(
+  //               'Admin & Approval Info',
+  //               style: TextStyle(
+  //                 fontSize: 14,
+  //                 fontWeight: FontWeight.bold,
+  //                 color: AppColors.blue,
+  //               ),
+  //             ),
+  //           ],
+  //         ),
+  //         Divider(color: AppColors.grey.withValues(alpha: 0.5)),
+  //         SizedBox(height: 5),
+  //         Column(
+  //           children: [
+  //             item(
+  //               icon: Icons.verified_user,
+  //               color: Colors.blue,
+  //               label: 'Approved By',
+  //               value:
+  //                   carDetails.approvedBy.isNotEmpty
+  //                       ? carDetails.approvedBy
+  //                       : 'N/A',
+  //             ),
+  //             item(
+  //               icon: Icons.date_range,
+  //               color: Colors.green,
+  //               label: 'Approval Date',
+  //               value: carDetails.approvalDate.toString().split(' ').first,
+  //             ),
+  //             item(
+  //               icon: Icons.access_time_filled,
+  //               color: Colors.orange,
+  //               label: 'Approval Time',
+  //               value:
+  //                   GlobalFunctions.getFormattedDate(
+  //                     date: carDetails.approvalTime,
+  //                     type: GlobalFunctions.time,
+  //                   ) ??
+  //                   'N/A',
+  //             ),
+  //             item(
+  //               icon: Icons.check_circle_outline,
+  //               color: Colors.purple,
+  //               label: 'Approval Status',
+  //               value: carDetails.approvalStatus,
+  //             ),
+  //             Divider(),
+  //             SizedBox(height: 5),
+  //             item(
+  //               icon: Icons.price_change,
+  //               color: Colors.indigo,
+  //               label: 'Price Discovery',
+  //               value:
+  //                   'Rs. ${NumberFormat.decimalPattern().format(carDetails.priceDiscovery)}/-',
+  //             ),
+  //             item(
+  //               icon: Icons.account_circle_outlined,
+  //               color: Colors.teal,
+  //               label: 'Price Discovery By',
+  //               value: carDetails.priceDiscoveryBy,
+  //             ),
+  //             item(
+  //               icon: Icons.person_pin_circle_outlined,
+  //               color: Colors.deepOrange,
+  //               label: 'Retail Associate',
+  //               value: carDetails.retailAssociate,
+  //             ),
+  //             Divider(),
+  //             SizedBox(height: 5),
+  //             item(
+  //               icon: Icons.phone_outlined,
+  //               color: Colors.black87,
+  //               label: 'Contact Number',
+  //               value: carDetails.contactNumber.toString(),
+  //             ),
+  //           ],
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   Widget _buildCommentsCard({
     required String title,
@@ -4156,85 +4156,85 @@ class _CarDetailsPageState extends State<CarDetailsPage> {
     );
   }
 
-  Widget _buildImageCardForSections({
-    required String imageLabel,
-    required String imageUrl,
+  // Widget _buildImageCardForSections({
+  //   required String imageLabel,
+  //   required String imageUrl,
 
-    required int imageIndex,
-    required List<String> imageLabels,
-    required List<String> imageUrls,
-  }) {
-    return InkWell(
-      onTap: () {
-        Get.to(
-          () => CarImagesPage(
-            imageLabels: imageLabels,
-            imageUrls: imageUrls,
-            initialIndex: imageIndex,
-          ),
-        );
-      },
-      borderRadius: BorderRadius.circular(5),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(5),
-          border: Border.all(color: AppColors.grey.withValues(alpha: .5)),
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(5),
-          child: Column(
-            children: [
-              Expanded(
-                child:
-                    imageUrl.isNotEmpty
-                        ? CachedNetworkImage(
-                          imageUrl: imageUrl,
-                          fit: BoxFit.cover,
-                          width: double.infinity,
-                          placeholder:
-                              (context, url) => const Center(
-                                child: SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(
-                                    color: AppColors.green,
-                                    strokeWidth: 1,
-                                  ),
-                                ),
-                              ),
-                          errorWidget:
-                              (context, url, error) => const Icon(
-                                Icons.image_not_supported,
-                                size: 40,
-                                color: AppColors.grey,
-                              ),
-                        )
-                        : Container(
-                          color: AppColors.grey.withValues(alpha: .2),
-                          child: Icon(
-                            Icons.image_not_supported,
-                            size: 40,
-                            color: AppColors.grey,
-                          ),
-                        ),
-              ),
-              Container(
-                width: double.infinity,
-                color: AppColors.grey.withValues(alpha: .5),
-                padding: EdgeInsets.symmetric(vertical: 6),
+  //   required int imageIndex,
+  //   required List<String> imageLabels,
+  //   required List<String> imageUrls,
+  // }) {
+  //   return InkWell(
+  //     onTap: () {
+  //       Get.to(
+  //         () => CarImagesPage(
+  //           imageLabels: imageLabels,
+  //           imageUrls: imageUrls,
+  //           initialIndex: imageIndex,
+  //         ),
+  //       );
+  //     },
+  //     borderRadius: BorderRadius.circular(5),
+  //     child: Container(
+  //       decoration: BoxDecoration(
+  //         borderRadius: BorderRadius.circular(5),
+  //         border: Border.all(color: AppColors.grey.withValues(alpha: .5)),
+  //       ),
+  //       child: ClipRRect(
+  //         borderRadius: BorderRadius.circular(5),
+  //         child: Column(
+  //           children: [
+  //             Expanded(
+  //               child:
+  //                   imageUrl.isNotEmpty
+  //                       ? CachedNetworkImage(
+  //                         imageUrl: imageUrl,
+  //                         fit: BoxFit.cover,
+  //                         width: double.infinity,
+  //                         placeholder:
+  //                             (context, url) => const Center(
+  //                               child: SizedBox(
+  //                                 height: 20,
+  //                                 width: 20,
+  //                                 child: CircularProgressIndicator(
+  //                                   color: AppColors.green,
+  //                                   strokeWidth: 1,
+  //                                 ),
+  //                               ),
+  //                             ),
+  //                         errorWidget:
+  //                             (context, url, error) => const Icon(
+  //                               Icons.image_not_supported,
+  //                               size: 40,
+  //                               color: AppColors.grey,
+  //                             ),
+  //                       )
+  //                       : Container(
+  //                         color: AppColors.grey.withValues(alpha: .2),
+  //                         child: Icon(
+  //                           Icons.image_not_supported,
+  //                           size: 40,
+  //                           color: AppColors.grey,
+  //                         ),
+  //                       ),
+  //             ),
+  //             Container(
+  //               width: double.infinity,
+  //               color: AppColors.grey.withValues(alpha: .5),
+  //               padding: EdgeInsets.symmetric(vertical: 6),
 
-                child: Text(
-                  imageLabel,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: AppColors.white, fontSize: 13),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+  //               child: Text(
+  //                 imageLabel,
+  //                 textAlign: TextAlign.center,
+  //                 style: TextStyle(color: AppColors.white, fontSize: 13),
+  //               ),
+  //             ),
+  //           ],
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
 
   Widget _buildStickyTabs(CarDetailsController getxController) {
     final sectionNames = [

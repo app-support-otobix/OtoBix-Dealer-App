@@ -418,10 +418,10 @@ class LiveBidsController extends GetxController {
       remainingTimes.remove(id); // drops the RxString entry
     }
 
-    String fmt(Duration d) {
-      String two(int n) => n.toString().padLeft(2, '0');
-      return '${two(d.inHours)}h : ${two(d.inMinutes % 60)}m : ${two(d.inSeconds % 60)}s';
-    }
+    // String fmt(Duration d) {
+    //   String two(int n) => n.toString().padLeft(2, '0');
+    //   return '${two(d.inHours)}h : ${two(d.inMinutes % 60)}m : ${two(d.inSeconds % 60)}s';
+    // }
 
     DateTime? computeLiveEnd(CarsListModel car) {
       if (car.auctionEndTime != null) return car.auctionEndTime!.toLocal();
@@ -469,39 +469,39 @@ class LiveBidsController extends GetxController {
       );
     }
 
-    void startFor1(CarsListModel car) {
-      _timers[car.id]?.cancel();
+    // void startFor1(CarsListModel car) {
+    //   _timers[car.id]?.cancel();
 
-      final endAt = computeLiveEnd(car);
-      if (endAt == null) {
-        // 🔴 IMPORTANT: write to .value of the RxString
-        getCarRemainingTimeForNextScreen(car.id).value = 'N/A';
-        return;
-      }
+    //   final endAt = computeLiveEnd(car);
+    //   if (endAt == null) {
+    //     // 🔴 IMPORTANT: write to .value of the RxString
+    //     getCarRemainingTimeForNextScreen(car.id).value = 'N/A';
+    //     return;
+    //   }
 
-      void tick() {
-        final diff = endAt.difference(DateTime.now());
-        if (diff.isNegative || diff.inSeconds <= 0) {
-          getCarRemainingTimeForNextScreen(car.id).value = '00h : 00m : 00s';
-          _timers[car.id]?.cancel();
-          _timers.remove(car.id);
+    //   void tick() {
+    //     final diff = endAt.difference(DateTime.now());
+    //     if (diff.isNegative || diff.inSeconds <= 0) {
+    //       getCarRemainingTimeForNextScreen(car.id).value = '00h : 00m : 00s';
+    //       _timers[car.id]?.cancel();
+    //       _timers.remove(car.id);
 
-          // Remove the car from the list when timer becomes less than zero
-          remainingTimes.remove(car.id);
-          filteredLiveBidsCarsList.removeWhere((c) => c.id == car.id);
-          liveBidsCarsCount.value = filteredLiveBidsCarsList.length;
-          return;
-        }
-        getCarRemainingTimeForNextScreen(car.id).value = fmt(diff);
-      }
+    //       // Remove the car from the list when timer becomes less than zero
+    //       remainingTimes.remove(car.id);
+    //       filteredLiveBidsCarsList.removeWhere((c) => c.id == car.id);
+    //       liveBidsCarsCount.value = filteredLiveBidsCarsList.length;
+    //       return;
+    //     }
+    //     getCarRemainingTimeForNextScreen(car.id).value = fmt(diff);
+    //   }
 
-      // prime immediately, then every second
-      tick();
-      _timers[car.id] = Timer.periodic(
-        const Duration(seconds: 1),
-        (_) => tick(),
-      );
-    }
+    //   // prime immediately, then every second
+    //   tick();
+    //   _timers[car.id] = Timer.periodic(
+    //     const Duration(seconds: 1),
+    //     (_) => tick(),
+    //   );
+    // }
 
     // 2) ensure every listed car has an active timer
     for (final car in cars) {
@@ -567,7 +567,7 @@ class LiveBidsController extends GetxController {
     } else if (extendedBySeconds != null && extendedBySeconds != 0) {
       // server gave us a delta (extend/shrink)
       if (endAt != null) {
-        endAt = endAt!.add(Duration(seconds: extendedBySeconds));
+        endAt = endAt.add(Duration(seconds: extendedBySeconds));
       }
     }
 

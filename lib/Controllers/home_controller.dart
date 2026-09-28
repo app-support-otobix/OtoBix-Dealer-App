@@ -691,22 +691,22 @@ class HomeController extends GetxController {
   //   }
   // }
 
-  Future<void> _fetchAndApplyWishlist({required String userId}) async {
-    try {
-      final url = AppUrls.getUserWishlist;
-      final response = await ApiService.get(endpoint: url);
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final List<dynamic> ids = data['wishlist'] ?? [];
+  // Future<void> _fetchAndApplyWishlist({required String userId}) async {
+  //   try {
+  //     final url = AppUrls.getUserWishlist;
+  //     final response = await ApiService.get(endpoint: url);
+  //     if (response.statusCode == 200) {
+  //       final data = jsonDecode(response.body);
+  //       final List<dynamic> ids = data['wishlist'] ?? [];
 
-        wishlistCarsIds
-          ..clear()
-          ..addAll(ids.map((e) => '$e'));
-      }
-    } catch (e) {
-      debugPrint('_fetchAndApplyWishlist error: $e');
-    }
-  }
+  //       wishlistCarsIds
+  //         ..clear()
+  //         ..addAll(ids.map((e) => '$e'));
+  //     }
+  //   } catch (e) {
+  //     debugPrint('_fetchAndApplyWishlist error: $e');
+  //   }
+  // }
 
   void _listenWishlistRealtime() {
     SocketService.instance.on(SocketEvents.wishlistUpdated, (data) {

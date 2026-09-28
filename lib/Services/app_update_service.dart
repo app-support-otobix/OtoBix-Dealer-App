@@ -96,6 +96,8 @@ class AppUpdateService {
       final data = decoded["data"];
       if (data == null || data is! Map<String, dynamic>) return null;
 
+      // debugPrint("AppUpdateInfo Response: ${data.toString()}");
+
       return AppUpdateInfoModel.fromJson(data);
     } catch (_) {
       return null;
@@ -196,6 +198,7 @@ class AppUpdateService {
         _dialogShowing = false;
       } catch (_) {
         _dialogShowing = false;
+        debugPrint("Dialog Show Error");
         return;
       }
     });

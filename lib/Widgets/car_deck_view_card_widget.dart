@@ -260,10 +260,7 @@ class CarDeckViewCardWidget extends StatelessWidget {
         Icons.settings,
         'Transmission',
         getFirstValidValueFromCarModel(
-          values: [
-            car.transmissionTypeDropdownList,
-            car.commentsOnTransmission,
-          ],
+          values: [car.transmissionTypeDropdownList],
           returnType: ReturnType.string,
         ),
       ),
