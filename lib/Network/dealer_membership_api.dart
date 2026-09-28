@@ -5,8 +5,6 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:otobix/Network/api_service.dart';
 
-/// A failure the dealer can read. [code] carries the server's machine code
-/// (e.g. INSUFFICIENT_POINTS, MEMBERSHIP_INACTIVE) so screens can react.
 class DealerApiException implements Exception {
   final String message;
   final String code;
@@ -18,8 +16,6 @@ class DealerApiException implements Exception {
   String toString() => message;
 }
 
-/// Calls the Dealer Membership APIs through [ApiService] (auth, token refresh,
-/// App Check) and unwraps the `{ success, message, data }` envelope.
 class DealerMembershipApi {
   DealerMembershipApi._();
 
@@ -67,7 +63,6 @@ class DealerMembershipApi {
     }
 
     if (response.statusCode == 401) {
-      // ApiService has already sent the dealer back to login.
       throw const DealerApiException(
         'Your session has expired. Please log in again.',
         code: 'UNAUTHORIZED',
@@ -75,8 +70,6 @@ class DealerMembershipApi {
       );
     }
 
-    // 4xx messages and coded 5xx ones (e.g. provider down) are written for
-    // dealers; uncoded 5xx details are never shown.
     final serverMessage = body?['message'];
     final code = (body?['code'] ?? '').toString();
     final message =

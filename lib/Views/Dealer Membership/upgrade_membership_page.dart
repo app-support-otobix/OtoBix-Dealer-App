@@ -9,9 +9,6 @@ import 'package:otobix/Widgets/app_bar_widget.dart';
 import 'package:otobix/Widgets/button_widget.dart';
 import 'package:otobix/Widgets/toast_widget.dart';
 
-/// Upgrade Membership: pick Pro or Pro+, then how to pay. Only offline
-/// payment is open for now - UPI and NACH show as coming soon. A new plan
-/// starts a fresh cycle; unused points from the current one do not carry over.
 class UpgradeMembershipPage extends StatefulWidget {
   const UpgradeMembershipPage({super.key});
 

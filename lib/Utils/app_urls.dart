@@ -202,7 +202,6 @@ class AppUrls {
 
   static String get createGuestUser => "${baseUrl}guest-user/create";
 
-  // ---------------- Dealer Membership ----------------
   static String get _dealerMembership => "${baseUrl}dealer-membership/";
 
   static String get dealerMembershipConfig => "${_dealerMembership}config";

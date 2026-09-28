@@ -9,9 +9,6 @@ import 'package:otobix/Views/Dealer%20Panel/my_cars_page.dart';
 class BottomNavigationController extends GetxController {
   RxInt currentIndex = 0.obs;
 
-  // The auction screens (Upcoming / Live / OtoBuy / PD), opened from Buy >
-  // Auctions. Built here, before the tabs, so their controllers exist from
-  // the start as other screens (My Cars, car details) expect.
   final HomePage auctionsPage = HomePage();
 
   final List<Widget> pages = [

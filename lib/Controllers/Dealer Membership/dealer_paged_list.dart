@@ -1,12 +1,9 @@
 import 'package:get/get.dart';
 import 'package:otobix/Network/dealer_membership_api.dart';
 
-/// One page of results from a `{ items, hasMore }` Dealer Membership list API.
 typedef DealerPageFetcher<T> =
     Future<(List<T> items, bool hasMore)> Function(int page);
 
-/// Reactive paged list shared by every Dealer Membership list screen:
-/// loading / error / has-more state and "load the next page" in one place.
 class DealerPagedList<T> {
   final DealerPageFetcher<T> fetch;
   final items = <T>[].obs;
@@ -40,7 +37,6 @@ class DealerPagedList<T> {
 
   Future<void> refresh() => load(reset: true);
 
-  /// Parses a `{ items, hasMore }` payload with [fromJson].
   static (List<T>, bool) parse<T>(
     dynamic data,
     T Function(Map<String, dynamic>) fromJson,

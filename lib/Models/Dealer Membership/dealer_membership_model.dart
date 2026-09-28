@@ -27,7 +27,6 @@ class DealerPlanModel {
       benefits = _strings(j['benefits']);
 }
 
-/// UPI / NACH / Offline. Disabled methods are shown as coming soon.
 class DealerPaymentMethodModel {
   final String code;
   final String label;
@@ -39,7 +38,6 @@ class DealerPaymentMethodModel {
       enabled = j['enabled'] == true;
 }
 
-/// Catalogues served by the backend so the app never keeps its own copies.
 class DealerMembershipConfigModel {
   final List<DealerPlanModel> plans;
   final DealerPlanModel? promo;
@@ -68,11 +66,10 @@ class DealerCycleSummaryModel {
       expired = _int(j['expired']);
 }
 
-/// One feature's share of the cycle's points (Current Month Usage).
 class DealerUsageModel {
-  final String feature; // RC | SERVICE_HISTORY | CONNECTION
+  final String feature;
   final String label;
-  final String unit; // checks | connections | rupees
+  final String unit;
   final int unitPoints;
   final int usedPoints;
   final int limitPoints;
@@ -92,7 +89,6 @@ class DealerUsageModel {
   double get progress => limitPoints == 0 ? 0 : usedPoints / limitPoints;
 }
 
-/// An offline payment waiting for OtoBix to confirm it.
 class DealerPendingPaymentModel {
   final String code;
   final String planCode;
@@ -116,7 +112,7 @@ class DealerMembershipModel {
   final String city;
   final String state;
   final int tradeRadiusKm;
-  final String status; // ACTIVE | GRACE | EXPIRED
+  final String status;
   final DealerPlanModel? plan;
   final int cycleNumber;
   final DateTime? cycleStartAt;
@@ -130,7 +126,6 @@ class DealerMembershipModel {
   final DealerPendingPaymentModel? pendingPayment;
   final DealerCycleSummaryModel? summary;
 
-  /// Usable inside the cycle and during the grace period after it.
   bool get isActive => status == active || status == grace;
   bool get isGrace => status == grace;
 

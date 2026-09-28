@@ -8,8 +8,6 @@ import 'package:otobix/Views/Dealer%20Membership/dealer_membership_navigator.dar
 import 'package:otobix/Widgets/Dealer%20Membership/dealer_common_widgets.dart';
 import 'package:otobix/Widgets/app_bar_widget.dart';
 
-/// Activity Log - every membership event, newest first. Each entry opens the
-/// object it is about.
 class ActivityLogPage extends StatefulWidget {
   const ActivityLogPage({super.key});
 

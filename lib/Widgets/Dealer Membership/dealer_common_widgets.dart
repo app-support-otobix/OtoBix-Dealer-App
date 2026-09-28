@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:otobix/Utils/app_colors.dart';
 
-/// Rounded white card used to group related content.
 class DealerSectionCard extends StatelessWidget {
   final String? title;
   final Widget child;
@@ -121,8 +120,6 @@ class DealerStatusChip extends StatelessWidget {
   }
 }
 
-/// Loading, error (with retry) and empty states shared by every screen, so a
-/// list is never blank without saying why.
 class DealerStateView extends StatelessWidget {
   final bool isLoading;
   final String error;

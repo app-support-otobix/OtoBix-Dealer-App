@@ -10,8 +10,6 @@ import 'package:otobix/Widgets/Dealer%20Membership/dealer_common_widgets.dart';
 import 'package:otobix/Widgets/Dealer%20Membership/dealer_renewal_banner.dart';
 import 'package:otobix/Widgets/app_bar_widget.dart';
 
-/// Membership Dashboard: the current plan with Upgrade, the renewal warning,
-/// Current Month Usage per feature, and the point ledger.
 class MembershipDashboardPage extends StatefulWidget {
   const MembershipDashboardPage({super.key});
 
@@ -207,7 +205,6 @@ class _MembershipDashboardPageState extends State<MembershipDashboardPage> {
     );
   }
 
-  // Current Month Usage: each feature's share of the cycle's points.
   Widget _usageCard(DealerMembershipModel m) {
     return DealerSectionCard(
       title: 'Current Month Usage',

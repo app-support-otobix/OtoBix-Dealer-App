@@ -12,8 +12,6 @@ import 'package:otobix/Views/Dealer%20Panel/user_notifications_page.dart';
 import 'package:otobix/Widgets/Dealer%20Membership/dealer_common_widgets.dart';
 import 'package:otobix/Widgets/Dealer%20Membership/dealer_renewal_banner.dart';
 
-/// The Dealer Home: feature search, membership card, module grid and the
-/// dealer's latest activity.
 class DealerHomePage extends StatefulWidget {
   const DealerHomePage({super.key});
 
@@ -238,8 +236,6 @@ class _DealerHomePageState extends State<DealerHomePage> {
     );
   }
 
-  /// The dealer's membership at a glance: plan, dealer name and ID, the
-  /// cycle's month and city - then the renewal warning when it is due.
   Widget _buildMembershipCard() {
     return Obx(() {
       final m = controller.membership.value;

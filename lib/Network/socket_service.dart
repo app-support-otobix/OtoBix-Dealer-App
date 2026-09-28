@@ -48,8 +48,6 @@ class SocketService {
     debugPrint('Joined room: $roomId');
   }
 
-  // Join this dealer's private room. The server only admits the owner of a
-  // valid access token, and it is re-joined after every reconnect.
   bool _dealerRoomWanted = false;
 
   Future<void> joinDealerRoom() async {

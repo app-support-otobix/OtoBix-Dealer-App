@@ -167,14 +167,11 @@ class GlobalFunctions {
     return dateTime.toLocal();
   }
 
-  // 73,972
   static String formatNumber(num value) =>
       NumberFormat.decimalPattern('en_IN').format(value.round());
 
-  // ₹3,25,000
   static String formatRupees(num value) => '₹${formatNumber(value)}';
 
-  // 12m ago, 3h ago, yesterday, 12 Sep
   static String timeAgo(DateTime? date) {
     if (date == null) return '';
     final diff = DateTime.now().difference(date.toLocal());

@@ -11,9 +11,6 @@ import 'package:otobix/Utils/socket_events.dart';
 import 'package:otobix/Widgets/toast_widget.dart';
 import 'package:otobix/helpers/shared_prefs_helper.dart';
 
-/// Membership state for the Dealer Membership section: the catalogues from
-/// the server, the dealer's membership record, the Home summary and the
-/// point ledger.
 class DealerMembershipController extends GetxController {
   static DealerMembershipController get to =>
       Get.isRegistered<DealerMembershipController>()
@@ -23,13 +20,11 @@ class DealerMembershipController extends GetxController {
   final config = Rxn<DealerMembershipConfigModel>();
   final membership = Rxn<DealerMembershipModel>();
 
-  // Home
   final dealerName = ''.obs;
   final latestActivities = <DealerActivityModel>[].obs;
   final isLoadingHome = false.obs;
   final homeError = ''.obs;
 
-  // Point ledger
   final ledger = <DealerLedgerEntryModel>[].obs;
   final ledgerFilter = 'ALL'.obs;
   final isLoadingLedger = false.obs;
@@ -37,7 +32,6 @@ class DealerMembershipController extends GetxController {
   final ledgerHasMore = true.obs;
   int _ledgerPage = 0;
 
-  // Actions
   final isSubmitting = false.obs;
   final isPaying = false.obs;
 
@@ -68,10 +62,6 @@ class DealerMembershipController extends GetxController {
   String _sessionUserId = '';
   Future<void>? _sync;
 
-  /// Home calls this whenever it is shown. The Dealer Membership controllers
-  /// outlive logout, so when another dealer has signed in, the previous
-  /// dealer's data is dropped, the private socket room is joined with the new
-  /// token and Home loads again.
   Future<void> syncSession() =>
       _sync ??= _syncSession().whenComplete(() => _sync = null);
 
@@ -106,10 +96,7 @@ class DealerMembershipController extends GetxController {
 
   void _onMembershipEvent(dynamic _) => refreshMembership();
 
-  // A new activity shows up in Home's latest activity.
   void _onActivityEvent(dynamic _) => loadHome(silent: true);
-
-  // ---------------------------------------------------------------- Loading
 
   Future<DealerMembershipConfigModel?> ensureConfig() async {
     if (config.value != null) return config.value;
@@ -152,7 +139,6 @@ class DealerMembershipController extends GetxController {
     }
   }
 
-  /// Full membership record including the current-cycle summary.
   Future<void> refreshMembership() async {
     try {
       final data = await DealerMembershipApi.get(AppUrls.dealerMembership);
@@ -191,13 +177,12 @@ class DealerMembershipController extends GetxController {
       _ledgerPage += 1;
       ledgerHasMore.value = data['hasMore'] == true;
     } on DealerApiException catch (e) {
-      ledgerError.value = e.message; // shown in the list with Retry
+      ledgerError.value = e.message;
     } finally {
       isLoadingLedger.value = false;
     }
   }
 
-  /// Activity Log, newest first.
   DealerPagedList<DealerActivityModel> activity() => DealerPagedList(
     (page) async => DealerPagedList.parse(
       await DealerMembershipApi.get(
@@ -212,8 +197,6 @@ class DealerMembershipController extends GetxController {
     ledgerFilter.value = filter;
     loadLedger(reset: true);
   }
-
-  // ---------------------------------------------------------------- Dealer details & upgrade
 
   Future<bool> register({
     required String dealerType,
@@ -250,8 +233,6 @@ class DealerMembershipController extends GetxController {
     }
   }
 
-  /// Asks OtoBix to confirm an offline payment for [plan]. The plan starts
-  /// when OtoBix confirms it from the CRM; until then the current plan runs.
   Future<bool> requestOfflinePayment(
     DealerPlanModel plan, {
     String reference = '',
@@ -281,7 +262,6 @@ class DealerMembershipController extends GetxController {
     }
   }
 
-  /// Pays for a plan by UPI (when enabled). The amount comes from the server.
   Future<void> purchasePlan(DealerPlanModel plan) async {
     if (isPaying.value) return;
     isPaying.value = true;

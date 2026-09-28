@@ -134,8 +134,6 @@ class RazorpayPaymentService {
     }
   }
 
-  /// Opens checkout for an order the backend already created, so the amount
-  /// is decided on the server (used for Dealer Membership plans).
   void openOrder({
     required String keyId,
     required String orderId,

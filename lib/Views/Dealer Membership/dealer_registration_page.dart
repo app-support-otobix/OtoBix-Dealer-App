@@ -7,9 +7,6 @@ import 'package:otobix/Widgets/Dealer%20Membership/dealer_common_widgets.dart';
 import 'package:otobix/Widgets/app_bar_widget.dart';
 import 'package:otobix/Widgets/button_widget.dart';
 
-/// Dealer Details: dealer type, trade area and GSTIN. Optional - every dealer
-/// is already on a membership - and shown to other dealers next to the dealer
-/// code (e.g. "Used Car Dealer · Kolkata").
 class DealerRegistrationPage extends StatefulWidget {
   const DealerRegistrationPage({super.key});
 

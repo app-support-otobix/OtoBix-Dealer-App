@@ -4,9 +4,6 @@ import 'package:otobix/Controllers/Dealer%20Membership/dealer_membership_control
 import 'package:otobix/Utils/app_colors.dart';
 import 'package:otobix/Views/Dealer%20Membership/dealer_membership_navigator.dart';
 
-/// "You have N days left" with Upgrade Membership - from day 23 of the cycle
-/// and through the grace period - or, once an offline payment is requested,
-/// that it is waiting for OtoBix. Hidden the rest of the time.
 class DealerRenewalBanner extends StatelessWidget {
   final EdgeInsetsGeometry margin;
 

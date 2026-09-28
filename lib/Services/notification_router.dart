@@ -36,8 +36,6 @@ class NotificationRouter {
       data['parametersForScreen'] ?? {},
     );
 
-    // Dealer Membership alerts open the listing, offer, connection or deal
-    // room they are about.
     if (navigateToScreen == NotificationRoutes.dealerMembership) {
       Future.microtask(
         () => DealerMembershipNavigator.openTarget(

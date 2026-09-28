@@ -1,9 +1,8 @@
 import 'package:otobix/Utils/global_functions.dart';
 
-/// One Activity Log entry. [targetType]/[targetId] open the object it is about.
 class DealerActivityModel {
   final String id;
-  final String module; // BUY | SELL | SERVICES | LEADS | MEMBERSHIP
+  final String module;
   final String service;
   final String category;
   final String title;
