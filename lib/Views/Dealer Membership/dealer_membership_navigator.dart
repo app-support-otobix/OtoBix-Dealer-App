@@ -3,7 +3,9 @@ import 'package:get/get.dart';
 import 'package:otobix/Controllers/bottom_navigation_controller.dart';
 import 'package:otobix/Utils/app_colors.dart';
 import 'package:otobix/Views/Dealer%20Membership/activity_log_page.dart';
+import 'package:otobix/Views/Dealer%20Membership/dealer_registration_page.dart';
 import 'package:otobix/Views/Dealer%20Membership/membership_dashboard_page.dart';
+import 'package:otobix/Views/Dealer%20Membership/upgrade_membership_page.dart';
 import 'package:otobix/Widgets/app_bar_widget.dart';
 
 /// A feature reachable from the Home search box.
@@ -42,11 +44,24 @@ class DealerMembershipNavigator {
       'history',
       'notifications',
     ], (_) => openActivityLog()),
+    DealerFeature('Upgrade Membership', Icons.upgrade, [
+      'membership',
+      'upgrade',
+      'renew',
+      'plan',
+      'pro',
+      'payment',
+    ], (_) => openUpgrade()),
   ];
 
   static void openMembership() => Get.to(() => const MembershipDashboardPage());
 
   static void openActivityLog() => Get.to(() => const ActivityLogPage());
+
+  static void openUpgrade() => Get.to(() => const UpgradeMembershipPage());
+
+  static void openDealerDetails() =>
+      Get.to(() => const DealerRegistrationPage());
 
   /// The existing auction screens (Upcoming / Live / OtoBuy / PD).
   static void openAuctions() => Get.to(

@@ -213,7 +213,7 @@ class DealerMembershipController extends GetxController {
     loadLedger(reset: true);
   }
 
-  // ---------------------------------------------------------------- Onboarding & purchase
+  // ---------------------------------------------------------------- Dealer details & upgrade
 
   Future<bool> register({
     required String dealerType,
@@ -236,6 +236,11 @@ class DealerMembershipController extends GetxController {
       membership.value = DealerMembershipModel.fromJson(
         Map<String, dynamic>.from(data),
       );
+      _toast(
+        'Details saved',
+        'Your dealer details are updated.',
+        ToastType.success,
+      );
       return true;
     } on DealerApiException catch (e) {
       _toast('Could not save your details', e.message, ToastType.error);
@@ -245,29 +250,38 @@ class DealerMembershipController extends GetxController {
     }
   }
 
-  Future<bool> applyPromo(String code) async {
+  /// Asks OtoBix to confirm an offline payment for [plan]. The plan starts
+  /// when OtoBix confirms it from the CRM; until then the current plan runs.
+  Future<bool> requestOfflinePayment(
+    DealerPlanModel plan, {
+    String reference = '',
+  }) async {
     if (isSubmitting.value) return false;
     isSubmitting.value = true;
     try {
       final data = await DealerMembershipApi.post(
-        AppUrls.dealerMembershipApplyPromo,
-        {'code': code.trim()},
+        AppUrls.dealerMembershipOfflinePayment,
+        {'planCode': plan.code, 'reference': reference.trim()},
       );
       membership.value = DealerMembershipModel.fromJson(
         Map<String, dynamic>.from(data),
       );
-      _toast('Promo applied', 'Your membership is active.', ToastType.success);
+      _toast(
+        'Upgrade requested',
+        'OtoBix will confirm your payment and start ${plan.name}.',
+        ToastType.success,
+      );
       loadHome(silent: true);
       return true;
     } on DealerApiException catch (e) {
-      _toast('Promo not applied', e.message, ToastType.error);
+      _toast('Upgrade not requested', e.message, ToastType.error);
       return false;
     } finally {
       isSubmitting.value = false;
     }
   }
 
-  /// Buys (or renews) a plan. The order amount comes from the server.
+  /// Pays for a plan by UPI (when enabled). The amount comes from the server.
   Future<void> purchasePlan(DealerPlanModel plan) async {
     if (isPaying.value) return;
     isPaying.value = true;

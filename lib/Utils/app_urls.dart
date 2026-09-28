@@ -221,8 +221,8 @@ class AppUrls {
   }) =>
       "${_dealerMembership}membership/ledger?type=$type&page=$page&limit=$limit";
 
-  static String get dealerMembershipApplyPromo =>
-      "${_dealerMembership}membership/apply-promo";
+  static String get dealerMembershipOfflinePayment =>
+      "${_dealerMembership}membership/offline-payment";
 
   static String get dealerMembershipCreateOrder =>
       "${_dealerMembership}membership/create-order";

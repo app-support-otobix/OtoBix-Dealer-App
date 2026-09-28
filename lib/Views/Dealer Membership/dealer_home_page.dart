@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:otobix/Controllers/Dealer%20Membership/dealer_membership_controller.dart';
 import 'package:otobix/Controllers/home_controller.dart';
 import 'package:otobix/Models/Dealer%20Membership/dealer_activity_model.dart';
@@ -9,8 +10,9 @@ import 'package:otobix/Utils/global_functions.dart';
 import 'package:otobix/Views/Dealer%20Membership/dealer_membership_navigator.dart';
 import 'package:otobix/Views/Dealer%20Panel/user_notifications_page.dart';
 import 'package:otobix/Widgets/Dealer%20Membership/dealer_common_widgets.dart';
+import 'package:otobix/Widgets/Dealer%20Membership/dealer_renewal_banner.dart';
 
-/// The Dealer Home: feature search, membership nudge, module grid and the
+/// The Dealer Home: feature search, membership card, module grid and the
 /// dealer's latest activity.
 class DealerHomePage extends StatefulWidget {
   const DealerHomePage({super.key});
@@ -52,8 +54,8 @@ class _DealerHomePageState extends State<DealerHomePage> {
               _buildSearchBar(),
               if (_query.isNotEmpty) _buildSearchResults(),
               const SizedBox(height: 14),
-              _buildMembershipBanner(),
-              const SizedBox(height: 6),
+              _buildMembershipCard(),
+              const SizedBox(height: 16),
               const Text(
                 'Modules',
                 style: TextStyle(
@@ -236,70 +238,98 @@ class _DealerHomePageState extends State<DealerHomePage> {
     );
   }
 
-  /// Onboarding / renewal nudge - only shown while the membership is not active.
-  Widget _buildMembershipBanner() {
+  /// The dealer's membership at a glance: plan, dealer name and ID, the
+  /// cycle's month and city - then the renewal warning when it is due.
+  Widget _buildMembershipCard() {
     return Obx(() {
       final m = controller.membership.value;
-      if (m == null || m.isActive) return const SizedBox.shrink();
-      final promo = controller.config.value?.promo;
-      final text =
-          !m.isOnboarded
-              ? 'Activate Dealer Membership'
-              : m.status == 'NONE'
-              ? 'Choose a membership plan'
-              : 'Your membership has ended · renew';
-      final subtitle =
-          m.promoAvailable && promo != null
-              ? 'New members get ${promo.pointsPerCycle} OtoBix Points with a promo code'
-              : 'OtoBix Points every cycle with a Pro or Pro+ plan';
-      return Padding(
-        padding: const EdgeInsets.only(bottom: 10),
-        child: InkWell(
-          onTap: DealerMembershipNavigator.openMembership,
-          borderRadius: BorderRadius.circular(14),
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: Colors.teal.withValues(alpha: 0.08),
-              border: Border.all(color: Colors.teal.withValues(alpha: 0.5)),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.workspace_premium_outlined,
-                  color: Colors.teal,
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+      if (m == null) return const SizedBox.shrink();
+      final month =
+          m.cycleStartAt == null
+              ? ''
+              : '${DateFormat('MMMM').format(m.cycleStartAt!.toLocal())} cycle';
+      return Column(
+        children: [
+          InkWell(
+            onTap: DealerMembershipNavigator.openMembership,
+            borderRadius: BorderRadius.circular(14),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.teal.withValues(alpha: 0.08),
+                border: Border.all(color: Colors.teal.withValues(alpha: 0.5)),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.workspace_premium_outlined,
+                    color: Colors.teal,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          (m.plan?.name ?? 'Dealer Membership').toUpperCase(),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                            color: Colors.teal,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          [
+                            if (controller.dealerName.value.isNotEmpty)
+                              controller.dealerName.value,
+                            m.dealerCode,
+                          ].join(' · '),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.black,
+                          ),
+                        ),
+                        Text(
+                          [
+                            if (month.isNotEmpty) month,
+                            if (m.city.isNotEmpty) m.city,
+                          ].join(' · '),
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: AppColors.grey,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
-                        text,
+                        GlobalFunctions.formatNumber(m.availablePoints),
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
-                          fontSize: 13,
-                          color: Colors.teal,
+                          fontSize: 16,
+                          color: AppColors.green,
                         ),
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        subtitle,
-                        style: const TextStyle(
-                          fontSize: 11,
-                          color: AppColors.black,
-                        ),
+                      const Text(
+                        'points',
+                        style: TextStyle(fontSize: 10, color: AppColors.grey),
                       ),
                     ],
                   ),
-                ),
-                const Icon(Icons.chevron_right, color: Colors.teal),
-              ],
+                ],
+              ),
             ),
           ),
-        ),
+          const SizedBox(height: 10),
+          const DealerRenewalBanner(margin: EdgeInsets.zero),
+        ],
       );
     });
   }

@@ -3,15 +3,13 @@ import 'package:get/get.dart';
 import 'package:otobix/Controllers/Dealer%20Membership/dealer_membership_controller.dart';
 import 'package:otobix/Utils/app_colors.dart';
 import 'package:otobix/Utils/app_constants.dart';
-import 'package:otobix/Views/Dealer%20Membership/membership_dashboard_page.dart';
 import 'package:otobix/Widgets/Dealer%20Membership/dealer_common_widgets.dart';
-import 'package:otobix/Widgets/Dealer%20Membership/dealer_plan_picker.dart';
 import 'package:otobix/Widgets/app_bar_widget.dart';
 import 'package:otobix/Widgets/button_widget.dart';
 
-/// Dealer Membership Registration. The dealer is already signed in (mobile and
-/// OTP done at login), so this captures business details, dealer type and
-/// trade area, then the plan.
+/// Dealer Details: dealer type, trade area and GSTIN. Optional - every dealer
+/// is already on a membership - and shown to other dealers next to the dealer
+/// code (e.g. "Used Car Dealer · Kolkata").
 class DealerRegistrationPage extends StatefulWidget {
   const DealerRegistrationPage({super.key});
 
@@ -26,41 +24,30 @@ class _DealerRegistrationPageState extends State<DealerRegistrationPage> {
   String? _state;
   String? _dealerType;
   double _radiusKm = 100;
-  int _step = 0;
   String? _error;
-  Worker? _activeWatcher;
-
-  static const _steps = ['Details', 'Plan'];
 
   @override
   void initState() {
     super.initState();
     controller.ensureConfig();
     final m = controller.membership.value;
-    if (m != null && m.isOnboarded) {
-      _dealerType = m.dealerType;
+    if (m != null) {
+      _dealerType = m.dealerType.isEmpty ? null : m.dealerType;
       _city.text = m.city;
       _gstin.text = m.gstin;
       _state = AppConstants.indianStates.contains(m.state) ? m.state : null;
       _radiusKm = m.tradeRadiusKm.clamp(10, 500).toDouble();
     }
-    // Once a promo or payment activates the membership, go to the dashboard.
-    _activeWatcher = ever(controller.membership, (m) {
-      if (m?.isActive == true && _step == 1) {
-        Get.off(() => const MembershipDashboardPage());
-      }
-    });
   }
 
   @override
   void dispose() {
-    _activeWatcher?.dispose();
     _gstin.dispose();
     _city.dispose();
     super.dispose();
   }
 
-  Future<void> _continue() async {
+  Future<void> _save() async {
     final gstin = _gstin.text.trim().toUpperCase();
     final error =
         _dealerType == null
@@ -84,110 +71,42 @@ class _DealerRegistrationPageState extends State<DealerRegistrationPage> {
       gstin: gstin,
       tradeRadiusKm: _radiusKm.round(),
     );
-    if (!saved || !mounted) return;
-    if (controller.membership.value?.isActive == true) {
-      Get.off(() => const MembershipDashboardPage());
-    } else {
-      setState(() => _step = 1);
-    }
+    if (saved && mounted) Get.back();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.white,
-      appBar: AppBarWidget(title: 'Dealer Membership Registration'),
+      appBar: AppBarWidget(title: 'Dealer Details'),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildStepper(),
-              const SizedBox(height: 16),
               Expanded(
-                child: SingleChildScrollView(
-                  child:
-                      _step == 0
-                          ? _buildDetailsStep()
-                          : const DealerPlanPicker(),
-                ),
+                child: SingleChildScrollView(child: _buildDetailsStep()),
               ),
-              if (_step == 0) ...[
-                if (_error != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8),
-                    child: Text(
-                      _error!,
-                      style: const TextStyle(
-                        color: AppColors.red,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  child: ButtonWidget(
-                    text: 'Continue to Membership',
-                    isLoading: controller.isSubmitting,
-                    width: double.infinity,
-                    onTap: _continue,
+              if (_error != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text(
+                    _error!,
+                    style: const TextStyle(color: AppColors.red, fontSize: 12),
                   ),
                 ),
-              ],
+              const SizedBox(height: 12),
+              ButtonWidget(
+                text: 'Save Details',
+                isLoading: controller.isSubmitting,
+                width: double.infinity,
+                onTap: _save,
+              ),
             ],
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildStepper() {
-    return Row(
-      children: List.generate(_steps.length, (i) {
-        final active = i <= _step;
-        return Expanded(
-          child: Row(
-            children: [
-              CircleAvatar(
-                radius: 12,
-                backgroundColor:
-                    active
-                        ? AppColors.green
-                        : AppColors.grey.withValues(alpha: 0.3),
-                child: Text(
-                  '${i + 1}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 6),
-              Text(
-                _steps[i],
-                style: TextStyle(
-                  fontSize: 12,
-                  color: active ? AppColors.black : AppColors.grey,
-                ),
-              ),
-              if (i != _steps.length - 1)
-                Expanded(
-                  child: Container(
-                    height: 2,
-                    margin: const EdgeInsets.symmetric(horizontal: 8),
-                    color:
-                        i < _step
-                            ? AppColors.green
-                            : AppColors.grey.withValues(alpha: 0.3),
-                  ),
-                ),
-            ],
-          ),
-        );
-      }),
     );
   }
 
