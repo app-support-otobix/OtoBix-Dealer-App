@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get_rx/src/rx_types/rx_types.dart';
+import 'package:otobix/Models/car_model.dart';
 import 'package:otobix/Models/cars_list_model.dart';
 
 class DealerHomeSearchSortFilterHelper {
@@ -12,7 +13,7 @@ class DealerHomeSearchSortFilterHelper {
     if (query.isEmpty) return carsList;
     return carsList.where((c) {
       final s =
-          '${c.make} ${c.model} ${c.variant} ${c.inspectionLocation}'
+          '${c.make} ${c.model} ${c.variant} ${getFirstValidValueFromCarModel(values: [c.inspectionCity, c.city], returnType: ReturnType.string)}'
               .toLowerCase();
       return s.contains(query);
     }).toList();
@@ -63,7 +64,7 @@ class DealerHomeSearchSortFilterHelper {
 
     final _priceOf = priceOf ?? (c) => (c.priceDiscovery);
     final _yearOf = yearOf ?? (c) => (c.yearMonthOfManufacture ?? DateTime(0));
-    final _kmsOf = kmsOf ?? (c) => (c.odometerReadingInKms);
+    // final _kmsOf = kmsOf ?? (c) => (c.odometerReadingInKms);
 
     switch (selectedSortLabel.value) {
       case 'Price Low to High':
@@ -355,7 +356,13 @@ class DealerHomeSearchSortFilterHelper {
     final _variantOf = variantOf ?? (c) => c.variant;
     // NOTE: use an explicit transmission field if you have it;
     // fall back to commentsOnTransmission to preserve current behavior.
-    final _transOf = transmissionOf ?? (c) => c.commentsOnTransmission;
+    // final _transOf = transmissionOf ?? (c) => c.commentsOnTransmission;
+    final _transOf =
+        transmissionOf ??
+        (c) => getFirstValidValueFromCarModel(
+          values: [c.transmissionTypeDropdownList],
+          returnType: ReturnType.string,
+        );
     final _kmsOf = kmsOf ?? (c) => c.odometerReadingInKms;
     final _ownOf = ownershipOf ?? (c) => c.ownerSerialNumber;
 

@@ -279,10 +279,10 @@ class UpcomingController extends GetxController {
       getCarRemainingTimeForNextScreen(id).value = '00h : 00m : 00s';
     }
 
-    String fmt(Duration d) {
-      String two(int n) => n.toString().padLeft(2, '0');
-      return '${two(d.inHours)}h : ${two(d.inMinutes % 60)}m : ${two(d.inSeconds % 60)}s';
-    }
+    // String fmt(Duration d) {
+    //   String two(int n) => n.toString().padLeft(2, '0');
+    //   return '${two(d.inHours)}h : ${two(d.inMinutes % 60)}m : ${two(d.inSeconds % 60)}s';
+    // }
 
     void startFor(CarsListModel car) {
       // ensure an Rx exists BEFORE any widget reads it
@@ -314,39 +314,39 @@ class UpcomingController extends GetxController {
       );
     }
 
-    void startFor1(CarsListModel car) {
-      _timers[car.id]?.cancel();
+    // void startFor1(CarsListModel car) {
+    //   _timers[car.id]?.cancel();
 
-      final until = car.upcomingUntil; // your model’s target DateTime
-      if (until == null) {
-        getCarRemainingTimeForNextScreen(car.id).value = 'N/A';
-        return;
-      }
+    //   final until = car.upcomingUntil; // your model’s target DateTime
+    //   if (until == null) {
+    //     getCarRemainingTimeForNextScreen(car.id).value = 'N/A';
+    //     return;
+    //   }
 
-      void tick() {
-        final diff = until.difference(DateTime.now());
-        if (diff.isNegative || diff.inSeconds <= 0) {
-          getCarRemainingTimeForNextScreen(car.id).value = '00h : 00m : 00s';
-          _timers[car.id]?.cancel();
-          _timers.remove(car.id);
+    //   void tick() {
+    //     final diff = until.difference(DateTime.now());
+    //     if (diff.isNegative || diff.inSeconds <= 0) {
+    //       getCarRemainingTimeForNextScreen(car.id).value = '00h : 00m : 00s';
+    //       _timers[car.id]?.cancel();
+    //       _timers.remove(car.id);
 
-          // Remove the car from the list when timer becomes less than zero
-          remainingTimes.remove(car.id);
-          filteredUpcomingCarsList.removeWhere((c) => c.id == car.id);
-          upcomingCarsCount.value = filteredUpcomingCarsList.length;
+    //       // Remove the car from the list when timer becomes less than zero
+    //       remainingTimes.remove(car.id);
+    //       filteredUpcomingCarsList.removeWhere((c) => c.id == car.id);
+    //       upcomingCarsCount.value = filteredUpcomingCarsList.length;
 
-          return;
-        }
-        getCarRemainingTimeForNextScreen(car.id).value = fmt(diff);
-      }
+    //       return;
+    //     }
+    //     getCarRemainingTimeForNextScreen(car.id).value = fmt(diff);
+    //   }
 
-      // Prime immediately, then every second
-      tick();
-      _timers[car.id] = Timer.periodic(
-        const Duration(seconds: 1),
-        (_) => tick(),
-      );
-    }
+    //   // Prime immediately, then every second
+    //   tick();
+    //   _timers[car.id] = Timer.periodic(
+    //     const Duration(seconds: 1),
+    //     (_) => tick(),
+    //   );
+    // }
 
     // 2) ensure each car in the list has an active timer
     for (final car in cars) {

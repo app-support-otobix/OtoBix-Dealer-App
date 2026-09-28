@@ -451,32 +451,32 @@ class RegistrationFormController extends GetxController {
     update(); // refresh GetBuilder
   }
 
-  // Fetch entity documents
-  Future<List<String>> _fetchEntityDocuments(String? entityType) async {
-    final fallback = <String>[
-      // optional: keep empty list if you don't want a fallback
-      'No documents found',
-    ];
+  // // Fetch entity documents
+  // Future<List<String>> _fetchEntityDocuments(String? entityType) async {
+  //   final fallback = <String>[
+  //     // optional: keep empty list if you don't want a fallback
+  //     'No documents found',
+  //   ];
 
-    if (entityType == null || entityType.trim().isEmpty) return fallback;
+  //   if (entityType == null || entityType.trim().isEmpty) return fallback;
 
-    try {
-      final response = await ApiService.get(
-        endpoint: AppUrls.getEntityDocumentsByName(
-          entityName: entityType.trim(),
-        ),
-      );
+  //   try {
+  //     final response = await ApiService.get(
+  //       endpoint: AppUrls.getEntityDocumentsByName(
+  //         entityName: entityType.trim(),
+  //       ),
+  //     );
 
-      if (response.statusCode == 200) {
-        final json = jsonDecode(response.body) as Map<String, dynamic>;
-        final data = (json['data'] ?? {}) as Map<String, dynamic>;
-        final docs = (data['documents'] ?? []) as List;
-        return docs.map((e) => '$e').toList();
-      }
-    } catch (error) {
-      // ignore and use fallback
-      debugPrint("Error: $error");
-    }
-    return fallback;
-  }
+  //     if (response.statusCode == 200) {
+  //       final json = jsonDecode(response.body) as Map<String, dynamic>;
+  //       final data = (json['data'] ?? {}) as Map<String, dynamic>;
+  //       final docs = (data['documents'] ?? []) as List;
+  //       return docs.map((e) => '$e').toList();
+  //     }
+  //   } catch (error) {
+  //     // ignore and use fallback
+  //     debugPrint("Error: $error");
+  //   }
+  //   return fallback;
+  // }
 }

@@ -59,9 +59,6 @@ class AppUrls {
   static String get getAuctionStatusAndRemainingTime =>
       "${baseUrl}car/get-car-auction-status-and-remaining-time";
 
-  static String updateUserThroughAdmin(String userId) =>
-      "${baseUrl}user/update-user-through-admin/?userId=$userId";
-
   static String get updateCarBid => "${baseUrl}car/update-bid";
 
   static String get updateCarAuctionTime => "${baseUrl}car/update-auction-time";
@@ -181,7 +178,7 @@ class AppUrls {
 
   // GET app update info
   static String getAppUpdateInfo({required String appKey}) =>
-      "${baseUrl}admin/get-app-update-info?appKey=$appKey";
+      "${baseUrl}auth/get-app-update-info?appKey=$appKey";
 
   static String getLiveSelfInspectedCarsList({
     required int page,

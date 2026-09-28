@@ -13,14 +13,14 @@ class MyBidsCarsListModel {
   final int odometerReadingInKms;
   final int odometerReadingBeforeTestDrive;
   final String fuelType;
-  final String inspectionLocation;
+  // final String inspectionLocation;
   final String inspectionCity;
   final String city;
   final bool isInspected;
   final String roadTaxValidity;
   final DateTime? taxValidTill;
   final int ownerSerialNumber;
-  final String commentsOnTransmission;
+  // final String commentsOnTransmission;
   final List<String> transmissionTypeDropdownList;
   final String registrationNumber;
   final String registeredRto;
@@ -42,14 +42,14 @@ class MyBidsCarsListModel {
     required this.odometerReadingInKms,
     required this.odometerReadingBeforeTestDrive,
     required this.fuelType,
-    required this.inspectionLocation,
+    // required this.inspectionLocation,
     required this.inspectionCity,
     required this.city,
     required this.isInspected,
     required this.roadTaxValidity,
     required this.taxValidTill,
     required this.ownerSerialNumber,
-    required this.commentsOnTransmission,
+    // required this.commentsOnTransmission,
     required this.transmissionTypeDropdownList,
     required this.registrationNumber,
     required this.registeredRto,
@@ -91,7 +91,7 @@ class MyBidsCarsListModel {
                 data['odometerReadingBeforeTestDrive']?.toString() ?? '0',
               ),
       fuelType: data['fuelType'] ?? '',
-      inspectionLocation: data['inspectionLocation'],
+      // inspectionLocation: data['inspectionLocation'],
       inspectionCity: data['inspectionCity'] ?? '',
       city: data['city'] ?? '',
       isInspected: data['isInspected'] ?? false,
@@ -101,7 +101,7 @@ class MyBidsCarsListModel {
           data['ownerSerialNumber'] is int
               ? data['ownerSerialNumber']
               : int.tryParse(data['ownerSerialNumber']?.toString() ?? ''),
-      commentsOnTransmission: data['commentsOnTransmission'] ?? '',
+      // commentsOnTransmission: data['commentsOnTransmission'] ?? '',
       transmissionTypeDropdownList:
           (data['transmissionTypeDropdownList'] as List?)
               ?.where((e) => e != null)
@@ -142,14 +142,14 @@ class MyBidsCarsListModel {
       'odometerReadingInKms': odometerReadingInKms,
       'odometerReadingBeforeTestDrive': odometerReadingBeforeTestDrive,
       'fuelType': fuelType,
-      'inspectionLocation': inspectionLocation,
+      // 'inspectionLocation': inspectionLocation,
       'inspectionCity': inspectionCity,
       'city': city,
       'isInspected': isInspected,
       'roadTaxValidity': roadTaxValidity,
       'taxValidTill': taxValidTill,
       'ownerSerialNumber': ownerSerialNumber,
-      'commentsOnTransmission': commentsOnTransmission,
+      // 'commentsOnTransmission': commentsOnTransmission,
       'transmissionTypeDropdownList': transmissionTypeDropdownList,
       'registrationNumber': registrationNumber,
       'registeredRto': registeredRto,

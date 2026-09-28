@@ -182,7 +182,7 @@ class SelfInspectedCarDetailsPage extends StatelessWidget {
   }
 
   Widget _buildHighestOfferAndExpectedPriceCard(SelfInspectedCarModel car) {
-    final carDetailsController = Get.find<SelfInspectedCarDetailsController>();
+    // final carDetailsController = Get.find<SelfInspectedCarDetailsController>();
     return Card(
       elevation: 8,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -346,129 +346,129 @@ class SelfInspectedCarDetailsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildHighestOfferAndExpectedPriceCard1(SelfInspectedCarModel car) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Container(
-        padding: const EdgeInsets.all(15),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              AppColors.grey.withValues(alpha: 0.6),
-              AppColors.grey.withValues(alpha: 0.3),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(15),
-        ),
-        child: Obx(() {
-          final selfInspectedCarsListController =
-              Get.find<SelfInspectedCarsListController>();
+  // Widget _buildHighestOfferAndExpectedPriceCard1(SelfInspectedCarModel car) {
+  //   return Card(
+  //     elevation: 4,
+  //     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+  //     child: Container(
+  //       padding: const EdgeInsets.all(15),
+  //       decoration: BoxDecoration(
+  //         gradient: LinearGradient(
+  //           colors: [
+  //             AppColors.grey.withValues(alpha: 0.6),
+  //             AppColors.grey.withValues(alpha: 0.3),
+  //           ],
+  //           begin: Alignment.topLeft,
+  //           end: Alignment.bottomRight,
+  //         ),
+  //         borderRadius: BorderRadius.circular(15),
+  //       ),
+  //       child: Obx(() {
+  //         final selfInspectedCarsListController =
+  //             Get.find<SelfInspectedCarsListController>();
 
-          final expectedPriceAfterMarginAdjustment =
-              SelfInspectedCarMarginHelpers.getMarginAdjustedAmount(
-                originalPrice: car.expectedPrice.value,
-                priceDiscovery: car.priceDiscovery,
-                fixedMargin: car.fixedMargin.value,
-                variableMargin: car.variableMargin.value,
-                shouldIncreaseMargin: true,
-              );
+  //         final expectedPriceAfterMarginAdjustment =
+  //             SelfInspectedCarMarginHelpers.getMarginAdjustedAmount(
+  //               originalPrice: car.expectedPrice.value,
+  //               priceDiscovery: car.priceDiscovery,
+  //               fixedMargin: car.fixedMargin.value,
+  //               variableMargin: car.variableMargin.value,
+  //               shouldIncreaseMargin: true,
+  //             );
 
-          // Resolve color:
-          RxBool hasUserMadeOfferOnCar = selfInspectedCarsListController
-              .hasUserMadeOfferOnCar(car.id ?? '');
-          final highestOfferColor = BidColorChangeHelper.getHighestBidColor(
-            currentUserId: selfInspectedCarsListController.currentUserId,
-            highestBidderUserId: car.highestOfferBy.value,
-            hasUserBid: hasUserMadeOfferOnCar.value,
-            neutralColor: AppColors.black,
-            winningColor: AppColors.green,
-            losingColor: AppColors.red,
-          );
+  //         // Resolve color:
+  //         RxBool hasUserMadeOfferOnCar = selfInspectedCarsListController
+  //             .hasUserMadeOfferOnCar(car.id ?? '');
+  //         final highestOfferColor = BidColorChangeHelper.getHighestBidColor(
+  //           currentUserId: selfInspectedCarsListController.currentUserId,
+  //           highestBidderUserId: car.highestOfferBy.value,
+  //           hasUserBid: hasUserMadeOfferOnCar.value,
+  //           neutralColor: AppColors.black,
+  //           winningColor: AppColors.green,
+  //           losingColor: AppColors.red,
+  //         );
 
-          final Color expectedPriceColor =
-              car.highestOffer.value >= expectedPriceAfterMarginAdjustment
-                  ? AppColors.green
-                  : AppColors.red;
+  //         final Color expectedPriceColor =
+  //             car.highestOffer.value >= expectedPriceAfterMarginAdjustment
+  //                 ? AppColors.green
+  //                 : AppColors.red;
 
-          return Column(
-            children: [
-              Row(
-                children: [
-                  const Icon(
-                    Icons.trending_up,
-                    color: AppColors.black,
-                    size: 20,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Highest Offer: ',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.black,
-                          ),
-                        ),
-                        Text(
-                          '${NumberFormat.decimalPattern('en_IN').format(car.highestOffer.value)}/-',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: highestOfferColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
+  //         return Column(
+  //           children: [
+  //             Row(
+  //               children: [
+  //                 const Icon(
+  //                   Icons.trending_up,
+  //                   color: AppColors.black,
+  //                   size: 20,
+  //                 ),
+  //                 const SizedBox(width: 8),
+  //                 Expanded(
+  //                   child: Row(
+  //                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //                     children: [
+  //                       Text(
+  //                         'Highest Offer: ',
+  //                         style: const TextStyle(
+  //                           fontSize: 14,
+  //                           fontWeight: FontWeight.bold,
+  //                           color: AppColors.black,
+  //                         ),
+  //                       ),
+  //                       Text(
+  //                         '${NumberFormat.decimalPattern('en_IN').format(car.highestOffer.value)}/-',
+  //                         style: TextStyle(
+  //                           fontSize: 14,
+  //                           fontWeight: FontWeight.bold,
+  //                           color: highestOfferColor,
+  //                         ),
+  //                       ),
+  //                     ],
+  //                   ),
+  //                 ),
+  //               ],
+  //             ),
+  //             const SizedBox(height: 8),
 
-              Row(
-                children: [
-                  const Icon(
-                    Icons.attach_money,
-                    color: AppColors.black,
-                    size: 20,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Expected Price: ',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.black,
-                          ),
-                        ),
-                        Text(
-                          '${NumberFormat.decimalPattern('en_IN').format(expectedPriceAfterMarginAdjustment)}/-',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: expectedPriceColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          );
-        }),
-      ),
-    );
-  }
+  //             Row(
+  //               children: [
+  //                 const Icon(
+  //                   Icons.attach_money,
+  //                   color: AppColors.black,
+  //                   size: 20,
+  //                 ),
+  //                 const SizedBox(width: 8),
+  //                 Expanded(
+  //                   child: Row(
+  //                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //                     children: [
+  //                       Text(
+  //                         'Expected Price: ',
+  //                         style: const TextStyle(
+  //                           fontSize: 14,
+  //                           fontWeight: FontWeight.bold,
+  //                           color: AppColors.black,
+  //                         ),
+  //                       ),
+  //                       Text(
+  //                         '${NumberFormat.decimalPattern('en_IN').format(expectedPriceAfterMarginAdjustment)}/-',
+  //                         style: TextStyle(
+  //                           fontSize: 14,
+  //                           fontWeight: FontWeight.bold,
+  //                           color: expectedPriceColor,
+  //                         ),
+  //                       ),
+  //                     ],
+  //                   ),
+  //                 ),
+  //               ],
+  //             ),
+  //           ],
+  //         );
+  //       }),
+  //     ),
+  //   );
+  // }
 
   Widget _buildStatusCards(SelfInspectedCarModel car) {
     final controller = Get.find<SelfInspectedCarDetailsController>();

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:otobix/Utils/app_colors.dart';
-import 'package:otobix/Utils/app_images.dart';
 
 class CustomerHomepage extends StatelessWidget {
   const CustomerHomepage({super.key});

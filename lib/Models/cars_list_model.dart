@@ -20,7 +20,7 @@ class CarsListModel {
   final int odometerReadingBeforeTestDrive;
   final int ownerSerialNumber;
   final String fuelType;
-  final String commentsOnTransmission;
+  // final String commentsOnTransmission;
   final List<String> transmissionTypeDropdownList;
   final String roadTaxValidity;
   final DateTime? taxValidTill;
@@ -28,7 +28,7 @@ class CarsListModel {
   final String registeredRto;
   final String registrationState;
   final DateTime? registrationDate;
-  final String inspectionLocation;
+  // final String inspectionLocation;
   final String inspectionCity;
   final String city;
   final bool isInspected;
@@ -64,7 +64,7 @@ class CarsListModel {
     required this.odometerReadingBeforeTestDrive,
     required this.ownerSerialNumber,
     required this.fuelType,
-    required this.commentsOnTransmission,
+    // required this.commentsOnTransmission,
     required this.transmissionTypeDropdownList,
     required this.roadTaxValidity,
     required this.taxValidTill,
@@ -72,7 +72,7 @@ class CarsListModel {
     required this.registeredRto,
     required this.registrationState,
     required this.registrationDate,
-    required this.inspectionLocation,
+    // required this.inspectionLocation,
     required this.inspectionCity,
     required this.city,
     required this.isInspected,
@@ -130,7 +130,7 @@ class CarsListModel {
               ? data['ownerSerialNumber']
               : int.tryParse(data['ownerSerialNumber']?.toString() ?? ''),
       fuelType: data['fuelType'] ?? '',
-      commentsOnTransmission: data['commentsOnTransmission'] ?? '',
+      // commentsOnTransmission: data['commentsOnTransmission'] ?? '',
       transmissionTypeDropdownList:
           (data['transmissionTypeDropdownList'] as List?)
               ?.where((e) => e != null)
@@ -143,7 +143,7 @@ class CarsListModel {
       registeredRto: data['registeredRto'],
       registrationState: data["registrationState"] ?? 'N/A',
       registrationDate: parseMongoDbDate(data["registrationDate"]),
-      inspectionLocation: data['inspectionLocation'],
+      // inspectionLocation: data['inspectionLocation'],
       inspectionCity: data['inspectionCity'] ?? '',
       city: data['city'] ?? '',
       isInspected: data['isInspected'] ?? false,
@@ -195,7 +195,7 @@ class CarsListModel {
       'odometerReadingBeforeTestDrive': odometerReadingBeforeTestDrive,
       'ownerSerialNumber': ownerSerialNumber,
       'fuelType': fuelType,
-      'commentsOnTransmission': commentsOnTransmission,
+      // 'commentsOnTransmission': commentsOnTransmission,
       'transmissionTypeDropdownList': transmissionTypeDropdownList,
       'roadTaxValidity': roadTaxValidity,
       'taxValidTill': taxValidTill,
@@ -203,7 +203,7 @@ class CarsListModel {
       'registeredRto': registeredRto,
       'registrationState': registrationState,
       'registrationDate': registrationDate,
-      'inspectionLocation': inspectionLocation,
+      // 'inspectionLocation': inspectionLocation,
       'inspectionCity': inspectionCity,
       'city': city,
       'isInspected': isInspected,
