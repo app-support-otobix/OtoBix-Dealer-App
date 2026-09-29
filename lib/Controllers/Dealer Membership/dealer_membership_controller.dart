@@ -1,13 +1,22 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:otobix/Controllers/Dealer%20Membership/dealer_connections_controller.dart';
+import 'package:otobix/Controllers/Dealer%20Membership/dealer_exchange_controller.dart';
+import 'package:otobix/Controllers/Dealer%20Membership/dealer_inventory_controller.dart';
+import 'package:otobix/Controllers/Dealer%20Membership/dealer_leads_controller.dart';
+import 'package:otobix/Controllers/Dealer%20Membership/dealer_negotiations_controller.dart';
 import 'package:otobix/Controllers/Dealer%20Membership/dealer_paged_list.dart';
+import 'package:otobix/Controllers/Dealer%20Membership/dealer_requirements_controller.dart';
 import 'package:otobix/Models/Dealer%20Membership/dealer_activity_model.dart';
 import 'package:otobix/Models/Dealer%20Membership/dealer_membership_model.dart';
 import 'package:otobix/Network/dealer_membership_api.dart';
 import 'package:otobix/Network/socket_service.dart';
 import 'package:otobix/Services/razorpay_payment_service.dart';
+import 'package:otobix/Utils/app_colors.dart';
 import 'package:otobix/Utils/app_constants.dart';
 import 'package:otobix/Utils/app_urls.dart';
 import 'package:otobix/Utils/socket_events.dart';
+import 'package:otobix/Views/Dealer%20Membership/upgrade_membership_page.dart';
 import 'package:otobix/Widgets/toast_widget.dart';
 import 'package:otobix/helpers/shared_prefs_helper.dart';
 
@@ -21,7 +30,9 @@ class DealerMembershipController extends GetxController {
   final membership = Rxn<DealerMembershipModel>();
 
   final dealerName = ''.obs;
+  final pendingActivities = <DealerPendingActivityModel>[].obs;
   final latestActivities = <DealerActivityModel>[].obs;
+  final newLeads = 0.obs;
   final isLoadingHome = false.obs;
   final homeError = ''.obs;
 
@@ -72,8 +83,16 @@ class DealerMembershipController extends GetxController {
     if (_sessionUserId.isNotEmpty) {
       membership.value = null;
       dealerName.value = '';
+      newLeads.value = 0;
+      pendingActivities.clear();
       latestActivities.clear();
       ledger.clear();
+      Get.delete<DealerInventoryController>(force: true);
+      Get.delete<DealerExchangeController>(force: true);
+      Get.delete<DealerRequirementsController>(force: true);
+      Get.delete<DealerNegotiationsController>(force: true);
+      Get.delete<DealerConnectionsController>(force: true);
+      Get.delete<DealerLeadsController>(force: true);
     }
     _sessionUserId = userId;
     SocketService.instance.joinDealerRoom();
@@ -126,6 +145,13 @@ class DealerMembershipController extends GetxController {
       dealerName.value = (data['dealer']?['name'] ?? '').toString();
       membership.value = DealerMembershipModel.fromJson(
         Map<String, dynamic>.from(data['membership'] ?? {}),
+      );
+      newLeads.value = (data['counts']?['newLeads'] as num?)?.toInt() ?? 0;
+      pendingActivities.assignAll(
+        (data['pendingActivities'] as List? ?? []).map(
+          (e) =>
+              DealerPendingActivityModel.fromJson(Map<String, dynamic>.from(e)),
+        ),
       );
       latestActivities.assignAll(
         (data['latestActivities'] as List? ?? []).map(
@@ -183,10 +209,18 @@ class DealerMembershipController extends GetxController {
     }
   }
 
-  DealerPagedList<DealerActivityModel> activity() => DealerPagedList(
+  DealerPagedList<DealerActivityModel> activity({
+    String module = '',
+    String service = '',
+  }) => DealerPagedList(
     (page) async => DealerPagedList.parse(
       await DealerMembershipApi.get(
-        AppUrls.dealerActivity(page: page, limit: 20),
+        AppUrls.dealerActivity(
+          module: module,
+          service: service,
+          page: page,
+          limit: 20,
+        ),
       ),
       DealerActivityModel.fromJson,
     ),
@@ -319,6 +353,52 @@ class DealerMembershipController extends GetxController {
     } finally {
       isPaying.value = false;
     }
+  }
+
+  bool requireMembership() {
+    final m = membership.value;
+    if (m != null && !m.isActive) {
+      _showUpgradeDialog('Your membership has ended. Upgrade to continue.');
+      return false;
+    }
+    return true;
+  }
+
+  void handleError(
+    DealerApiException e, {
+    String title = 'Something went wrong',
+  }) {
+    switch (e.code) {
+      case 'MEMBERSHIP_INACTIVE':
+      case 'INSUFFICIENT_POINTS':
+      case 'ALLOWANCE_EXHAUSTED':
+        _showUpgradeDialog(e.message);
+        return;
+      default:
+        _toast(title, e.message, ToastType.error);
+    }
+  }
+
+  void _showUpgradeDialog(String message) {
+    Get.dialog(
+      AlertDialog(
+        title: const Text('Membership', style: TextStyle(fontSize: 16)),
+        content: Text(message, style: const TextStyle(fontSize: 13)),
+        actions: [
+          TextButton(onPressed: Get.back, child: const Text('Later')),
+          TextButton(
+            onPressed: () {
+              Get.back();
+              Get.to(() => const UpgradeMembershipPage());
+            },
+            child: const Text(
+              'Upgrade Membership',
+              style: TextStyle(color: AppColors.green),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   void _toast(String title, String subtitle, ToastType type) {

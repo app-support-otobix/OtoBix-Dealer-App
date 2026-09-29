@@ -167,10 +167,26 @@ class GlobalFunctions {
     return dateTime.toLocal();
   }
 
+  static String normalizeRegistration(String value) =>
+      value.toUpperCase().replaceAll(RegExp(r'[^A-Z0-9]'), '');
+
+  static bool isValidRegistration(String normalized) =>
+      RegExp(r'^[A-Z]{2}[0-9]{1,2}[A-Z]{0,3}[0-9]{4}$').hasMatch(normalized) ||
+      RegExp(r'^[0-9]{2}BH[0-9]{4}[A-Z]{1,2}$').hasMatch(normalized);
+
   static String formatNumber(num value) =>
       NumberFormat.decimalPattern('en_IN').format(value.round());
 
   static String formatRupees(num value) => '₹${formatNumber(value)}';
+
+  static String formatLakh(num value) {
+    if (value < 100000) return formatRupees(value);
+    final lakh = (value / 100000)
+        .toStringAsFixed(2)
+        .replaceFirst(RegExp(r'0+$'), '')
+        .replaceFirst(RegExp(r'\.$'), '');
+    return '₹${lakh}L';
+  }
 
   static String timeAgo(DateTime? date) {
     if (date == null) return '';
@@ -181,5 +197,13 @@ class GlobalFunctions {
     if (diff.inDays == 1) return 'yesterday';
     if (diff.inDays < 7) return '${diff.inDays}d ago';
     return DateFormat('d MMM').format(date.toLocal());
+  }
+
+  static String timeLeft(DateTime? date) {
+    if (date == null) return '';
+    final diff = date.toLocal().difference(DateTime.now());
+    if (diff.isNegative) return 'expired';
+    if (diff.inHours >= 1) return '${diff.inHours}h left';
+    return '${diff.inMinutes.clamp(1, 59)}m left';
   }
 }

@@ -2,9 +2,11 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:otobix/Controllers/Dealer%20Membership/dealer_membership_controller.dart';
 import 'package:otobix/Controllers/razorpay_payment_controller.dart';
 import 'package:otobix/Controllers/service_history_controller.dart';
 import 'package:otobix/Network/api_service.dart';
+import 'package:otobix/Network/dealer_membership_api.dart';
 import 'package:otobix/Services/user_activity_log_service.dart';
 import 'package:otobix/Utils/app_constants.dart';
 import 'package:otobix/Utils/app_urls.dart';
@@ -41,6 +43,17 @@ class ServiceHistoryCheckoutController extends GetxController {
   });
 
   RxBool isSubmitServiceHistoryRequestLoading = false.obs;
+
+  int get pointsPrice => total.round();
+
+  bool get canPayWithPoints {
+    final m = DealerMembershipController.to.membership.value;
+    final share = m?.usageFor('SERVICE_HISTORY');
+    return m != null &&
+        m.isActive &&
+        m.availablePoints >= pointsPrice &&
+        (share?.leftPoints ?? 0) >= pointsPrice;
+  }
 
   final List<String> leftSummaryItems = [
     'Vehicle Service History',
@@ -86,6 +99,8 @@ class ServiceHistoryCheckoutController extends GetxController {
       final userId = userData['userId'] ?? "";
       final userEmail = userData['email'] ?? "";
       final userPhone = userData['phone'] ?? "";
+
+      if (canPayWithPoints && await _payWithPoints(userId) != false) return;
 
       // ✅ 1) Start payment and WAIT for success
       final RazorpayPaymentController paymentController =
@@ -243,6 +258,67 @@ class ServiceHistoryCheckoutController extends GetxController {
       );
     } finally {
       isSubmitServiceHistoryRequestLoading.value = false;
+    }
+  }
+
+  Future<bool?> _payWithPoints(String userId) async {
+    try {
+      final data = Map<String, dynamic>.from(
+        await DealerMembershipApi.post(AppUrls.dealerServicesServiceHistory, {
+          "registrationNumber": registrationNumber,
+          "chassisNumber": chassisNumber,
+          "engineNumber": engineNumber,
+          "make": make,
+          "model": model,
+          "bodyType": bodyType,
+          "registrationDate": registrationDate?.toIso8601String(),
+          "fuelType": fuelType,
+          "ownerSerialNumber": ownerSerialNumber,
+        }),
+      );
+      final ServiceHistoryController serviceHistoryController =
+          Get.isRegistered<ServiceHistoryController>()
+              ? Get.find<ServiceHistoryController>()
+              : Get.put(ServiceHistoryController());
+      serviceHistoryController.fetchServiceHistoryReportsList();
+      DealerMembershipController.to.refreshMembership();
+
+      UserActivityLogService.logEvent(
+        userId: userId,
+        event: AppConstants.userActivityLogEvents.serviceHistoryPurchased,
+        eventDetails: 'User purchased service history with membership points',
+        metadata: {
+          "points": data['pointsCharged'],
+          "registrationNumber": registrationNumber,
+          "make": make,
+          "model": model,
+        },
+      );
+
+      Get.back();
+      ToastWidget.show(
+        context: Get.context!,
+        title: 'Submitted',
+        subtitle:
+            'Service history request submitted · ${data['pointsCharged']} points used.',
+        type: ToastType.success,
+      );
+      return true;
+    } on DealerApiException catch (e) {
+      const payOnline = {
+        'ALLOWANCE_EXHAUSTED',
+        'INSUFFICIENT_POINTS',
+        'MEMBERSHIP_INACTIVE',
+      };
+      if (payOnline.contains(e.code)) return false;
+      ToastWidget.show(
+        context: Get.context!,
+        title: e.code == 'ALREADY_REQUESTED' ? 'Already Submitted' : 'Failed',
+        subtitle: e.message,
+        type:
+            e.code == 'ALREADY_REQUESTED' ? ToastType.success : ToastType.error,
+      );
+      return null;
     }
   }
 

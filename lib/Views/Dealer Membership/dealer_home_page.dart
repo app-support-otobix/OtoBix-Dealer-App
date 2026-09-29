@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:otobix/Controllers/Dealer%20Membership/dealer_membership_controller.dart';
 import 'package:otobix/Controllers/home_controller.dart';
 import 'package:otobix/Models/Dealer%20Membership/dealer_activity_model.dart';
+import 'package:otobix/Models/Dealer%20Membership/dealer_membership_model.dart';
 import 'package:otobix/Utils/app_colors.dart';
 import 'package:otobix/Utils/app_images.dart';
 import 'package:otobix/Utils/global_functions.dart';
@@ -53,6 +54,8 @@ class _DealerHomePageState extends State<DealerHomePage> {
               if (_query.isNotEmpty) _buildSearchResults(),
               const SizedBox(height: 14),
               _buildMembershipCard(),
+              const SizedBox(height: 10),
+              _buildPromoBanner(),
               const SizedBox(height: 16),
               const Text(
                 'Modules',
@@ -330,13 +333,64 @@ class _DealerHomePageState extends State<DealerHomePage> {
     });
   }
 
+  Widget _buildPromoBanner() {
+    return InkWell(
+      onTap: DealerMembershipNavigator.openAddCustomerCar,
+      borderRadius: BorderRadius.circular(14),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.green.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'SELL YOUR CAR, GET THE BEST PRICE',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+                color: AppColors.green,
+              ),
+            ),
+            SizedBox(height: 4),
+            Text(
+              'Verified buyers · instant payment',
+              style: TextStyle(fontSize: 12, color: AppColors.black),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildModuleGrid() {
     final modules = <_ModuleItem>[
       _ModuleItem(
-        'Auctions',
+        'Sell',
+        AppImages.dealerModuleSell,
+        Colors.green,
+        DealerMembershipNavigator.openSell,
+      ),
+      _ModuleItem(
+        'Buy',
         AppImages.dealerModuleBuy,
         Colors.blue,
-        DealerMembershipNavigator.openAuctions,
+        () => DealerMembershipNavigator.openBuyDrawer(context),
+      ),
+      _ModuleItem(
+        'Services',
+        AppImages.dealerModuleServices,
+        Colors.deepPurple,
+        () => DealerMembershipNavigator.openServicesDrawer(context),
+      ),
+      _ModuleItem(
+        'Leads',
+        AppImages.dealerModuleLeads,
+        Colors.deepOrange,
+        DealerMembershipNavigator.openLeads,
       ),
       _ModuleItem(
         'Membership',
@@ -392,17 +446,99 @@ class _DealerHomePageState extends State<DealerHomePage> {
 
   Widget _buildActivity() {
     return Obx(() {
+      final pending = controller.pendingActivities;
       final latest = controller.latestActivities;
-      return DealerStateView(
-        isLoading: controller.isLoadingHome.value,
-        error: controller.homeError.value,
-        isEmpty: latest.isEmpty,
-        emptyIcon: Icons.history,
-        emptyMessage: 'No activity yet. Membership updates will show up here.',
-        onRetry: controller.loadHome,
-        child: Column(children: [for (final a in latest) _activityCard(a)]),
+      if (controller.isLoadingHome.value && pending.isEmpty && latest.isEmpty) {
+        return const Padding(
+          padding: EdgeInsets.all(20),
+          child: Center(
+            child: CircularProgressIndicator(color: AppColors.green),
+          ),
+        );
+      }
+      if (controller.homeError.value.isNotEmpty &&
+          pending.isEmpty &&
+          latest.isEmpty) {
+        return DealerStateView(
+          isLoading: false,
+          error: controller.homeError.value,
+          isEmpty: true,
+          emptyMessage: '',
+          onRetry: controller.loadHome,
+          child: const SizedBox.shrink(),
+        );
+      }
+      if (pending.isEmpty && latest.isEmpty) {
+        return const Padding(
+          padding: EdgeInsets.symmetric(vertical: 16),
+          child: Text(
+            'No activity yet. Offers, connection requests and matches will show up here.',
+            style: TextStyle(fontSize: 12, color: AppColors.grey),
+          ),
+        );
+      }
+      return Column(
+        children: [
+          for (final p in pending) _pendingCard(p),
+          for (final a in latest) _activityCard(a),
+        ],
       );
     });
+  }
+
+  Widget _pendingCard(DealerPendingActivityModel p) {
+    final isConnection = p.type == 'CONNECTION_REQUEST';
+    final timeLeft = GlobalFunctions.timeLeft(p.expiresAt);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: InkWell(
+        onTap:
+            () =>
+                DealerMembershipNavigator.openTarget(p.targetType, p.targetId),
+        borderRadius: BorderRadius.circular(12),
+        child: DealerSectionCard(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          child: Row(
+            children: [
+              Icon(
+                isConnection ? Icons.link : Icons.local_offer_outlined,
+                color: AppColors.blue,
+                size: 20,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      p.title,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                    Text(
+                      [
+                        p.subtitle,
+                        if (timeLeft.isNotEmpty) timeLeft,
+                      ].join(' · '),
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: AppColors.grey,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              DealerStatusChip(
+                label: isConnection ? 'Deal Room Request' : 'Offer to Review',
+                color: AppColors.blue,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _activityCard(DealerActivityModel a) {

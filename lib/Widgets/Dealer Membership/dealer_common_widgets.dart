@@ -188,3 +188,83 @@ class DealerStateView extends StatelessWidget {
     );
   }
 }
+
+class DealerInputDialog extends StatefulWidget {
+  final String title;
+  final String message;
+  final String initialText;
+  final String cancelLabel;
+  final String confirmLabel;
+  final Color? confirmColor;
+  final InputDecoration decoration;
+  final TextInputType? keyboardType;
+  final int maxLines;
+  final int? maxLength;
+
+  const DealerInputDialog({
+    super.key,
+    required this.title,
+    required this.confirmLabel,
+    required this.decoration,
+    this.message = '',
+    this.initialText = '',
+    this.cancelLabel = 'Cancel',
+    this.confirmColor,
+    this.keyboardType,
+    this.maxLines = 1,
+    this.maxLength,
+  });
+
+  @override
+  State<DealerInputDialog> createState() => _DealerInputDialogState();
+}
+
+class _DealerInputDialogState extends State<DealerInputDialog> {
+  late final _controller = TextEditingController(text: widget.initialText);
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(widget.title, style: const TextStyle(fontSize: 16)),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (widget.message.isNotEmpty) ...[
+            Text(
+              widget.message,
+              style: const TextStyle(fontSize: 12, color: AppColors.grey),
+            ),
+            const SizedBox(height: 10),
+          ],
+          TextField(
+            controller: _controller,
+            autofocus: true,
+            keyboardType: widget.keyboardType,
+            maxLines: widget.maxLines,
+            maxLength: widget.maxLength,
+            decoration: widget.decoration,
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(widget.cancelLabel),
+        ),
+        TextButton(
+          onPressed: () => Navigator.pop(context, _controller.text.trim()),
+          child: Text(
+            widget.confirmLabel,
+            style: TextStyle(color: widget.confirmColor),
+          ),
+        ),
+      ],
+    );
+  }
+}

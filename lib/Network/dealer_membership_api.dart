@@ -27,6 +27,24 @@ class DealerMembershipApi {
   static Future<dynamic> post(String url, [Map<String, dynamic>? body]) =>
       _send(() => ApiService.post(endpoint: url, body: body));
 
+  static Future<dynamic> put(String url, [Map<String, dynamic>? body]) =>
+      _send(() => ApiService.put(endpoint: url, body: body));
+
+  static Future<dynamic> delete(String url) =>
+      _send(() => ApiService.delete(endpoint: url));
+
+  static Future<dynamic> upload(
+    String url, {
+    required String field,
+    required List<String> filePaths,
+  }) => _send(
+    () => ApiService.multipart(
+      endpoint: url,
+      fileField: field,
+      filePaths: filePaths,
+    ),
+  );
+
   static Future<dynamic> _send(Future<http.Response> Function() call) async {
     final http.Response response;
     try {

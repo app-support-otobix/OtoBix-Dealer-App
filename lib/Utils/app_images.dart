@@ -14,7 +14,13 @@ class AppImages {
   static const String filterIcon = 'lib/assets/images/sort.png';
   static const String rejectedIcon = 'lib/assets/animations/Rejected.json';
 
+  static const String dealerModuleSell =
+      'lib/assets/images/dealerModuleSell.png';
   static const String dealerModuleBuy = 'lib/assets/images/dealerModuleBuy.png';
+  static const String dealerModuleServices =
+      'lib/assets/images/dealerModuleServices.png';
+  static const String dealerModuleLeads =
+      'lib/assets/images/dealerModuleLeads.png';
   static const String dealerModuleMembership =
       'lib/assets/images/dealerModuleMembership.png';
 

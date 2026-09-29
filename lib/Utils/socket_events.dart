@@ -37,6 +37,10 @@ class SocketEvents {
       'self-inspected-car-expected-price-updated';
 
   static const String dealerJoin = 'dealer-join';
+  static const String dealerMessageCreated = 'dealer-message-created';
+  static const String dealerNegotiationUpdated = 'dealer-negotiation-updated';
+  static const String dealerConnectionUpdated = 'dealer-connection-updated';
+  static const String dealerDealRoomUpdated = 'dealer-deal-room-updated';
   static const String dealerActivityCreated = 'dealer-activity-created';
   static const String dealerMembershipUpdated = 'dealer-membership-updated';
 

@@ -15,6 +15,7 @@ class DealerPlanModel {
   final String name;
   final int priceRupees;
   final int pointsPerCycle;
+  final int listingCap;
   final int cycleDays;
   final List<String> benefits;
 
@@ -23,6 +24,7 @@ class DealerPlanModel {
       name = _str(j['name']),
       priceRupees = _int(j['priceRupees']),
       pointsPerCycle = _int(j['pointsPerCycle']),
+      listingCap = _int(j['listingCap']),
       cycleDays = _int(j['cycleDays']),
       benefits = _strings(j['benefits']);
 }
@@ -43,6 +45,18 @@ class DealerMembershipConfigModel {
   final DealerPlanModel? promo;
   final List<DealerPaymentMethodModel> paymentMethods;
   final List<String> dealerTypes;
+  final List<String> fuelTypes;
+  final List<String> transmissions;
+  final Map<String, int> serviceCosts;
+  final int connectionPoints;
+  final int connectionExpiryHours;
+  final int maxCarImages;
+  final Map<String, List<String>> quickMessages;
+  final String offerQuickMessage;
+  final Map<String, List<String>> presetAnswers;
+  final List<String> fallbackAnswers;
+  final List<String> leadStatuses;
+  final Map<String, List<String>> dealTransitions;
 
   DealerMembershipConfigModel.fromJson(Map<String, dynamic> j)
     : plans = _maps(j['plans']).map(DealerPlanModel.fromJson).toList(),
@@ -54,16 +68,43 @@ class DealerMembershipConfigModel {
           _maps(
             j['paymentMethods'],
           ).map(DealerPaymentMethodModel.fromJson).toList(),
-      dealerTypes = _strings(j['dealerTypes']);
+      dealerTypes = _strings(j['dealerTypes']),
+      fuelTypes = _strings(j['fuelTypes']),
+      transmissions = _strings(j['transmissions']),
+      serviceCosts = {
+        for (final e
+            in Map<String, dynamic>.from(j['serviceCosts'] ?? {}).entries)
+          e.key: _int(e.value),
+      },
+      connectionPoints = _int(j['connection']?['pointsPerSide']),
+      connectionExpiryHours = _int(j['connection']?['expiryHours']),
+      maxCarImages = _int(j['maxCarImages']),
+      quickMessages = _stringListMap(j['quickMessages']),
+      offerQuickMessage = _str(j['offerQuickMessage']),
+      presetAnswers = _stringListMap(j['presetAnswers']),
+      fallbackAnswers = _strings(j['fallbackAnswers']),
+      leadStatuses = _strings(j['leadStatuses']),
+      dealTransitions = _stringListMap(j['dealTransitions']);
+
+  static Map<String, List<String>> _stringListMap(dynamic v) => {
+    for (final e in Map<String, dynamic>.from(v ?? {}).entries)
+      e.key: _strings(e.value),
+  };
 }
 
 class DealerCycleSummaryModel {
   final int allocated;
-  final int expired;
+  final int reserved;
+  final int pendingReservations;
+  final int consumed;
+  final int released;
 
   DealerCycleSummaryModel.fromJson(Map<String, dynamic> j)
     : allocated = _int(j['allocated']),
-      expired = _int(j['expired']);
+      reserved = _int(j['reserved']),
+      pendingReservations = _int(j['pendingReservations']),
+      consumed = _int(j['consumed']),
+      released = _int(j['released']);
 }
 
 class DealerUsageModel {
@@ -122,6 +163,7 @@ class DealerMembershipModel {
   final int daysLeft;
   final bool showRenewalWarning;
   final int availablePoints;
+  final int activeListings;
   final List<DealerUsageModel> usage;
   final DealerPendingPaymentModel? pendingPayment;
   final DealerCycleSummaryModel? summary;
@@ -149,6 +191,7 @@ class DealerMembershipModel {
       daysLeft = _int(j['daysLeft']),
       showRenewalWarning = j['showRenewalWarning'] == true,
       availablePoints = _int(j['availablePoints']),
+      activeListings = _int(j['activeListings']),
       usage = _maps(j['usage']).map(DealerUsageModel.fromJson).toList(),
       pendingPayment =
           j['pendingPayment'] is Map
@@ -162,12 +205,17 @@ class DealerMembershipModel {
                 Map<String, dynamic>.from(j['summary']),
               )
               : null;
+
+  DealerUsageModel? usageFor(String feature) =>
+      usage.where((u) => u.feature == feature).firstOrNull;
 }
 
 class DealerLedgerEntryModel {
   final String id;
   final String type;
   final int points;
+  final String connectionId;
+  final String service;
   final String note;
   final DateTime? createdAt;
 
@@ -175,6 +223,25 @@ class DealerLedgerEntryModel {
     : id = _str(j['_id']),
       type = _str(j['type']),
       points = _int(j['points']),
+      connectionId = _str(j['connectionId']),
+      service = _str(j['service']),
       note = _str(j['note']),
       createdAt = _date(j['createdAt']);
+}
+
+class DealerPendingActivityModel {
+  final String type;
+  final String title;
+  final String subtitle;
+  final DateTime? expiresAt;
+  final String targetType;
+  final String targetId;
+
+  DealerPendingActivityModel.fromJson(Map<String, dynamic> j)
+    : type = _str(j['type']),
+      title = _str(j['title']),
+      subtitle = _str(j['subtitle']),
+      expiresAt = _date(j['expiresAt']),
+      targetType = _str(j['target']?['type']),
+      targetId = _str(j['target']?['id']);
 }

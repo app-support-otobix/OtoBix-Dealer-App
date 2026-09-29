@@ -21,7 +21,7 @@ class MembershipDashboardPage extends StatefulWidget {
 class _MembershipDashboardPageState extends State<MembershipDashboardPage> {
   final DealerMembershipController controller = DealerMembershipController.to;
 
-  static const _filters = ['ALL', 'EXPIRED'];
+  static const _filters = ['ALL', 'RESERVED', 'CONSUMED', 'EXPIRED'];
 
   @override
   void initState() {
@@ -202,9 +202,10 @@ class _MembershipDashboardPageState extends State<MembershipDashboardPage> {
               ),
               Expanded(
                 child: DealerStatTile(
-                  value: GlobalFunctions.formatNumber(summary?.allocated ?? 0),
-                  label: 'Allocated this cycle',
-                  color: AppColors.blue,
+                  value: '${summary?.reserved ?? 0}',
+                  label:
+                      'Reserved · ${summary?.pendingReservations ?? 0} pending',
+                  color: AppColors.deepOrange,
                 ),
               ),
             ],
@@ -214,6 +215,13 @@ class _MembershipDashboardPageState extends State<MembershipDashboardPage> {
             statusLine,
             style: const TextStyle(color: AppColors.grey, fontSize: 11),
           ),
+          if (summary != null && m.isActive) ...[
+            const SizedBox(height: 10),
+            Text(
+              'This cycle: ${GlobalFunctions.formatNumber(summary.allocated)} allocated · ${summary.consumed} consumed · ${summary.released} released',
+              style: const TextStyle(fontSize: 11, color: AppColors.grey),
+            ),
+          ],
           if (m.dealerType.isEmpty) ...[
             const SizedBox(height: 4),
             TextButton(
@@ -341,7 +349,10 @@ class _MembershipDashboardPageState extends State<MembershipDashboardPage> {
                       DealerStatusChip(label: e.type, color: _colorFor(e.type)),
                       const SizedBox(height: 6),
                       Text(
-                        e.note,
+                        [
+                          if (e.connectionId.isNotEmpty) e.connectionId,
+                          e.note,
+                        ].where((s) => s.isNotEmpty).join(' · '),
                         style: const TextStyle(
                           fontSize: 12,
                           color: AppColors.black,
@@ -403,8 +414,14 @@ class _MembershipDashboardPageState extends State<MembershipDashboardPage> {
       case 'MEMBERSHIP_ALLOCATED':
       case 'PROMO_ALLOCATED':
         return AppColors.green;
+      case 'RESERVED':
+        return AppColors.deepOrange;
+      case 'CONSUMED':
       case 'EXPIRED':
         return AppColors.red;
+      case 'RELEASED':
+      case 'REFUNDED':
+        return AppColors.blue;
       default:
         return AppColors.grey;
     }

@@ -29,9 +29,9 @@
 		<!-- ===== Defined By Muhammad Ahsan ===== -->
 		<!-- ===== Permissions you need (Camera + Photos + Location + Tracking etc) ===== -->
 		<key>NSCameraUsageDescription</key>
-		<string>App requires access to the camera to take profile pictures of users.</string>
+		<string>App requires access to the camera to take profile pictures and photos of cars you list.</string>
 		<key>NSPhotoLibraryUsageDescription</key>
-		<string>App requires access to your photo library to upload profile pictures of users.</string>
+		<string>App requires access to your photo library to upload profile pictures and photos of cars you list.</string>
 		<!-- <key>NSUserTrackingUsageDescription</key>
 		<string>App uses tracking to deliver personalized notifications.</string> -->
 		<key>NSLocationWhenInUseUsageDescription</key>
