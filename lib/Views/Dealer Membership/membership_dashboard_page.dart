@@ -334,7 +334,7 @@ class _MembershipDashboardPageState extends State<MembershipDashboardPage> {
                   ),
                 ),
                 Text(
-                  '${e.points >= 0 ? '+' : '−'} ${e.points.abs()}',
+                  '${e.points >= 0 ? '+' : '−'} ${GlobalFunctions.formatNumber(e.points.abs())}',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 14,

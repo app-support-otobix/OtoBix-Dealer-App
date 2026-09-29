@@ -87,7 +87,7 @@ class _UpgradeMembershipPageState extends State<UpgradeMembershipPage> {
             children: [
               if (m != null)
                 Text(
-                  'You are on ${m.plan?.name ?? 'membership'} · ${m.availablePoints} points left this cycle.',
+                  'You are on ${m.plan?.name ?? 'membership'} · ${GlobalFunctions.formatNumber(m.availablePoints)} points left this cycle.',
                   style: const TextStyle(fontSize: 12, color: AppColors.grey),
                 ),
               const SizedBox(height: 14),
