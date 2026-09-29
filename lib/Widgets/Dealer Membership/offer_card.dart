@@ -47,6 +47,52 @@ String dealerOfferNote(DealerNegotiationModel n) {
   }
 }
 
+/// Who the other dealer is: their dealer code (their name once connected),
+/// dealer type and city.
+class DealerPartyTile extends StatelessWidget {
+  final DealerPartyModel party;
+  const DealerPartyTile({super.key, required this.party});
+
+  @override
+  Widget build(BuildContext context) {
+    final title = party.isRevealed ? party.name : party.dealerCode;
+    final details = [
+      if (party.isRevealed) party.dealerCode,
+      if (party.dealerType.isNotEmpty) party.dealerType,
+      if (party.city.isNotEmpty) party.city,
+    ].join(' · ');
+    return Row(
+      children: [
+        CircleAvatar(
+          radius: 18,
+          backgroundColor: AppColors.blue.withValues(alpha: 0.1),
+          child: const Icon(Icons.storefront, size: 18, color: AppColors.blue),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title.isEmpty ? 'Dealer' : title,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
+              ),
+              if (details.isNotEmpty)
+                Text(
+                  details,
+                  style: const TextStyle(fontSize: 11, color: AppColors.grey),
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class OfferCard extends StatelessWidget {
   final DealerNegotiationModel negotiation;
   final VoidCallback onTap;
@@ -81,30 +127,27 @@ class OfferCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                DealerStatusChip(
-                  label: n.displayStatus,
-                  color: dealerOfferStatusColor(n.displayStatus),
-                ),
-                Row(
-                  children: [
-                    if (n.unread > 0) ...[
-                      Badge.count(count: n.unread),
-                      const SizedBox(width: 8),
-                    ],
-                    if (amount > 0)
-                      Text(
-                        GlobalFunctions.formatLakh(amount),
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          color: AppColors.green,
-                        ),
-                      ),
-                  ],
-                ),
+                Expanded(child: DealerPartyTile(party: n.counterpart)),
+                if (n.unread > 0) ...[
+                  Badge.count(count: n.unread),
+                  const SizedBox(width: 8),
+                ],
+                if (amount > 0)
+                  Text(
+                    GlobalFunctions.formatLakh(amount),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: AppColors.green,
+                    ),
+                  ),
               ],
+            ),
+            const SizedBox(height: 10),
+            DealerStatusChip(
+              label: n.displayStatus,
+              color: dealerOfferStatusColor(n.displayStatus),
             ),
             const SizedBox(height: 8),
             if (showCar)

@@ -6,6 +6,7 @@ class DealerLeadModel {
   final String id;
   final String leadCode;
   final String carId;
+  final String carImage; // front photo of the car, '' when there is none
   final String source;
   final String customerName;
   final String contactNo;
@@ -31,6 +32,7 @@ class DealerLeadModel {
     : id = _str(j['id']),
       leadCode = _str(j['leadCode']),
       carId = _str(j['carId']),
+      carImage = _str(j['carImage']),
       source = _str(j['source']),
       customerName = _str(j['customerName']),
       contactNo = _str(j['contactNo']),

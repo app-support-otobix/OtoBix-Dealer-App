@@ -31,24 +31,25 @@ class _RcChallanCheckPageState extends State<RcChallanCheckPage> {
     super.dispose();
   }
 
-  void _check() {
+  // Every check fetches the owner's personal details, so the owner's consent
+  // is confirmed first, every time.
+  Future<void> _check() async {
     FocusScope.of(context).unfocus();
-    controller.check(_regNoController.text);
-  }
-
-  Future<void> _requestMobile() async {
+    final reg = controller.validRegistration(_regNoController.text);
+    if (reg == null || controller.isChecking.value) return;
     final consented = await showDialog<bool>(
       context: context,
-      builder: (_) => _MobileConsentDialog(cost: controller.mobileCost),
+      barrierDismissible: false,
+      builder: (_) => _ConsentDialog(reg: reg, cost: controller.checkCost),
     );
-    if (consented == true) controller.fetchOwnerMobile();
+    if (consented == true) controller.check(reg);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.white,
-      appBar: AppBarWidget(title: 'RC & Challan Check'),
+      appBar: AppBarWidget(title: 'RC Check'),
       body: SafeArea(
         child: Obx(() {
           final r = controller.result.value;
@@ -65,9 +66,9 @@ class _RcChallanCheckPageState extends State<RcChallanCheckPage> {
                 const SizedBox(height: 10),
                 _rcDetailsCard(r.vehicle),
                 const SizedBox(height: 12),
-                _challanCard(r),
-                const SizedBox(height: 12),
                 _mobileCard(r),
+                const SizedBox(height: 12),
+                _challanCard(r),
               ],
             ],
           );
@@ -131,8 +132,8 @@ class _RcChallanCheckPageState extends State<RcChallanCheckPage> {
           Text(
             controller.error.value.isNotEmpty
                 ? controller.error.value
-                : 'RC details and challans for this vehicle${cost > 0 ? ' · $cost points' : ''}. '
-                    'Points are only used for lookups that succeed.',
+                : 'RC details, owner mobile and challans in one check${cost > 0 ? ' · $cost points' : ''}. '
+                    "Needs the owner's consent. Points are refunded if the RC lookup fails.",
             style: TextStyle(
               fontSize: 11,
               color:
@@ -277,88 +278,47 @@ class _RcChallanCheckPageState extends State<RcChallanCheckPage> {
   }
 
   Widget _mobileCard(DealerRcCheckModel r) {
-    final mobile = controller.ownerMobile.value;
-    final consentAt = controller.mobileConsentAt.value;
+    final consentAt = r.consentRecordedAt;
     return _resultCard(
       icon: Icons.phone_iphone,
       color: AppColors.green,
-      title: 'Owner Mobile (RC to Mobile)',
+      title: 'Owner Mobile',
       children: [
-        if (mobile.isNotEmpty) ...[
-          Row(
-            children: [
-              const Icon(Icons.verified_user, size: 18, color: AppColors.green),
-              const SizedBox(width: 8),
-              Text(
-                mobile,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'Owner consent recorded ${DateFormat('d MMM yyyy, h:mm a').format((consentAt ?? DateTime.now()).toLocal())}',
-            style: const TextStyle(fontSize: 11, color: AppColors.grey),
-          ),
-        ] else ...[
-          Row(
-            children: [
-              const Icon(Icons.lock_outline, size: 18, color: AppColors.grey),
-              const SizedBox(width: 8),
-              Text(
-                '+91 ••••• •••••',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.grey.withValues(alpha: 0.7),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Text(
-            controller.mobileError.value.isNotEmpty
-                ? controller.mobileError.value
-                : r.rcToMobileAvailable
-                ? "The owner's mobile number is personal data - it is shown only after you confirm the owner's consent."
-                : 'Owner mobile lookup is not available yet.',
-            style: TextStyle(
-              fontSize: 11,
+        Row(
+          children: [
+            Icon(
+              r.ownerMobile.isNotEmpty
+                  ? Icons.verified_user
+                  : Icons.phone_disabled_outlined,
+              size: 18,
               color:
-                  controller.mobileError.value.isNotEmpty
-                      ? AppColors.red
-                      : AppColors.grey,
+                  r.ownerMobile.isNotEmpty ? AppColors.green : AppColors.grey,
             ),
-          ),
-          const SizedBox(height: 10),
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              onPressed:
-                  r.rcToMobileAvailable && !controller.isFetchingMobile.value
-                      ? _requestMobile
-                      : null,
-              icon:
-                  controller.isFetchingMobile.value
-                      ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                      : const Icon(Icons.how_to_reg_outlined, size: 18),
-              label: Text(
-                'Get Mobile Number${controller.mobileCost > 0 ? ' · ${controller.mobileCost} points' : ''}',
-              ),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.green,
-                side: const BorderSide(color: AppColors.green),
+            const SizedBox(width: 8),
+            Text(
+              r.ownerMobile.isNotEmpty ? r.ownerMobile : 'Not available',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                color:
+                    r.ownerMobile.isNotEmpty ? AppColors.black : AppColors.grey,
               ),
             ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        Text(
+          r.ownerMobile.isEmpty && r.mobileError.isNotEmpty
+              ? r.mobileError
+              : 'Owner consent recorded ${DateFormat('d MMM yyyy, h:mm a').format((consentAt ?? DateTime.now()).toLocal())}',
+          style: TextStyle(
+            fontSize: 11,
+            color:
+                r.ownerMobile.isEmpty && r.mobileError.isNotEmpty
+                    ? AppColors.red
+                    : AppColors.grey,
           ),
-        ],
+        ),
       ],
     );
   }
@@ -537,16 +497,11 @@ class _RcChallanCheckPageState extends State<RcChallanCheckPage> {
   }
 }
 
-class _MobileConsentDialog extends StatefulWidget {
+/// Asked before every check: OK confirms the owner's consent, Cancel stops it.
+class _ConsentDialog extends StatelessWidget {
+  final String reg;
   final int cost;
-  const _MobileConsentDialog({required this.cost});
-
-  @override
-  State<_MobileConsentDialog> createState() => _MobileConsentDialogState();
-}
-
-class _MobileConsentDialogState extends State<_MobileConsentDialog> {
-  bool _agreed = false;
+  const _ConsentDialog({required this.reg, required this.cost});
 
   @override
   Widget build(BuildContext context) {
@@ -557,45 +512,26 @@ class _MobileConsentDialogState extends State<_MobileConsentDialog> {
           Icon(Icons.privacy_tip_outlined, color: AppColors.green),
           SizedBox(width: 8),
           Expanded(
-            child: Text(
-              'Owner Consent Required',
-              style: TextStyle(fontSize: 16),
-            ),
+            child: Text('Owner Consent', style: TextStyle(fontSize: 16)),
           ),
         ],
       ),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "The mobile number linked to this RC belongs to the vehicle owner. It can only be fetched with the owner's consent, "
-            'and used for this vehicle transaction.${widget.cost > 0 ? ' This uses ${widget.cost} points.' : ''}',
-            style: const TextStyle(fontSize: 12, color: AppColors.grey),
-          ),
-          const SizedBox(height: 10),
-          CheckboxListTile(
-            value: _agreed,
-            onChanged: (v) => setState(() => _agreed = v ?? false),
-            contentPadding: EdgeInsets.zero,
-            controlAffinity: ListTileControlAffinity.leading,
-            activeColor: AppColors.green,
-            dense: true,
-            title: const Text(
-              'I confirm the vehicle owner has consented to OtoBix fetching and showing me their mobile number for this transaction.',
-              style: TextStyle(fontSize: 12),
-            ),
-          ),
-        ],
+      content: Text(
+        "This check shows the RC details, the owner's mobile number and the challans for $reg. "
+        "The owner's details are personal data. "
+        "By clicking OK you confirm the vehicle owner has given their consent to search their personal details for this service."
+        '${cost > 0 ? ' This uses $cost points.' : ''}',
+        style: const TextStyle(fontSize: 13, height: 1.4),
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context, false),
           child: const Text('Cancel'),
         ),
-        TextButton(
-          onPressed: _agreed ? () => Navigator.pop(context, true) : null,
-          child: const Text('Agree & Fetch'),
+        FilledButton(
+          style: FilledButton.styleFrom(backgroundColor: AppColors.green),
+          onPressed: () => Navigator.pop(context, true),
+          child: const Text('OK'),
         ),
       ],
     );

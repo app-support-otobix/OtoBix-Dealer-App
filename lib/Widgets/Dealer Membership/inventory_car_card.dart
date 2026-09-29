@@ -45,17 +45,35 @@ class InventoryCarCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    DealerStatusChip(
-                      label:
-                          car.status == 'LIVE'
-                              ? 'Live'
-                              : car.status[0] +
-                                  car.status.substring(1).toLowerCase(),
-                      color:
-                          car.status == 'LIVE'
-                              ? AppColors.green
-                              : AppColors.deepOrange,
-                      small: true,
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 4,
+                      children: [
+                        DealerStatusChip(
+                          label:
+                              car.status == 'LIVE'
+                                  ? 'Live'
+                                  : car.status[0] +
+                                      car.status.substring(1).toLowerCase(),
+                          color:
+                              car.status == 'LIVE'
+                                  ? AppColors.green
+                                  : AppColors.deepOrange,
+                          small: true,
+                        ),
+                        if (car.isQcPending)
+                          const DealerStatusChip(
+                            label: 'Photo check pending',
+                            color: AppColors.blue,
+                            small: true,
+                          ),
+                        if (car.isQcRejected)
+                          const DealerStatusChip(
+                            label: 'Photos rejected',
+                            color: AppColors.red,
+                            small: true,
+                          ),
+                      ],
                     ),
                   ],
                 ),
@@ -74,6 +92,18 @@ class InventoryCarCard extends StatelessWidget {
               ),
             ],
           ),
+          if (car.isQcPending || car.isQcRejected) ...[
+            const SizedBox(height: 10),
+            Text(
+              car.isQcRejected
+                  ? 'OtoBix could not approve the photos: ${car.qcReason}. Edit the car to upload new photos.'
+                  : 'OtoBix is checking the photos. Other dealers will see this car once they are approved.',
+              style: TextStyle(
+                fontSize: 11,
+                color: car.isQcRejected ? AppColors.red : AppColors.grey,
+              ),
+            ),
+          ],
           const SizedBox(height: 12),
           Row(
             children: [

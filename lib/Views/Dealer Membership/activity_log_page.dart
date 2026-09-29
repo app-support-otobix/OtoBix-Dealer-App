@@ -27,8 +27,7 @@ class _ActivityLogPageState extends State<ActivityLogPage> {
   };
   static const _services = {
     'All': '',
-    'RC & Challan': 'RC_CHECK',
-    'Owner Mobile': 'RC_TO_MOBILE',
+    'RC Check': 'RC_CHECK',
     'Service History': 'SERVICE_HISTORY',
   };
 

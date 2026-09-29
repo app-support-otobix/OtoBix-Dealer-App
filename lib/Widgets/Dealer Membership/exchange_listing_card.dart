@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:get/get.dart';
+import 'package:otobix/Controllers/Dealer%20Membership/dealer_exchange_controller.dart';
 import 'package:otobix/Models/Dealer%20Membership/dealer_exchange_model.dart';
 import 'package:otobix/Utils/app_colors.dart';
 import 'package:otobix/Utils/global_functions.dart';
@@ -52,14 +55,21 @@ class ExchangeListingCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            child: PriceBox(
-              label: 'Exchange Price',
-              value: GlobalFunctions.formatRupees(l.exchangePrice),
-              color: AppColors.blue,
-            ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: PriceBox(
+                  label: 'Their Price',
+                  value: GlobalFunctions.formatRupees(l.exchangePrice),
+                  color: AppColors.blue,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(child: _QuickOfferBox(listing: l)),
+            ],
           ),
+          _MyOfferStatus(listing: l),
           const SizedBox(height: 12),
           VehicleSpecSheet(
             specs: [
@@ -126,6 +136,174 @@ class ExchangeListingCard extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+/// Your price for this car, sent to the seller without opening the chat.
+class _QuickOfferBox extends StatefulWidget {
+  final DealerExchangeListingModel listing;
+  const _QuickOfferBox({required this.listing});
+
+  @override
+  State<_QuickOfferBox> createState() => _QuickOfferBoxState();
+}
+
+class _QuickOfferBoxState extends State<_QuickOfferBox> {
+  final _amount = TextEditingController();
+
+  @override
+  void dispose() {
+    _amount.dispose();
+    super.dispose();
+  }
+
+  Future<void> _send() async {
+    final amount = int.tryParse(_amount.text.trim()) ?? 0;
+    if (amount <= 0) return;
+    FocusScope.of(context).unfocus();
+    if (await DealerExchangeController.to.quickOffer(widget.listing, amount)) {
+      _amount.clear();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = DealerExchangeController.to;
+    return Obx(() {
+      final offer = controller.myOfferOn(widget.listing);
+      final closed = [
+        'AGREED',
+        'CONNECTED',
+        'CLOSED',
+      ].contains(offer?.displayStatus);
+      final sending = controller.offeringOn.value == widget.listing.id;
+      return Container(
+        padding: const EdgeInsets.fromLTRB(10, 8, 4, 4),
+        decoration: BoxDecoration(
+          color: AppColors.green.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Your Offer',
+              style: TextStyle(fontSize: 11, color: AppColors.grey),
+            ),
+            if (closed)
+              Padding(
+                padding: const EdgeInsets.only(top: 4, bottom: 6),
+                child: Text(
+                  GlobalFunctions.formatRupees(offer!.agreedAmount),
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.green,
+                  ),
+                ),
+              )
+            else
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _amount,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(9),
+                      ],
+                      textInputAction: TextInputAction.send,
+                      onSubmitted: (_) => _send(),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      decoration: const InputDecoration(
+                        prefixText: '₹ ',
+                        hintText: 'Enter price',
+                        hintStyle: TextStyle(fontSize: 13),
+                        isDense: true,
+                        border: InputBorder.none,
+                      ),
+                    ),
+                  ),
+                  sending
+                      ? const Padding(
+                        padding: EdgeInsets.all(10),
+                        child: SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: AppColors.green,
+                          ),
+                        ),
+                      )
+                      : IconButton(
+                        tooltip: 'Send offer',
+                        onPressed: _send,
+                        icon: const Icon(Icons.send, color: AppColors.green),
+                      ),
+                ],
+              ),
+          ],
+        ),
+      );
+    });
+  }
+}
+
+/// Where the seller stands on your offer.
+class _MyOfferStatus extends StatelessWidget {
+  final DealerExchangeListingModel listing;
+  const _MyOfferStatus({required this.listing});
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      final o = DealerExchangeController.to.myOfferOn(listing);
+      if (o == null || o.displayStatus == 'IN DISCUSSION') {
+        return const SizedBox.shrink();
+      }
+      final amount = GlobalFunctions.formatRupees(o.amount);
+      final (String text, Color color) = switch (o.displayStatus) {
+        'OFFER SENT' => (
+          'You offered $amount · waiting for the seller',
+          AppColors.deepOrange,
+        ),
+        'COUNTERED' => (
+          'You countered $amount · waiting for the seller',
+          AppColors.deepOrange,
+        ),
+        'ACTION NEEDED' => (
+          'Seller countered $amount · send a new price or open the chat',
+          AppColors.red,
+        ),
+        'AGREED' => (
+          '${GlobalFunctions.formatRupees(o.agreedAmount)} agreed · the seller is interested, enter the Deal Room',
+          AppColors.green,
+        ),
+        'CONNECTED' => ('Connected · Deal Room open', AppColors.green),
+        'REJECTED' => (
+          'Seller rejected your offer · you can send a new price',
+          AppColors.red,
+        ),
+        _ => ('', AppColors.grey),
+      };
+      if (text.isEmpty) return const SizedBox.shrink();
+      return Padding(
+        padding: const EdgeInsets.only(top: 8),
+        child: Text(
+          text,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: color,
+          ),
+        ),
+      );
+    });
   }
 }
 

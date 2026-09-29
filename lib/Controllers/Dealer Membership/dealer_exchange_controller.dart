@@ -4,6 +4,8 @@ import 'package:otobix/Controllers/Dealer%20Membership/dealer_membership_control
 import 'package:otobix/Models/Dealer%20Membership/dealer_exchange_model.dart';
 import 'package:otobix/Network/dealer_membership_api.dart';
 import 'package:otobix/Utils/app_urls.dart';
+import 'package:otobix/Utils/global_functions.dart';
+import 'package:otobix/Widgets/toast_widget.dart';
 
 class DealerExchangeController extends GetxController {
   static DealerExchangeController get to =>
@@ -107,6 +109,9 @@ class DealerExchangeController extends GetxController {
       );
       if (reset) results.clear();
       results.addAll(items);
+      for (final l in items) {
+        sentOffers.remove(l.id); // the server's view is newer
+      }
       _page += 1;
       hasMore.value = data['hasMore'] == true;
     } on DealerApiException catch (e) {
@@ -194,6 +199,9 @@ class DealerExchangeController extends GetxController {
       );
       if (reset) matches.clear();
       matches.addAll(items);
+      for (final l in items) {
+        sentOffers.remove(l.id);
+      }
       _matchesPage += 1;
       matchesHasMore.value = data['hasMore'] == true;
     } on DealerApiException catch (e) {
@@ -206,6 +214,54 @@ class DealerExchangeController extends GetxController {
   void showMatchesFor(String requirementId) {
     matchRequirementId.value = requirementId;
     loadMatches(reset: true);
+  }
+
+  // Offers sent from the cards this session, by listing id. They override the
+  // listing's own myOffer until the list is next loaded.
+  final sentOffers = <String, DealerMyOfferModel>{}.obs;
+  final offeringOn = ''.obs;
+
+  DealerMyOfferModel? myOfferOn(DealerExchangeListingModel l) =>
+      sentOffers[l.id] ?? l.myOffer;
+
+  /// Sends [amount] to the seller from the Dealer Inventory card, without
+  /// opening the chat. The card then shows where the seller stands.
+  Future<bool> quickOffer(
+    DealerExchangeListingModel listing,
+    int amount,
+  ) async {
+    if (offeringOn.value.isNotEmpty) return false;
+    offeringOn.value = listing.id;
+    try {
+      final data = await DealerMembershipApi.post(
+        AppUrls.dealerExchangeQuickOffer(listing.id),
+        {'amount': amount},
+      );
+      sentOffers[listing.id] = DealerMyOfferModel.fromNegotiation(
+        Map<String, dynamic>.from(data),
+      );
+      _toast(
+        'Offer sent',
+        '${GlobalFunctions.formatRupees(amount)} on ${listing.title} · the seller has been told',
+      );
+      return true;
+    } on DealerApiException catch (e) {
+      DealerMembershipController.to.handleError(e, title: 'Offer not sent');
+      return false;
+    } finally {
+      offeringOn.value = '';
+    }
+  }
+
+  void _toast(String title, String subtitle) {
+    final context = Get.context;
+    if (context == null) return;
+    ToastWidget.show(
+      context: context,
+      title: title,
+      subtitle: subtitle,
+      type: ToastType.success,
+    );
   }
 
   Future<DealerExchangeListingModel?> getListing(String id) async {

@@ -93,9 +93,11 @@ class DealerRcCheckModel {
   final int pendingChallans;
   final int pendingTotal;
   final String challanError;
+  final String ownerMobile;
+  final String mobileError;
+  final DateTime? consentRecordedAt;
   final int pointsCharged;
   final int availablePoints;
-  final bool rcToMobileAvailable;
 
   DealerRcCheckModel.fromJson(Map<String, dynamic> j)
     : vehicle = DealerVehicleFactsModel.fromJson(
@@ -114,7 +116,11 @@ class DealerRcCheckModel {
       pendingChallans = _int(j['challans']?['pendingCount']),
       pendingTotal = _int(j['challans']?['pendingTotal']),
       challanError = _str(j['challanError']),
+      ownerMobile = _str(j['ownerMobile']),
+      mobileError = _str(j['mobileError']),
+      consentRecordedAt = GlobalFunctions.parse<DateTime>(
+        j['consentRecordedAt'],
+      ),
       pointsCharged = _int(j['pointsCharged']),
-      availablePoints = _int(j['availablePoints']),
-      rcToMobileAvailable = j['rcToMobileAvailable'] == true;
+      availablePoints = _int(j['availablePoints']);
 }

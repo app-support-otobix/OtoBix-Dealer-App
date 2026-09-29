@@ -92,7 +92,12 @@ class DealerInventoryController extends GetxController {
       );
       _upsert(car);
       membership.loadHome(silent: true);
-      _toast(id == null ? 'Car listed' : 'Changes saved', car.title);
+      _toast(
+        id == null ? 'Car added' : 'Changes saved',
+        car.isQcPending
+            ? '${car.title} · OtoBix will check the photos before other dealers see it.'
+            : car.title,
+      );
       return true;
     } on DealerApiException catch (e) {
       membership.handleError(e, title: 'Could not save the car');

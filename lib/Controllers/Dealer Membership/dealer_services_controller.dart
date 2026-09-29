@@ -12,42 +12,33 @@ class DealerServicesController extends GetxController {
   final result = Rxn<DealerRcCheckModel>();
   final error = ''.obs;
 
-  final isFetchingMobile = false.obs;
-  final ownerMobile = ''.obs;
-  final mobileConsentAt = Rxn<DateTime>();
-  final mobileError = ''.obs;
-
   static const _membershipCodes = {
-    'ONBOARDING_REQUIRED',
     'MEMBERSHIP_INACTIVE',
     'INSUFFICIENT_POINTS',
+    'ALLOWANCE_EXHAUSTED',
   };
 
-  int get checkCost {
-    return membership.config.value?.serviceCosts['RC_CHECK'] ?? 0;
+  int get checkCost => membership.config.value?.serviceCosts['RC_CHECK'] ?? 0;
+
+  /// The registration to check, or null (with [error] set) when it is not valid.
+  String? validRegistration(String input) {
+    final reg = GlobalFunctions.normalizeRegistration(input);
+    if (GlobalFunctions.isValidRegistration(reg)) return reg;
+    error.value = 'Enter a valid registration number, e.g. WB02AB1234';
+    return null;
   }
 
-  int get mobileCost =>
-      membership.config.value?.serviceCosts['RC_TO_MOBILE'] ?? 0;
-
-  Future<void> check(String input) async {
-    final reg = GlobalFunctions.normalizeRegistration(input);
-    if (!GlobalFunctions.isValidRegistration(reg)) {
-      error.value = 'Enter a valid registration number, e.g. WB02AB1234';
-      return;
-    }
+  /// One check: RC details, the owner's mobile and challans for one charge.
+  /// Only called after the dealer confirms the owner's consent.
+  Future<void> check(String reg) async {
     if (isChecking.value || !membership.requireMembership()) return;
-
     error.value = '';
     result.value = null;
-    ownerMobile.value = '';
-    mobileConsentAt.value = null;
-    mobileError.value = '';
     isChecking.value = true;
     try {
       final data = await DealerMembershipApi.post(
         AppUrls.dealerServicesRcCheck,
-        {'registrationNumber': reg},
+        {'registrationNumber': reg, 'ownerConsent': true},
       );
       result.value = DealerRcCheckModel.fromJson(
         Map<String, dynamic>.from(data),
@@ -61,33 +52,6 @@ class DealerServicesController extends GetxController {
       }
     } finally {
       isChecking.value = false;
-    }
-  }
-
-  Future<void> fetchOwnerMobile() async {
-    final reg = result.value?.vehicle.registrationNumber;
-    if (reg == null || isFetchingMobile.value) return;
-    isFetchingMobile.value = true;
-    mobileError.value = '';
-    try {
-      final data = Map<String, dynamic>.from(
-        await DealerMembershipApi.post(AppUrls.dealerServicesRcToMobile, {
-          'registrationNumber': reg,
-          'ownerConsent': true,
-        }),
-      );
-      ownerMobile.value = (data['mobile'] ?? '').toString();
-      mobileConsentAt.value =
-          DateTime.tryParse('${data['consentRecordedAt']}') ?? DateTime.now();
-      membership.loadHome(silent: true);
-    } on DealerApiException catch (e) {
-      if (_membershipCodes.contains(e.code)) {
-        membership.handleError(e);
-      } else {
-        mobileError.value = e.message;
-      }
-    } finally {
-      isFetchingMobile.value = false;
     }
   }
 }

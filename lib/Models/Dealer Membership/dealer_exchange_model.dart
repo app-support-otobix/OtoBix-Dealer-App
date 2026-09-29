@@ -5,6 +5,31 @@ int _int(dynamic v) => GlobalFunctions.parse<int>(v) ?? 0;
 List<String> _strings(dynamic v) =>
     v is List ? v.map((e) => e.toString()).toList() : <String>[];
 
+/// The viewer's own offer on a listing, and where the seller stands on it.
+class DealerMyOfferModel {
+  final String negotiationId;
+  final String
+  displayStatus; // OFFER SENT | COUNTERED | ACTION NEEDED | AGREED | ...
+  final int amount;
+  final bool byMe;
+  final int agreedAmount;
+
+  DealerMyOfferModel.fromJson(Map<String, dynamic> j)
+    : negotiationId = _str(j['negotiationId']),
+      displayStatus = _str(j['displayStatus']),
+      amount = _int(j['amount']),
+      byMe = j['byMe'] == true,
+      agreedAmount = _int(j['agreedAmount']);
+
+  /// From the conversation the quick offer returns.
+  DealerMyOfferModel.fromNegotiation(Map<String, dynamic> j)
+    : negotiationId = _str(j['id']),
+      displayStatus = _str(j['displayStatus']),
+      amount = _int(j['lastOffer']?['amount']),
+      byMe = j['lastOffer']?['byMe'] == true,
+      agreedAmount = _int(j['agreedAmount']);
+}
+
 class DealerExchangeListingModel {
   final String id;
   final String listingCode;
@@ -34,6 +59,7 @@ class DealerExchangeListingModel {
   final DateTime? listedAt;
   final int matchPercent;
   final String matchedRequirement;
+  final DealerMyOfferModel? myOffer;
 
   DealerExchangeListingModel.fromJson(Map<String, dynamic> j)
     : id = _str(j['id']),
@@ -63,7 +89,13 @@ class DealerExchangeListingModel {
       sellerCity = _str(j['seller']?['city']),
       listedAt = GlobalFunctions.parse<DateTime>(j['listedAt']),
       matchPercent = _int(j['matchPercent']),
-      matchedRequirement = _str(j['matchedRequirement']);
+      matchedRequirement = _str(j['matchedRequirement']),
+      myOffer =
+          j['myOffer'] is Map
+              ? DealerMyOfferModel.fromJson(
+                Map<String, dynamic>.from(j['myOffer']),
+              )
+              : null;
 }
 
 class DealerRequirementModel {

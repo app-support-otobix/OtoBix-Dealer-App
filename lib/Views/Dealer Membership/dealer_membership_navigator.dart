@@ -117,12 +117,13 @@ class DealerMembershipNavigator {
       'deal',
       'chat',
     ], (_) => openLeads(tab: 1, section: 3)),
-    DealerFeature('RC & Challan Check', Icons.assignment_outlined, [
+    DealerFeature('RC Check', Icons.assignment_outlined, [
       'services',
       'rc',
       'challan',
       'registration',
       'owner',
+      'mobile',
       'rc check',
     ], (_) => openRcCheck()),
     DealerFeature('Service History', Icons.build_outlined, [
@@ -294,8 +295,8 @@ class DealerMembershipNavigator {
         _DrawerItem(
           Icons.assignment_outlined,
           AppColors.blue,
-          'RC & Challan Check',
-          'Registration, ownership & pending fines',
+          'RC Check',
+          'RC details, owner mobile & challans',
           openRcCheck,
         ),
         _DrawerItem(

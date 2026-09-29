@@ -38,12 +38,15 @@ class DealerInventoryCarModel {
   final bool exchangeEnabled;
   final int exchangePrice;
   final String exchangeVisibility;
-  final String objective;
+  final String qcStatus; // PENDING | APPROVED | REJECTED
+  final String qcReason;
   final String status;
   final int offerCount;
   final int leadCount;
 
   bool get isCustomerCar => ownership == customerOwned;
+  bool get isQcPending => qcStatus == 'PENDING';
+  bool get isQcRejected => qcStatus == 'REJECTED';
 
   DealerInventoryCarModel.fromJson(Map<String, dynamic> j)
     : id = _str(j['id']),
@@ -77,7 +80,8 @@ class DealerInventoryCarModel {
       exchangeEnabled = j['exchange']?['enabled'] == true,
       exchangePrice = _int(j['exchange']?['price']),
       exchangeVisibility = _str(j['exchange']?['visibility']),
-      objective = _str(j['objective']),
+      qcStatus = _str(j['qc']?['status']),
+      qcReason = _str(j['qc']?['reason']),
       status = _str(j['status']),
       offerCount = _int(j['offerCount']),
       leadCount = _int(j['leadCount']);

@@ -6,6 +6,7 @@ import 'package:otobix/Controllers/Dealer%20Membership/dealer_paged_list.dart';
 import 'package:otobix/Models/Dealer%20Membership/dealer_lead_model.dart';
 import 'package:otobix/Utils/app_colors.dart';
 import 'package:otobix/Widgets/Dealer%20Membership/dealer_common_widgets.dart';
+import 'package:otobix/Widgets/Dealer%20Membership/vehicle_spec_sheet.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 (String, Color, String) leadStatusDisplay(DealerLeadModel l) {
@@ -176,12 +177,27 @@ class CustomerLeadsList extends StatelessWidget {
             ),
           ],
           const SizedBox(height: 8),
-          _field('Contact No', lead.contactNo),
-          _field('Make', lead.make),
-          _field('Model', lead.model),
-          _field('Variant', lead.variant),
-          _field('Transmission', lead.transmission),
-          _field('Year', lead.year),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  children: [
+                    _field('Contact No', lead.contactNo),
+                    _field('Make', lead.make),
+                    _field('Model', lead.model),
+                    _field('Variant', lead.variant),
+                    _field('Transmission', lead.transmission),
+                    _field('Year', lead.year),
+                  ],
+                ),
+              ),
+              if (lead.carImage.isNotEmpty) ...[
+                const SizedBox(width: 10),
+                CarThumbnail(imageUrl: lead.carImage, size: 96),
+              ],
+            ],
+          ),
           const SizedBox(height: 10),
           Row(
             children: [

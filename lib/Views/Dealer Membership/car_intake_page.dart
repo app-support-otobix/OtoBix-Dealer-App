@@ -40,7 +40,6 @@ class _CarIntakePageState extends State<CarIntakePage> {
   String? _transmission;
   bool _exchangeEnabled = true;
   String _visibility = 'OPEN';
-  String _objective = 'GET_OFFERS';
   List<String> _imageUrls = [];
   int _imagesNotReady = 0;
   String? _error;
@@ -73,7 +72,6 @@ class _CarIntakePageState extends State<CarIntakePage> {
           _visibilities.containsKey(car.exchangeVisibility)
               ? car.exchangeVisibility
               : 'OPEN';
-      _objective = car.objective.isEmpty ? 'GET_OFFERS' : car.objective;
       _description.text = car.description;
       _city.text = car.city;
       _customerName.text = car.customerName;
@@ -174,7 +172,6 @@ class _CarIntakePageState extends State<CarIntakePage> {
         'retailPrice': _amount(_retailPrice),
       },
       if (_isCustomerCar) ...{
-        'objective': _objective,
         'customerName': _customerName.text.trim(),
         'customerPhone': _customerPhone.text.trim(),
       },
@@ -525,28 +522,6 @@ class _CarIntakePageState extends State<CarIntakePage> {
             hint: '10 digit number',
             number: true,
             maxLength: 10,
-          ),
-          const SizedBox(height: 6),
-          const Text(
-            'Objective',
-            style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
-          ),
-          Wrap(
-            spacing: 6,
-            children: [
-              for (final o
-                  in const {
-                    'GET_OFFERS': 'Get Dealer Offers',
-                    'SELL': 'Sell This Car',
-                  }.entries)
-                ChoiceChip(
-                  label: Text(o.value, style: const TextStyle(fontSize: 11)),
-                  visualDensity: VisualDensity.compact,
-                  selected: _objective == o.key,
-                  selectedColor: AppColors.green.withValues(alpha: 0.2),
-                  onSelected: (_) => setState(() => _objective = o.key),
-                ),
-            ],
           ),
         ],
       ),

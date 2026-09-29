@@ -232,9 +232,6 @@ class AppUrls {
   static String get dealerServicesRcCheck =>
       "${_dealerMembership}services/rc-check";
 
-  static String get dealerServicesRcToMobile =>
-      "${_dealerMembership}services/rc-to-mobile";
-
   static String get dealerServicesServiceHistory =>
       "${_dealerMembership}services/service-history";
 
@@ -276,6 +273,9 @@ class AppUrls {
 
   static String dealerExchangeCar(String id) =>
       "${_dealerMembership}exchange/cars/$id";
+
+  static String dealerExchangeQuickOffer(String id) =>
+      "${_dealerMembership}exchange/cars/$id/offer";
 
   static String get dealerRequirements => "${_dealerMembership}requirements";
 
