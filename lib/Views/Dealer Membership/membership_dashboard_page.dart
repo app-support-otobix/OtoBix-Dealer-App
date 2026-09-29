@@ -103,53 +103,92 @@ class _MembershipDashboardPageState extends State<MembershipDashboardPage> {
         m.isGrace
             ? 'Grace period · ends ${m.graceEndAt == null ? '' : date.format(m.graceEndAt!.toLocal())}'
             : m.isActive
-            ? '${m.cycleStartAt == null ? '' : '${DateFormat('MMMM').format(m.cycleStartAt!.toLocal())} cycle · '}'
-                'Day ${m.dayOfCycle} of ${plan?.cycleDays ?? 30} · renews by ${m.cycleEndAt == null ? '' : date.format(m.cycleEndAt!.toLocal())}'
+            ? 'Day ${m.dayOfCycle} of ${plan?.cycleDays ?? 30} · renews by ${m.cycleEndAt == null ? '' : date.format(m.cycleEndAt!.toLocal())}'
             : 'Ended · upgrade to continue';
+    final dealerName = controller.dealerName.value;
     return DealerSectionCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                (plan?.name ?? 'Dealer Membership').toUpperCase(),
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.blue,
-                  fontSize: 14,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      (plan?.name ?? 'Dealer Membership').toUpperCase(),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.blue,
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      [
+                        if (dealerName.isNotEmpty) dealerName,
+                        m.dealerCode,
+                      ].join(' · '),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.black,
+                        fontSize: 13,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      [
+                        if (m.cycleStartAt != null)
+                          '${DateFormat('MMMM').format(m.cycleStartAt!.toLocal())} cycle',
+                        if (m.city.isNotEmpty) m.city,
+                      ].join(' · '),
+                      style: const TextStyle(
+                        color: AppColors.grey,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              DealerStatusChip(
-                label:
-                    m.isGrace
-                        ? 'GRACE PERIOD'
-                        : m.isActive
-                        ? 'ACTIVE'
-                        : 'ENDED',
-                color:
-                    m.isGrace
-                        ? AppColors.deepOrange
-                        : m.isActive
-                        ? AppColors.green
-                        : AppColors.red,
-                small: true,
+              const SizedBox(width: 10),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  DealerStatusChip(
+                    label:
+                        m.isGrace
+                            ? 'GRACE PERIOD'
+                            : m.isActive
+                            ? 'ACTIVE'
+                            : 'ENDED',
+                    color:
+                        m.isGrace
+                            ? AppColors.deepOrange
+                            : m.isActive
+                            ? AppColors.green
+                            : AppColors.red,
+                    small: true,
+                  ),
+                  const SizedBox(height: 10),
+                  FilledButton(
+                    onPressed: DealerMembershipNavigator.openUpgrade,
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppColors.green,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    child: const Text(
+                      'Upgrade Now',
+                      style: TextStyle(fontSize: 12),
+                    ),
+                  ),
+                ],
               ),
             ],
-          ),
-          const SizedBox(height: 4),
-          Text(
-            [
-              m.dealerCode,
-              if (m.dealerType.isNotEmpty) m.dealerType,
-              if (m.city.isNotEmpty) m.city,
-            ].join(' · '),
-            style: const TextStyle(color: AppColors.grey, fontSize: 11),
-          ),
-          Text(
-            statusLine,
-            style: const TextStyle(color: AppColors.grey, fontSize: 11),
           ),
           const SizedBox(height: 14),
           Row(
@@ -168,22 +207,12 @@ class _MembershipDashboardPageState extends State<MembershipDashboardPage> {
                   color: AppColors.blue,
                 ),
               ),
-              FilledButton(
-                onPressed: DealerMembershipNavigator.openUpgrade,
-                style: FilledButton.styleFrom(
-                  backgroundColor: AppColors.green,
-                  padding: const EdgeInsets.symmetric(horizontal: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                child: const Text(
-                  'Upgrade\nnow',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 12, height: 1.2),
-                ),
-              ),
             ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            statusLine,
+            style: const TextStyle(color: AppColors.grey, fontSize: 11),
           ),
           if (m.dealerType.isEmpty) ...[
             const SizedBox(height: 4),
