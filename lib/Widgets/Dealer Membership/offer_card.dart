@@ -47,6 +47,71 @@ String dealerOfferNote(DealerNegotiationModel n) {
   }
 }
 
+/// Both dealers' latest prices, as in the chat: mine in blue, the other
+/// dealer's in red, and the agreed price in green once there is one.
+class NegotiationPricesRow extends StatelessWidget {
+  final DealerNegotiationModel negotiation;
+  const NegotiationPricesRow({super.key, required this.negotiation});
+
+  @override
+  Widget build(BuildContext context) {
+    final n = negotiation;
+    if (n.buyerPrice <= 0 && n.sellerPrice <= 0 && n.finalPrice <= 0) {
+      return const SizedBox.shrink();
+    }
+    final buyerColor = n.isBuyer ? AppColors.blue : AppColors.red;
+    final sellerColor = n.isBuyer ? AppColors.red : AppColors.blue;
+    return Wrap(
+      spacing: 6,
+      runSpacing: 4,
+      children: [
+        if (n.buyerPrice > 0)
+          _pill(n.isBuyer ? 'Buyer (you)' : 'Buyer', n.buyerPrice, buyerColor),
+        if (n.sellerPrice > 0)
+          _pill(
+            n.isBuyer ? 'Seller' : 'Seller (you)',
+            n.sellerPrice,
+            sellerColor,
+          ),
+        if (n.finalPrice > 0) _pill('Final', n.finalPrice, AppColors.green),
+      ],
+    );
+  }
+
+  Widget _pill(String label, int amount, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withValues(alpha: 0.35)),
+      ),
+      child: Text.rich(
+        TextSpan(
+          children: [
+            TextSpan(
+              text: '$label ',
+              style: TextStyle(
+                fontSize: 10,
+                color: color,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            TextSpan(
+              text: GlobalFunctions.formatLakh(amount),
+              style: TextStyle(
+                fontSize: 12,
+                color: color,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 /// Who the other dealer is: their dealer code (their name once connected),
 /// dealer type and city.
 class DealerPartyTile extends StatelessWidget {
@@ -133,15 +198,6 @@ class OfferCard extends StatelessWidget {
                   Badge.count(count: n.unread),
                   const SizedBox(width: 8),
                 ],
-                if (amount > 0)
-                  Text(
-                    GlobalFunctions.formatLakh(amount),
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      color: AppColors.green,
-                    ),
-                  ),
               ],
             ),
             const SizedBox(height: 10),
@@ -149,6 +205,8 @@ class OfferCard extends StatelessWidget {
               label: n.displayStatus,
               color: dealerOfferStatusColor(n.displayStatus),
             ),
+            const SizedBox(height: 8),
+            NegotiationPricesRow(negotiation: n),
             const SizedBox(height: 8),
             if (showCar)
               Text(

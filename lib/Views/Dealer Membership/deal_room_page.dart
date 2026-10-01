@@ -11,6 +11,7 @@ import 'package:otobix/Utils/socket_events.dart';
 import 'package:otobix/Views/Dealer%20Membership/deal_room_exceptions_page.dart';
 import 'package:otobix/Widgets/Dealer%20Membership/chat_message_bubble.dart';
 import 'package:otobix/Widgets/Dealer%20Membership/dealer_common_widgets.dart';
+import 'package:otobix/Widgets/Dealer%20Membership/offer_card.dart';
 import 'package:otobix/Widgets/app_bar_widget.dart';
 import 'package:otobix/Widgets/button_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -176,6 +177,7 @@ class _DealRoomPageState extends State<DealRoomPage> {
                     children: [
                       _partiesHeader(r),
                       _statusBar(r),
+                      _pricesRow(),
                       Expanded(child: _thread()),
                       if (!r.isClosed) _inputBar(r),
                       if (r.nextStatuses.contains('COMPLETED'))
@@ -337,6 +339,19 @@ class _DealRoomPageState extends State<DealRoomPage> {
               ),
             ),
         ],
+      ),
+    );
+  }
+
+  // Both dealers' latest prices and the final one, from the chat thread.
+  Widget _pricesRow() {
+    final n = chat.value?.negotiation.value;
+    if (n == null) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(14, 6, 14, 0),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: NegotiationPricesRow(negotiation: n),
       ),
     );
   }

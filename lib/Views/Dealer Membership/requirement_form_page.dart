@@ -21,7 +21,7 @@ class _RequirementFormPageState extends State<RequirementFormPage> {
   static const double _minYear = 2000;
   static const double _maxKms = 200000;
   static const double _maxPriceLakh = 50;
-  static const int _maxMakes = 10;
+  static const int _maxMakes = 3;
 
   final rc = DealerRequirementsController.to;
   final membership = DealerMembershipController.to;

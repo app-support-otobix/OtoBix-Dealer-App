@@ -100,10 +100,16 @@ class _ReviewOfferPageState extends State<ReviewOfferPage> {
                             amount > 0
                                 ? GlobalFunctions.formatLakh(amount)
                                 : 'No offer yet',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 22,
-                              color: AppColors.green,
+                              // Agreed green, my price blue, theirs red.
+                              color:
+                                  n.agreedAmount > 0 || amount == 0
+                                      ? AppColors.green
+                                      : n.lastOfferByMe
+                                      ? AppColors.blue
+                                      : AppColors.red,
                             ),
                           ),
                           DealerStatusChip(
@@ -112,6 +118,8 @@ class _ReviewOfferPageState extends State<ReviewOfferPage> {
                           ),
                         ],
                       ),
+                      const SizedBox(height: 8),
+                      NegotiationPricesRow(negotiation: n),
                       const SizedBox(height: 6),
                       Text(
                         dealerOfferNote(n),

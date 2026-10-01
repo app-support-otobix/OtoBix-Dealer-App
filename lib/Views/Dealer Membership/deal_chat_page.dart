@@ -253,6 +253,8 @@ class _DealChatPageState extends State<DealChatPage> {
                     color: dealerOfferStatusColor(n.displayStatus),
                     small: true,
                   ),
+                  const SizedBox(height: 6),
+                  NegotiationPricesRow(negotiation: n),
                 ],
               ),
             ),

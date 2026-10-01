@@ -33,7 +33,7 @@ class DistanceBadge extends StatelessWidget {
           Icon(Icons.place, size: 11, color: text),
           const SizedBox(width: 2),
           Text(
-            '$label km',
+            '$label km away',
             style: TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.bold,

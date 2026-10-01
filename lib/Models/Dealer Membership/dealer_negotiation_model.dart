@@ -37,6 +37,10 @@ class DealerNegotiationModel {
   final bool lastOfferByMe;
   final bool lastOfferIsCounter;
   final int agreedAmount;
+  // Each side's latest offer or counter (0 = none yet), and the agreed one.
+  final int buyerPrice;
+  final int sellerPrice;
+  final int finalPrice;
   final int offerCount;
   final int questionCount;
   final int unread;
@@ -73,6 +77,9 @@ class DealerNegotiationModel {
       lastOfferByMe = j['lastOffer']?['byMe'] == true,
       lastOfferIsCounter = j['lastOffer']?['isCounter'] == true,
       agreedAmount = _int(j['agreedAmount']),
+      buyerPrice = _int(j['prices']?['buyer']),
+      sellerPrice = _int(j['prices']?['seller']),
+      finalPrice = _int(j['prices']?['final']),
       offerCount = _int(j['offerCount']),
       questionCount = _int(j['questionCount']),
       unread = _int(j['unread']),
