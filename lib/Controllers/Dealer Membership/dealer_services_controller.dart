@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:otobix/Controllers/Dealer%20Membership/dealer_membership_controller.dart';
 import 'package:otobix/Models/Dealer%20Membership/dealer_rc_check_model.dart';
@@ -52,6 +53,18 @@ class DealerServicesController extends GetxController {
       }
     } finally {
       isChecking.value = false;
+    }
+  }
+
+  /// The dealer pressed Cancel on the consent notice. The server keeps the
+  /// answer (DPDP); nothing else depends on it, so a failure is not shown.
+  Future<void> declineConsent(String reg) async {
+    try {
+      await DealerMembershipApi.post(AppUrls.dealerServicesRcCheckDecline, {
+        'registrationNumber': reg,
+      });
+    } on DealerApiException catch (e) {
+      debugPrint('Consent decline not recorded: ${e.message}');
     }
   }
 }

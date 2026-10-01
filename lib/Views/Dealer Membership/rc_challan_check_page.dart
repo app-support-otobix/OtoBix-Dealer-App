@@ -32,17 +32,26 @@ class _RcChallanCheckPageState extends State<RcChallanCheckPage> {
   }
 
   // Every check fetches the owner's personal details, so the owner's consent
-  // is confirmed first, every time.
+  // is confirmed first, every time. The server stores each answer, OK or
+  // Cancel, so the notice is only shown when the check can actually run.
   Future<void> _check() async {
     FocusScope.of(context).unfocus();
     final reg = controller.validRegistration(_regNoController.text);
-    if (reg == null || controller.isChecking.value) return;
+    if (reg == null ||
+        controller.isChecking.value ||
+        !controller.membership.requireMembership()) {
+      return;
+    }
     final consented = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
       builder: (_) => _ConsentDialog(reg: reg, cost: controller.checkCost),
     );
-    if (consented == true) controller.check(reg);
+    if (consented == true) {
+      controller.check(reg);
+    } else {
+      controller.declineConsent(reg);
+    }
   }
 
   @override
@@ -498,6 +507,8 @@ class _RcChallanCheckPageState extends State<RcChallanCheckPage> {
 }
 
 /// Asked before every check: OK confirms the owner's consent, Cancel stops it.
+/// The server stores each answer with its own copy of these words
+/// (RC_CHECK_CONSENT in dealer_membership_config_helper.js): change both together.
 class _ConsentDialog extends StatelessWidget {
   final String reg;
   final int cost;

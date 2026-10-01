@@ -232,6 +232,9 @@ class AppUrls {
   static String get dealerServicesRcCheck =>
       "${_dealerMembership}services/rc-check";
 
+  static String get dealerServicesRcCheckDecline =>
+      "${_dealerMembership}services/rc-check/decline";
+
   static String get dealerServicesServiceHistory =>
       "${_dealerMembership}services/service-history";
 
