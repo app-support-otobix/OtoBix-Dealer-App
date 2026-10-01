@@ -32,6 +32,7 @@ class _DealChatPageState extends State<DealChatPage> {
     'Offer': AppColors.deepOrange,
     'Vehicle History': Colors.purple,
     'Inspection': Colors.teal,
+    'Connection': Colors.indigo,
   };
 
   @override
@@ -124,7 +125,7 @@ class _DealChatPageState extends State<DealChatPage> {
               const SizedBox(height: 8),
               Expanded(child: _messages(n)),
               const SizedBox(height: 8),
-              if (n.dealRoomId.isEmpty) _quickReplyBar(),
+              if (n.dealRoomId.isEmpty) _quickReplyBar(n),
               const SizedBox(height: 8),
             ],
           );
@@ -337,8 +338,16 @@ class _DealChatPageState extends State<DealChatPage> {
     );
   }
 
-  Widget _quickReplyBar() {
-    final categories = membership.config.value?.quickMessages ?? const {};
+  Widget _quickReplyBar(DealerNegotiationModel n) {
+    final config = membership.config.value;
+    // "Please kindly accept" only while my own connection request is pending.
+    final nudge = config?.connectionQuickMessage ?? '';
+    final canNudge = n.hasPendingConnection && n.connectionInitiatedByMe;
+    bool shown(String text) => canNudge || text != nudge;
+    final categories = <String, List<String>>{
+      for (final e in (config?.quickMessages ?? const {}).entries)
+        if (e.value.any(shown)) e.key: e.value.where(shown).toList(),
+    };
     return ConstrainedBox(
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.3,

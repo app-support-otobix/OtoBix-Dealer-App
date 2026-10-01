@@ -60,6 +60,8 @@ class DealerExchangeListingModel {
   final int matchPercent;
   final String matchedRequirement;
   final DealerMyOfferModel? myOffer;
+  // From my showroom to the seller's; null when either has no location set.
+  final double? distanceKm;
 
   DealerExchangeListingModel.fromJson(Map<String, dynamic> j)
     : id = _str(j['id']),
@@ -90,6 +92,7 @@ class DealerExchangeListingModel {
       listedAt = GlobalFunctions.parse<DateTime>(j['listedAt']),
       matchPercent = _int(j['matchPercent']),
       matchedRequirement = _str(j['matchedRequirement']),
+      distanceKm = (j['distanceKm'] as num?)?.toDouble(),
       myOffer =
           j['myOffer'] is Map
               ? DealerMyOfferModel.fromJson(
@@ -102,8 +105,9 @@ class DealerRequirementModel {
   final String id;
   final String requirementCode;
   final String name;
+  final List<String> makes; // empty = any make
   final String make;
-  final String model;
+  final String model; // only with exactly one make
   final int yearFrom;
   final int yearTo;
   final int kmMin;
@@ -131,6 +135,7 @@ class DealerRequirementModel {
     : id = _str(j['id']),
       requirementCode = _str(j['requirementCode']),
       name = _str(j['name']),
+      makes = _requirementMakes(j),
       make = _str(j['make']),
       model = _str(j['model']),
       yearFrom = _int(j['yearFrom']),
@@ -146,9 +151,17 @@ class DealerRequirementModel {
       expiresAt = GlobalFunctions.parse<DateTime>(j['expiresAt']),
       matchCount = _int(j['matchCount']);
 
+  // `makes` from a current server; an older one sends a single `make`.
+  static List<String> _requirementMakes(Map<String, dynamic> j) {
+    final makes = _strings(j['makes']);
+    if (makes.isNotEmpty) return makes;
+    final make = _str(j['make']);
+    return make.isEmpty ? const [] : [make];
+  }
+
   String get summary {
     final parts = <String>[
-      [make, model].where((s) => s.isNotEmpty).join(' '),
+      [makes.join(' / '), model].where((s) => s.isNotEmpty).join(' '),
       if (yearFrom > 0 || yearTo > 0)
         '${yearFrom > 0 ? yearFrom : 'Any'}–${yearTo > 0 ? yearTo : 'now'}',
       if (priceMin > 0 || priceMax > 0)

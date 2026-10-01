@@ -8,6 +8,7 @@ import 'package:otobix/Views/Dealer%20Membership/requirement_form_page.dart';
 import 'package:otobix/Widgets/Dealer%20Membership/dealer_common_widgets.dart';
 import 'package:otobix/Widgets/Dealer%20Membership/exchange_filters_panel.dart';
 import 'package:otobix/Widgets/Dealer%20Membership/exchange_listing_card.dart';
+import 'package:otobix/Widgets/Dealer%20Membership/showroom_location_widgets.dart';
 import 'package:otobix/Widgets/app_bar_widget.dart';
 import 'package:otobix/Widgets/button_widget.dart';
 
@@ -119,6 +120,7 @@ class _FindCarsTabState extends State<_FindCarsTab> {
   );
 
   static const _sorts = {
+    'nearest': 'Nearest first',
     'recent': 'Recently added',
     'price_asc': 'Price: low to high',
     'price_desc': 'Price: high to low',
@@ -214,6 +216,13 @@ class _FindCarsTabState extends State<_FindCarsTab> {
           ),
         ),
         const SizedBox(height: 10),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: ShowroomLocationCard(
+            promptOnly: true,
+            onSaved: () => fc.search(reset: true),
+          ),
+        ),
         ConstrainedBox(
           constraints: BoxConstraints(
             maxHeight: MediaQuery.of(context).size.height * 0.5,

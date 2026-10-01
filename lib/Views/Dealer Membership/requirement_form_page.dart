@@ -21,6 +21,7 @@ class _RequirementFormPageState extends State<RequirementFormPage> {
   static const double _minYear = 2000;
   static const double _maxKms = 200000;
   static const double _maxPriceLakh = 50;
+  static const int _maxMakes = 10;
 
   final rc = DealerRequirementsController.to;
   final membership = DealerMembershipController.to;
@@ -30,8 +31,8 @@ class _RequirementFormPageState extends State<RequirementFormPage> {
   late final _city = TextEditingController(
     text: widget.existing?.city ?? membership.membership.value?.city ?? '',
   );
-  String? _make;
-  String? _model;
+  final List<String> _makes = []; // empty = any make
+  String? _model; // only with exactly one make
   late RangeValues _years;
   late RangeValues _kms;
   late RangeValues _priceLakh;
@@ -42,7 +43,7 @@ class _RequirementFormPageState extends State<RequirementFormPage> {
   void initState() {
     super.initState();
     final r = widget.existing;
-    _make = (r?.make ?? '').isEmpty ? null : r!.make;
+    _makes.addAll(r?.makes ?? const []);
     _model = (r?.model ?? '').isEmpty ? null : r!.model;
     _years = RangeValues(
       (r?.yearFrom ?? 0) > 0 ? r!.yearFrom.toDouble() : _minYear,
@@ -62,7 +63,19 @@ class _RequirementFormPageState extends State<RequirementFormPage> {
     _transmissions = {...?r?.transmissions};
     membership.ensureConfig();
     rc.fetchMakes('');
-    if (_make != null) rc.fetchModels(make: _make!, query: '');
+    if (_singleMake != null) rc.fetchModels(make: _singleMake!, query: '');
+  }
+
+  String? get _singleMake => _makes.length == 1 ? _makes.first : null;
+
+  // A model belongs to one make, so it is cleared whenever the makes change.
+  void _setMakes(void Function() change) {
+    setState(() {
+      change();
+      _model = null;
+    });
+    rc.modelOptions.clear();
+    if (_singleMake != null) rc.fetchModels(make: _singleMake!, query: '');
   }
 
   @override
@@ -75,8 +88,9 @@ class _RequirementFormPageState extends State<RequirementFormPage> {
   Future<void> _save() async {
     final body = {
       'name': _name.text.trim(),
-      'make': _make ?? '',
-      'model': _model ?? '',
+      'makes': _makes,
+      'make': _singleMake ?? '', // for a server from before multiple makes
+      'model': _singleMake == null ? '' : _model ?? '',
       'yearFrom': _years.start > _minYear ? _years.start.round() : 0,
       'yearTo': _years.end < _maxYear ? _years.end.round() : 0,
       'kmMin': _kms.start.round(),
@@ -135,58 +149,100 @@ class _RequirementFormPageState extends State<RequirementFormPage> {
             const SizedBox(height: 12),
             DealerSectionCard(
               title: 'Make & Model',
-              child: Row(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: Obx(
-                      () => DealerPickerField(
-                        label: 'Make',
-                        hintText: 'Any Make',
-                        value: _make,
-                        isLoading: rc.isMakeLoading.value,
-                        onTap:
-                            () => showDealerOptionPicker(
-                              context,
-                              title: 'Select Make',
-                              options: rc.makeOptions,
-                              isLoading: rc.isMakeLoading,
-                              onSearch: rc.onMakeSearchChanged,
-                              onSelect: (v) {
-                                setState(() {
-                                  _make = v;
-                                  _model = null;
-                                });
-                                rc.modelOptions.clear();
-                                rc.fetchModels(make: v, query: '');
-                              },
-                            ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Obx(
+                          () => DealerPickerField(
+                            label: 'Make',
+                            hintText:
+                                _makes.isEmpty
+                                    ? 'Any Make'
+                                    : _makes.length < _maxMakes
+                                    ? 'Add another make'
+                                    : 'Up to $_maxMakes makes',
+                            value: null,
+                            enabled: _makes.length < _maxMakes,
+                            isLoading: rc.isMakeLoading.value,
+                            onTap:
+                                () => showDealerOptionPicker(
+                                  context,
+                                  title: 'Select Make',
+                                  options: rc.makeOptions,
+                                  isLoading: rc.isMakeLoading,
+                                  onSearch: rc.onMakeSearchChanged,
+                                  onSelect: (v) {
+                                    if (!_makes.contains(v)) {
+                                      _setMakes(() => _makes.add(v));
+                                    }
+                                  },
+                                ),
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Obx(
-                      () => DealerPickerField(
-                        label: 'Model',
-                        hintText:
-                            _make == null ? 'Select make first' : 'Any Model',
-                        value: _model,
-                        enabled: _make != null,
-                        isLoading: rc.isModelLoading.value,
-                        onTap:
-                            () => showDealerOptionPicker(
-                              context,
-                              title: 'Select Model',
-                              options: rc.modelOptions,
-                              isLoading: rc.isModelLoading,
-                              onSearch:
-                                  (q) =>
-                                      rc.onModelSearchChanged(_make ?? '', q),
-                              onSelect: (v) => setState(() => _model = v),
-                            ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Obx(
+                          () => DealerPickerField(
+                            label: 'Model',
+                            hintText:
+                                _makes.isEmpty
+                                    ? 'Select make first'
+                                    : _singleMake == null
+                                    ? 'Any model'
+                                    : 'Any Model',
+                            value: _model,
+                            enabled: _singleMake != null,
+                            isLoading: rc.isModelLoading.value,
+                            onTap:
+                                () => showDealerOptionPicker(
+                                  context,
+                                  title: 'Select Model',
+                                  options: rc.modelOptions,
+                                  isLoading: rc.isModelLoading,
+                                  onSearch:
+                                      (q) => rc.onModelSearchChanged(
+                                        _singleMake ?? '',
+                                        q,
+                                      ),
+                                  onSelect: (v) => setState(() => _model = v),
+                                ),
+                          ),
+                        ),
                       ),
-                    ),
+                    ],
                   ),
+                  if (_makes.isNotEmpty) ...[
+                    const SizedBox(height: 10),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: [
+                        for (final m in _makes)
+                          InputChip(
+                            label: Text(m, style: const TextStyle(fontSize: 12)),
+                            selected: true,
+                            showCheckmark: false,
+                            selectedColor: AppColors.green.withValues(
+                              alpha: 0.18,
+                            ),
+                            deleteIconColor: AppColors.green,
+                            visualDensity: VisualDensity.compact,
+                            onDeleted: () => _setMakes(() => _makes.remove(m)),
+                          ),
+                      ],
+                    ),
+                  ],
+                  if (_makes.length > 1) ...[
+                    const SizedBox(height: 6),
+                    const Text(
+                      'A model can be picked when only one make is selected.',
+                      style: TextStyle(fontSize: 11, color: AppColors.grey),
+                    ),
+                  ],
                 ],
               ),
             ),

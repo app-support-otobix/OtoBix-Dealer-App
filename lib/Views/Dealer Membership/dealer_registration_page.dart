@@ -4,6 +4,7 @@ import 'package:otobix/Controllers/Dealer%20Membership/dealer_membership_control
 import 'package:otobix/Utils/app_colors.dart';
 import 'package:otobix/Utils/app_constants.dart';
 import 'package:otobix/Widgets/Dealer%20Membership/dealer_common_widgets.dart';
+import 'package:otobix/Widgets/Dealer%20Membership/showroom_location_widgets.dart';
 import 'package:otobix/Widgets/app_bar_widget.dart';
 import 'package:otobix/Widgets/button_widget.dart';
 
@@ -185,6 +186,13 @@ class _DealerRegistrationPageState extends State<DealerRegistrationPage> {
                       _error = null;
                     }),
               ),
+              const SizedBox(height: 10),
+              const Text(
+                'Showroom location',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 6),
+              const ShowroomLocationCard(),
               const SizedBox(height: 10),
               Text(
                 'Trade distance · ${_radiusKm.round()} km',

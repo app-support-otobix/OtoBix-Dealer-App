@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:otobix/Controllers/Dealer%20Membership/dealer_membership_controller.dart';
 import 'package:otobix/Controllers/Dealer%20Membership/dealer_paged_list.dart';
 import 'package:otobix/Models/Dealer%20Membership/dealer_lead_model.dart';
@@ -45,8 +46,21 @@ class DealerLeadsController extends GetxController {
       'status': status,
       'details': details,
     }),
-    success: 'Status updated',
+    success: _statusSaved(status, details),
   );
+
+  // The server reminds the dealer when a showroom visit still to come is due.
+  static String _statusSaved(String status, Map<String, dynamic> details) {
+    final at = DateTime.tryParse('${details['visitAt'] ?? ''}')?.toLocal();
+    final remind =
+        status == 'SCHEDULED_SHOWROOM_VISIT' &&
+        const ['Scheduled', 'Deferred'].contains(details['visitStatus']) &&
+        at != null &&
+        at.isAfter(DateTime.now());
+    return remind
+        ? 'Status updated · reminder at ${DateFormat('d MMM, h:mm a').format(at)}'
+        : 'Status updated';
+  }
 
   Future<DealerLeadModel?> _save(
     Future<dynamic> Function() call, {

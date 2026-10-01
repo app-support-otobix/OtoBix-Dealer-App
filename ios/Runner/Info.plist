@@ -35,7 +35,7 @@
 		<!-- <key>NSUserTrackingUsageDescription</key>
 		<string>App uses tracking to deliver personalized notifications.</string> -->
 		<key>NSLocationWhenInUseUsageDescription</key>
-		<string>OtoBix Dealer App may request your location only for features that need it.</string>
+		<string>OtoBix uses your location only when you set your showroom location, to show how far other dealers' cars are from your showroom.</string>
 		<key>UIApplicationSupportsIndirectInputEvents</key>
 		<true/>
 		<!-- ===== Background modes for OneSignal ===== -->

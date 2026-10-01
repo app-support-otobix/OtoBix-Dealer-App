@@ -53,6 +53,7 @@ class DealerMembershipConfigModel {
   final int maxCarImages;
   final Map<String, List<String>> quickMessages;
   final String offerQuickMessage;
+  final String connectionQuickMessage;
   final Map<String, List<String>> presetAnswers;
   final List<String> fallbackAnswers;
   final List<String> leadStatuses;
@@ -81,6 +82,7 @@ class DealerMembershipConfigModel {
       maxCarImages = _int(j['maxCarImages']),
       quickMessages = _stringListMap(j['quickMessages']),
       offerQuickMessage = _str(j['offerQuickMessage']),
+      connectionQuickMessage = _str(j['connectionQuickMessage']),
       presetAnswers = _stringListMap(j['presetAnswers']),
       fallbackAnswers = _strings(j['fallbackAnswers']),
       leadStatuses = _strings(j['leadStatuses']),
@@ -153,6 +155,9 @@ class DealerMembershipModel {
   final String city;
   final String state;
   final int tradeRadiusKm;
+  // Set from the phone GPS; other dealers' cars show their distance from it.
+  final bool hasShowroomLocation;
+  final DateTime? showroomLocationAt;
   final String status;
   final DealerPlanModel? plan;
   final int cycleNumber;
@@ -178,6 +183,8 @@ class DealerMembershipModel {
       city = _str(j['city']),
       state = _str(j['state']),
       tradeRadiusKm = _int(j['tradeRadiusKm']),
+      hasShowroomLocation = j['showroomLocation'] is Map,
+      showroomLocationAt = _date(j['showroomLocation']?['updatedAt']),
       status = _str(j['status']).isEmpty ? 'NONE' : _str(j['status']),
       plan =
           j['plan'] is Map

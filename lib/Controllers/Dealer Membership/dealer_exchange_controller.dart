@@ -19,7 +19,8 @@ class DealerExchangeController extends GetxController {
   static const double maxPriceLakh = 50;
 
   final searchText = ''.obs;
-  final sort = 'recent'.obs;
+  // Nearest first; the server falls back to newest when no showroom location is set.
+  final sort = 'nearest'.obs;
   final selectedMake = RxnString();
   final selectedModel = RxnString();
   final selectedFuelTypes = <String>{}.obs;

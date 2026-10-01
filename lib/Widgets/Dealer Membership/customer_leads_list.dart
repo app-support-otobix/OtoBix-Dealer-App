@@ -20,6 +20,8 @@ import 'package:url_launcher/url_launcher.dart';
         'VISIT ${s.toUpperCase()}',
         s == 'Visited'
             ? AppColors.green
+            : s == 'Scheduled'
+            ? AppColors.blue
             : s == 'Deferred'
             ? AppColors.deepOrange
             : AppColors.red,
@@ -317,7 +319,7 @@ class _UpdateLeadStatusDialogState extends State<_UpdateLeadStatusDialog> {
   _Outcome? _outcome;
   String? _error;
   DateTime? _visitAt;
-  String _visitStatus = 'Visited';
+  String _visitStatus = 'Scheduled';
   DateTime? _followUpDate;
   String _soldAction = 'PITCHED_ANOTHER';
   final _pitched = TextEditingController();
@@ -482,10 +484,18 @@ class _UpdateLeadStatusDialogState extends State<_UpdateLeadStatusDialog> {
           ),
           _question('Status'),
           _choice(
-            ['Visited', 'Deferred', 'Cancelled'],
+            ['Scheduled', 'Visited', 'Deferred', 'Cancelled'],
             _visitStatus,
             (v) => setState(() => _visitStatus = v),
           ),
+          if (const ['Scheduled', 'Deferred'].contains(_visitStatus))
+            const Padding(
+              padding: EdgeInsets.only(top: 6),
+              child: Text(
+                "You'll get a notification at the visit time.",
+                style: TextStyle(fontSize: 11, color: AppColors.grey),
+              ),
+            ),
         ];
       case _Outcome.sharedOnWhatsApp:
         return [

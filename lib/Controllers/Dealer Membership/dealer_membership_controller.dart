@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:otobix/Controllers/Dealer%20Membership/dealer_connections_controller.dart';
 import 'package:otobix/Controllers/Dealer%20Membership/dealer_exchange_controller.dart';
@@ -267,6 +268,75 @@ class DealerMembershipController extends GetxController {
     }
   }
 
+  final isLocating = false.obs;
+
+  /// Reads the phone's GPS (the dealer is asked to do this at the showroom) and
+  /// saves it as the showroom location; other dealers' cars then show their
+  /// distance from it. Only the distance ever reaches other dealers.
+  Future<bool> setShowroomLocation() async {
+    if (isLocating.value) return false;
+    isLocating.value = true;
+    try {
+      final position = await _currentPosition();
+      final data = await DealerMembershipApi.put(
+        AppUrls.dealerShowroomLocation,
+        {'latitude': position.latitude, 'longitude': position.longitude},
+      );
+      membership.value = DealerMembershipModel.fromJson(
+        Map<String, dynamic>.from(data),
+      );
+      _toast(
+        'Showroom location saved',
+        "Other dealers' cars now show how far they are from you.",
+        ToastType.success,
+      );
+      return true;
+    } on _LocationUnavailable catch (e) {
+      _toast('Location not available', e.message, ToastType.error);
+      return false;
+    } on DealerApiException catch (e) {
+      _toast('Could not save the location', e.message, ToastType.error);
+      return false;
+    } finally {
+      isLocating.value = false;
+    }
+  }
+
+  Future<Position> _currentPosition() async {
+    if (!await Geolocator.isLocationServiceEnabled()) {
+      throw const _LocationUnavailable(
+        'Turn on location (GPS) on your phone and try again.',
+      );
+    }
+    var permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+    }
+    if (permission == LocationPermission.deniedForever) {
+      await Geolocator.openAppSettings();
+      throw const _LocationUnavailable(
+        'Allow location for OtoBix in Settings, then try again.',
+      );
+    }
+    if (permission == LocationPermission.denied) {
+      throw const _LocationUnavailable(
+        'Allow location access to set your showroom location.',
+      );
+    }
+    try {
+      return await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          timeLimit: Duration(seconds: 20),
+        ),
+      );
+    } catch (_) {
+      throw const _LocationUnavailable(
+        'Could not get a GPS fix. Step outside or near a window and try again.',
+      );
+    }
+  }
+
   Future<bool> requestOfflinePayment(
     DealerPlanModel plan, {
     String reference = '',
@@ -411,4 +481,10 @@ class DealerMembershipController extends GetxController {
       type: type,
     );
   }
+}
+
+/// Why the phone could not give a showroom location, in the dealer's words.
+class _LocationUnavailable implements Exception {
+  final String message;
+  const _LocationUnavailable(this.message);
 }

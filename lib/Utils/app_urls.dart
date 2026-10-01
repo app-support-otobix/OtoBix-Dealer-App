@@ -213,6 +213,9 @@ class AppUrls {
   static String get dealerMembershipRegister =>
       "${_dealerMembership}membership/register";
 
+  static String get dealerShowroomLocation =>
+      "${_dealerMembership}membership/showroom-location";
+
   static String dealerMembershipLedger({
     required String type,
     required int page,

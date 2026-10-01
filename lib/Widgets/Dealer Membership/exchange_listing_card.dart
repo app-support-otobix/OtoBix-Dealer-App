@@ -7,6 +7,7 @@ import 'package:otobix/Utils/app_colors.dart';
 import 'package:otobix/Utils/global_functions.dart';
 import 'package:otobix/Views/Dealer%20Membership/dealer_membership_navigator.dart';
 import 'package:otobix/Widgets/Dealer%20Membership/dealer_common_widgets.dart';
+import 'package:otobix/Widgets/Dealer%20Membership/showroom_location_widgets.dart';
 import 'package:otobix/Widgets/Dealer%20Membership/vehicle_spec_sheet.dart';
 
 class ExchangeListingCard extends StatelessWidget {
@@ -41,6 +42,8 @@ class ExchangeListingCard extends StatelessWidget {
                       spacing: 6,
                       runSpacing: 4,
                       children: [
+                        if (l.distanceKm != null)
+                          DistanceBadge(km: l.distanceKm!),
                         _ThinBadge(label: l.source),
                         if (l.matchPercent > 0)
                           _ThinBadge(
