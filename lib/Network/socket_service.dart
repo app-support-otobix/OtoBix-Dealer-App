@@ -1,3 +1,4 @@
+import 'package:otobix/Network/api_service.dart';
 import 'package:otobix/Utils/socket_events.dart';
 import 'package:otobix/helpers/shared_prefs_helper.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
@@ -50,7 +51,7 @@ class SocketService {
 
   bool _dealerRoomWanted = false;
 
-  Future<void> joinDealerRoom() async {
+  Future<void> joinDealerRoom({bool isRetry = false}) async {
     _dealerRoomWanted = true;
     final token =
         await SharedPrefsHelper.getString(SharedPrefsHelper.accessTokenKey) ??
@@ -59,9 +60,15 @@ class SocketService {
     socket.emitWithAck(
       SocketEvents.dealerJoin,
       {'token': token},
-      ack: (response) {
+      ack: (response) async {
         if (response is Map && response['ok'] != true) {
           debugPrint('Dealer room join refused: ${response['code']}');
+          // Access tokens last 15 minutes: refresh a stale one and join again once.
+          if (response['code'] == 'TOKEN_EXPIRED' &&
+              !isRetry &&
+              await ApiService.refreshAccessToken()) {
+            joinDealerRoom(isRetry: true);
+          }
         }
       },
     );
