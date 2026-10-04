@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:otobix/Controllers/Dealer%20Membership/dealer_exchange_controller.dart';
+import 'package:otobix/Controllers/Dealer%20Membership/dealer_membership_controller.dart';
 import 'package:otobix/Controllers/Dealer%20Membership/dealer_inventory_controller.dart';
 import 'package:otobix/Controllers/Dealer%20Membership/dealer_negotiations_controller.dart';
 import 'package:otobix/Controllers/bottom_navigation_controller.dart';
@@ -159,26 +160,58 @@ class DealerMembershipNavigator {
     ], (_) => openUpgrade()),
   ];
 
-  static void openMembership() => Get.to(() => const MembershipDashboardPage());
+  // Dealer Home modules OtoBix can switch off from the CRM (App Access). Every
+  // way into one — its tile, a drawer, the feature search, a notification —
+  // comes through here, so a locked module explains itself and opens nothing.
+  static const _sell = DealerMembershipController.moduleSell;
+  static const _buy = DealerMembershipController.moduleBuy;
+  static const _services = DealerMembershipController.moduleServices;
+  static const _leads = DealerMembershipController.moduleLeads;
+  static const _membership = DealerMembershipController.moduleMembership;
+
+  static bool _can(List<String> anyOf) =>
+      DealerMembershipController.to.requireAnyModule(anyOf);
+
+  static void _ifEnabled(String code, VoidCallback open) {
+    if (_can([code])) open();
+  }
+
+  static void openMembership() => _ifEnabled(
+    _membership,
+    () => Get.to(() => const MembershipDashboardPage()),
+  );
 
   static void openSell({int tab = 0}) =>
-      Get.to(() => DealerSellPage(initialTab: tab));
+      _ifEnabled(_sell, () => Get.to(() => DealerSellPage(initialTab: tab)));
 
-  static void openLeads({int tab = 0, int section = 0}) =>
-      Get.to(() => DealerLeadsPage(initialTab: tab, dealerSection: section));
+  static void openLeads({int tab = 0, int section = 0}) => _ifEnabled(
+    _leads,
+    () => Get.to(
+      () => DealerLeadsPage(initialTab: tab, dealerSection: section),
+    ),
+  );
 
   static void openActivityLog() => Get.to(() => const ActivityLogPage());
 
-  static void openUpgrade() => Get.to(() => const UpgradeMembershipPage());
+  static void openUpgrade() => _ifEnabled(
+    _membership,
+    () => Get.to(() => const UpgradeMembershipPage()),
+  );
 
   static void openDealerDetails() =>
       Get.to(() => const DealerRegistrationPage());
 
-  static void openAddCustomerCar() => Get.to(
-    () => const CarIntakePage(ownership: DealerInventoryCarModel.customerOwned),
+  static void openAddCustomerCar() => _ifEnabled(
+    _sell,
+    () => Get.to(
+      () => const CarIntakePage(
+        ownership: DealerInventoryCarModel.customerOwned,
+      ),
+    ),
   );
 
   static Future<void> openListing(String id) async {
+    if (!_can([_sell])) return;
     final car = await DealerInventoryController.to.getCar(id);
     if (car != null) {
       Get.to(() => CarIntakePage(ownership: car.ownership, car: car));
@@ -194,28 +227,38 @@ class DealerMembershipNavigator {
   static void openOfferToDealers(DealerInventoryCarModel car) =>
       Get.to(() => SellerInitiatedConnectionPage(car: car));
 
-  static void openDealerInventory({int tab = 0}) =>
-      Get.to(() => DealerInventoryPage(initialTab: tab));
+  static void openDealerInventory({int tab = 0}) => _ifEnabled(
+    _buy,
+    () => Get.to(() => DealerInventoryPage(initialTab: tab)),
+  );
 
   static Future<void> openExchangeListing(String id) async {
+    if (!_can([_buy])) return;
     final listing = await DealerExchangeController.to.getListing(id);
     if (listing != null) Get.to(() => ExchangeListingPage(listing: listing));
   }
 
-  static void openAuctions() => Get.to(
-    () => Scaffold(
-      appBar: AppBarWidget(title: 'Auctions'),
-      body: Get.find<BottomNavigationController>().auctionsPage,
+  static void openAuctions() => _ifEnabled(
+    _buy,
+    () => Get.to(
+      () => Scaffold(
+        appBar: AppBarWidget(title: 'Auctions'),
+        body: Get.find<BottomNavigationController>().auctionsPage,
+      ),
     ),
   );
 
-  static void openServiceHistory() => Get.to(() => ServiceHistoryPage());
+  static void openServiceHistory() =>
+      _ifEnabled(_services, () => Get.to(() => ServiceHistoryPage()));
 
-  static void openRcCheck() => Get.to(() => const RcChallanCheckPage());
+  static void openRcCheck() =>
+      _ifEnabled(_services, () => Get.to(() => const RcChallanCheckPage()));
 
-  static void openInsurance() => Get.to(() => const InsurancePage());
+  static void openInsurance() =>
+      _ifEnabled(_services, () => Get.to(() => const InsurancePage()));
 
-  static void openFinance() => Get.to(() => const FinancePage());
+  static void openFinance() =>
+      _ifEnabled(_services, () => Get.to(() => const FinancePage()));
 
   static void openChat(String negotiationId) =>
       Get.to(() => DealChatPage(negotiationId: negotiationId));
@@ -273,7 +316,11 @@ class DealerMembershipNavigator {
     openRequestConnection(negotiationId: n.id);
   }
 
-  static void openBuyDrawer(BuildContext context) => _drawer(context, 'Buy', [
+  static void openBuyDrawer(BuildContext context) {
+    if (_can([_buy])) _openBuyDrawer(context);
+  }
+
+  static void _openBuyDrawer(BuildContext context) => _drawer(context, 'Buy', [
     _DrawerItem(
       Icons.gavel_outlined,
       Colors.deepOrange,
@@ -290,7 +337,11 @@ class DealerMembershipNavigator {
     ),
   ]);
 
-  static void openServicesDrawer(BuildContext context) =>
+  static void openServicesDrawer(BuildContext context) {
+    if (_can([_services])) _openServicesDrawer(context);
+  }
+
+  static void _openServicesDrawer(BuildContext context) =>
       _drawer(context, 'Services', header: const DealerRenewalBanner(), [
         _DrawerItem(
           Icons.assignment_outlined,
@@ -334,13 +385,17 @@ class DealerMembershipNavigator {
         return openExchangeListing(id);
       case 'REQUIREMENT':
         return openDealerInventory(tab: 1);
+      // Shared by buyer and seller: open while either module is on.
       case 'NEGOTIATION':
+        if (!_can([_buy, _sell])) return;
         final n = await DealerNegotiationsController.to.get(id);
         if (n != null) openNegotiation(n);
         return;
       case 'CONNECTION':
+        if (!_can([_buy, _sell])) return;
         return openConnection(id);
       case 'DEAL_ROOM':
+        if (!_can([_buy, _sell])) return;
         return openDealRoom(id);
       case 'LEAD':
       case 'LEADS':

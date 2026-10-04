@@ -370,78 +370,113 @@ class _DealerHomePageState extends State<DealerHomePage> {
     final modules = <_ModuleItem>[
       _ModuleItem(
         'Sell',
+        DealerMembershipController.moduleSell,
         AppImages.dealerModuleSell,
         Colors.green,
         DealerMembershipNavigator.openSell,
       ),
       _ModuleItem(
         'Buy',
+        DealerMembershipController.moduleBuy,
         AppImages.dealerModuleBuy,
         Colors.blue,
         () => DealerMembershipNavigator.openBuyDrawer(context),
       ),
       _ModuleItem(
         'Services',
+        DealerMembershipController.moduleServices,
         AppImages.dealerModuleServices,
         Colors.deepPurple,
         () => DealerMembershipNavigator.openServicesDrawer(context),
       ),
       _ModuleItem(
         'Leads',
+        DealerMembershipController.moduleLeads,
         AppImages.dealerModuleLeads,
         Colors.deepOrange,
         DealerMembershipNavigator.openLeads,
       ),
       _ModuleItem(
         'Membership',
+        DealerMembershipController.moduleMembership,
         AppImages.dealerModuleMembership,
         Colors.teal,
         DealerMembershipNavigator.openMembership,
       ),
     ];
 
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: modules.length,
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
-        mainAxisSpacing: 10,
-        crossAxisSpacing: 10,
-        childAspectRatio: 1.0,
-      ),
-      itemBuilder: (context, i) {
-        final m = modules[i];
-        return InkWell(
-          onTap: m.onTap,
-          borderRadius: BorderRadius.circular(10),
-          child: Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: m.color.withValues(alpha: 0.1),
-              border: Border.all(color: m.color, width: 0.75),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+    // Read here, not in itemBuilder (which runs outside Obx), so a tab OtoBix
+    // switches off from the CRM locks at once.
+    return Obx(() {
+      final enabled = [for (final m in modules) controller.moduleEnabled(m.code)];
+      return GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: modules.length,
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 3,
+          mainAxisSpacing: 10,
+          crossAxisSpacing: 10,
+          childAspectRatio: 1.0,
+        ),
+        itemBuilder: (context, i) {
+          final m = modules[i];
+          final on = enabled[i];
+          final color = on ? m.color : AppColors.grey;
+          return InkWell(
+            // Locked: the navigator explains it and opens nothing.
+            onTap: m.onTap,
+            borderRadius: BorderRadius.circular(10),
+            child: Stack(
               children: [
-                Image.asset(m.iconAsset, width: 66, height: 66),
-                const SizedBox(height: 6),
-                Text(
-                  m.label,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.black,
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: on ? 0.1 : 0.08),
+                    border: Border.all(color: color, width: 0.75),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      on
+                          ? Image.asset(m.iconAsset, width: 66, height: 66)
+                          : Opacity(
+                            opacity: 0.45,
+                            child: ColorFiltered(
+                              colorFilter: _greyscale,
+                              child: Image.asset(
+                                m.iconAsset,
+                                width: 66,
+                                height: 66,
+                              ),
+                            ),
+                          ),
+                      const SizedBox(height: 6),
+                      Text(
+                        m.label,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: on ? AppColors.black : AppColors.grey,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
+                if (!on)
+                  const Positioned(
+                    top: 6,
+                    right: 6,
+                    child: Icon(Icons.lock, size: 16, color: AppColors.grey),
+                  ),
               ],
             ),
-          ),
-        );
-      },
-    );
+          );
+        },
+      );
+    });
   }
 
   Widget _buildActivity() {
@@ -598,8 +633,17 @@ class _DealerHomePageState extends State<DealerHomePage> {
 
 class _ModuleItem {
   final String label;
+  final String code; // DealerMembershipController.module*
   final String iconAsset;
   final Color color;
   final VoidCallback onTap;
-  _ModuleItem(this.label, this.iconAsset, this.color, this.onTap);
+  _ModuleItem(this.label, this.code, this.iconAsset, this.color, this.onTap);
 }
+
+// A locked module's icon, in grey.
+const _greyscale = ColorFilter.matrix(<double>[
+  0.2126, 0.7152, 0.0722, 0, 0, //
+  0.2126, 0.7152, 0.0722, 0, 0, //
+  0.2126, 0.7152, 0.0722, 0, 0, //
+  0, 0, 0, 1, 0, //
+]);

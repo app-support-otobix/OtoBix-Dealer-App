@@ -434,6 +434,57 @@ class DealerMembershipController extends GetxController {
     return true;
   }
 
+  // Dealer Home tabs OtoBix can switch off from the CRM (the backend's
+  // DEALER_APP_MODULES); the backend refuses their calls too.
+  static const moduleSell = 'SELL';
+  static const moduleBuy = 'BUY';
+  static const moduleServices = 'SERVICES';
+  static const moduleLeads = 'LEADS';
+  static const moduleMembership = 'MEMBERSHIP';
+  static const _moduleNames = {
+    moduleSell: 'Sell',
+    moduleBuy: 'Buy',
+    moduleServices: 'Services',
+    moduleLeads: 'Leads',
+    moduleMembership: 'Membership',
+  };
+
+  /// On until the membership says otherwise, so a slow load never locks a tab.
+  bool moduleEnabled(String code) =>
+      membership.value?.moduleEnabled(code) ?? true;
+
+  /// True when the dealer may open [code]; otherwise says it is locked.
+  bool requireModule(String code) => requireAnyModule([code]);
+
+  /// True when any of [codes] is on (chats and deal rooms serve both Buy and
+  /// Sell); otherwise says it is locked.
+  bool requireAnyModule(List<String> codes) {
+    if (codes.any(moduleEnabled)) return true;
+    final names = codes.map((c) => _moduleNames[c] ?? c).join(' and ');
+    _showModuleLockedDialog(
+      "$names ${codes.length > 1 ? "aren't" : "isn't"} enabled for your "
+      'account. Contact OtoBix to turn it on.',
+    );
+    return false;
+  }
+
+  void _showModuleLockedDialog(String message) {
+    if (Get.isDialogOpen == true) return;
+    Get.dialog(
+      AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.lock_outline, size: 18, color: AppColors.grey),
+            SizedBox(width: 8),
+            Text('Not enabled', style: TextStyle(fontSize: 16)),
+          ],
+        ),
+        content: Text(message, style: const TextStyle(fontSize: 13)),
+        actions: [TextButton(onPressed: Get.back, child: const Text('OK'))],
+      ),
+    );
+  }
+
   void handleError(
     DealerApiException e, {
     String title = 'Something went wrong',
@@ -443,6 +494,11 @@ class DealerMembershipController extends GetxController {
       case 'INSUFFICIENT_POINTS':
       case 'ALLOWANCE_EXHAUSTED':
         _showUpgradeDialog(e.message);
+        return;
+      case 'MODULE_DISABLED':
+        // Switched off from the CRM while this screen was open: lock the tile.
+        _showModuleLockedDialog(e.message);
+        refreshMembership();
         return;
       default:
         _toast(title, e.message, ToastType.error);
@@ -459,7 +515,9 @@ class DealerMembershipController extends GetxController {
           TextButton(
             onPressed: () {
               Get.back();
-              Get.to(() => const UpgradeMembershipPage());
+              if (requireModule(moduleMembership)) {
+                Get.to(() => const UpgradeMembershipPage());
+              }
             },
             child: const Text(
               'Upgrade Membership',

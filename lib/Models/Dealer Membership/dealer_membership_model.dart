@@ -172,12 +172,23 @@ class DealerMembershipModel {
   final List<DealerUsageModel> usage;
   final DealerPendingPaymentModel? pendingPayment;
   final DealerCycleSummaryModel? summary;
+  // Dealer Home tabs OtoBix switched on or off from the CRM, by module code
+  // (SELL, BUY, SERVICES, LEADS, MEMBERSHIP). A missing code means on.
+  final Map<String, bool> modules;
 
   bool get isActive => status == active || status == grace;
   bool get isGrace => status == grace;
+  bool moduleEnabled(String code) => modules[code] ?? true;
 
   DealerMembershipModel.fromJson(Map<String, dynamic> j)
-    : dealerCode = _str(j['dealerCode']),
+    : modules =
+          j['modules'] is Map
+              ? {
+                for (final e in (j['modules'] as Map).entries)
+                  if (e.value is bool) e.key.toString(): e.value as bool,
+              }
+              : const {},
+      dealerCode = _str(j['dealerCode']),
       dealerType = _str(j['dealerType']),
       gstin = _str(j['gstin']),
       city = _str(j['city']),
