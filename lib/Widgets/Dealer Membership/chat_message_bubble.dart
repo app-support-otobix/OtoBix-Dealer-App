@@ -26,10 +26,10 @@ class ChatMessageBubble extends StatelessWidget {
     final isOffer = m.kind == 'OFFER';
     final failed = m.state == DealerMessageState.failed;
     final sending = m.state == DealerMessageState.sending;
-    // The other dealer's counter-offer stands out in red.
-    final isTheirCounter = isOffer && !mine && m.offerLabel == 'COUNTER';
+    // Any price from the other dealer, offer or counter, stands out in red.
+    final isTheirPrice = isOffer && !mine;
     final background =
-        isTheirCounter
+        isTheirPrice
             ? AppColors.red
             : isOffer
             ? AppColors.blue

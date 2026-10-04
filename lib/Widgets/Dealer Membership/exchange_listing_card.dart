@@ -10,6 +10,17 @@ import 'package:otobix/Widgets/Dealer%20Membership/dealer_common_widgets.dart';
 import 'package:otobix/Widgets/Dealer%20Membership/showroom_location_widgets.dart';
 import 'package:otobix/Widgets/Dealer%20Membership/vehicle_spec_sheet.dart';
 
+// TEMPORARY: until dealers set their showroom locations, a car without a real
+// distance shows a fixed demo one (always the same for a given listing, spread
+// over the green / yellow / red bands). Set to false, or delete with
+// _demoDistanceKm, once locations are in.
+const _showDemoDistance = true;
+const _demoDistancesKm = <double>[4.2, 8.5, 12, 17, 24, 33, 46, 58, 72];
+
+double _demoDistanceKm(DealerExchangeListingModel l) =>
+    _demoDistancesKm[l.listingCode.codeUnits.fold<int>(0, (a, c) => a + c) %
+        _demoDistancesKm.length];
+
 class ExchangeListingCard extends StatelessWidget {
   final DealerExchangeListingModel listing;
 
@@ -18,6 +29,8 @@ class ExchangeListingCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = listing;
+    final distanceKm =
+        l.distanceKm ?? (_showDemoDistance ? _demoDistanceKm(l) : null);
     return DealerSectionCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -42,8 +55,7 @@ class ExchangeListingCard extends StatelessWidget {
                       spacing: 6,
                       runSpacing: 4,
                       children: [
-                        if (l.distanceKm != null)
-                          DistanceBadge(km: l.distanceKm!),
+                        if (distanceKm != null) DistanceBadge(km: distanceKm),
                         _ThinBadge(label: l.source),
                         if (l.matchPercent > 0)
                           _ThinBadge(
