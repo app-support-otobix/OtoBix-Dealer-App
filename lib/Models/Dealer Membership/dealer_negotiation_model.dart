@@ -36,6 +36,8 @@ class DealerNegotiationModel {
   final int? lastOfferAmount;
   final bool lastOfferByMe;
   final bool lastOfferIsCounter;
+  final int buyerOffer;
+  final int sellerOffer;
   final int agreedAmount;
   final int offerCount;
   final int questionCount;
@@ -72,6 +74,8 @@ class DealerNegotiationModel {
           j['lastOffer'] is Map ? _int(j['lastOffer']['amount']) : null,
       lastOfferByMe = j['lastOffer']?['byMe'] == true,
       lastOfferIsCounter = j['lastOffer']?['isCounter'] == true,
+      buyerOffer = _int(j['buyerOffer']),
+      sellerOffer = _int(j['sellerOffer']),
       agreedAmount = _int(j['agreedAmount']),
       offerCount = _int(j['offerCount']),
       questionCount = _int(j['questionCount']),

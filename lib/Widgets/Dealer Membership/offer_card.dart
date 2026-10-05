@@ -150,6 +150,21 @@ class OfferCard extends StatelessWidget {
               color: dealerOfferStatusColor(n.displayStatus),
             ),
             const SizedBox(height: 8),
+            if (n.buyerOffer > 0 || n.sellerOffer > 0) ...[
+              Row(
+                children: [
+                  _price(
+                    n.isBuyer ? 'Your offer' : 'Their offer',
+                    n.buyerOffer,
+                  ),
+                  _price(
+                    n.isBuyer ? 'Their counter' : 'Your counter',
+                    n.sellerOffer,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+            ],
             if (showCar)
               Text(
                 '${n.carTitle} — ${GlobalFunctions.formatLakh(n.askingPrice)} asking',
@@ -177,6 +192,24 @@ class OfferCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _price(String label, int amount) {
+    return Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(fontSize: 11, color: AppColors.grey),
+          ),
+          Text(
+            amount > 0 ? GlobalFunctions.formatLakh(amount) : '—',
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+          ),
+        ],
       ),
     );
   }
