@@ -36,8 +36,16 @@ class DealerFeature {
   final IconData icon;
   final List<String> keywords;
   final void Function(BuildContext context) open;
+  // The Dealer Home module it belongs to; hidden while OtoBix has it off.
+  final String? module;
 
-  const DealerFeature(this.label, this.icon, this.keywords, this.open);
+  const DealerFeature(
+    this.label,
+    this.icon,
+    this.keywords,
+    this.open, {
+    this.module,
+  });
 }
 
 class DealerMembershipNavigator {
@@ -49,120 +57,147 @@ class DealerMembershipNavigator {
       Icons.workspace_premium_outlined,
       ['membership', 'points', 'ledger', 'plan', 'renew', 'upgrade'],
       (_) => openMembership(),
+      module: _membership,
     ),
-    DealerFeature('Sell · My Inventory', Icons.directions_car_filled_outlined, [
-      'sell',
-      'inventory',
-      'my cars',
-      'upload',
-      'stock',
-      'listing',
-    ], (_) => openSell()),
+    DealerFeature(
+      'Sell · My Inventory',
+      Icons.directions_car_filled_outlined,
+      ['sell', 'inventory', 'my cars', 'upload', 'stock', 'listing'],
+      (_) => openSell(),
+      module: _sell,
+    ),
     DealerFeature(
       "My Customer's Inventory",
       Icons.person_add_alt_outlined,
       ['sell', 'customer', 'customer car', 'add customer car'],
       (_) => openSell(tab: 1),
+      module: _sell,
     ),
-    DealerFeature('Dealer Inventory · Find Cars', Icons.search, [
-      'buy',
-      'find',
-      'dealer inventory',
-      'exchange',
-      'wholesale',
-      'search cars',
-    ], (_) => openDealerInventory()),
-    DealerFeature('Saved Filters & Requirements', Icons.tune, [
-      'buy',
-      'filters',
-      'requirement',
-      'saved',
-    ], (_) => openDealerInventory(tab: 1)),
+    DealerFeature(
+      'Dealer Inventory · Find Cars',
+      Icons.search,
+      [
+        'buy',
+        'find',
+        'dealer inventory',
+        'exchange',
+        'wholesale',
+        'search cars',
+      ],
+      (_) => openDealerInventory(),
+      module: _buy,
+    ),
+    DealerFeature(
+      'Saved Filters & Requirements',
+      Icons.tune,
+      ['buy', 'filters', 'requirement', 'saved'],
+      (_) => openDealerInventory(tab: 1),
+      module: _buy,
+    ),
     DealerFeature(
       'Matching Inventory',
       Icons.filter_alt_outlined,
       ['buy', 'matching', 'match'],
       (_) => openDealerInventory(tab: 2),
+      module: _buy,
     ),
-    DealerFeature('OtoBix Auctions', Icons.gavel_outlined, [
-      'buy',
-      'auction',
-      'live',
-      'bid',
-      'otobuy',
-    ], (_) => openAuctions()),
-    DealerFeature('Customer Leads', Icons.groups_outlined, [
-      'leads',
-      'customer',
-      'enquiry',
-      'walk-in',
-    ], (_) => openLeads()),
-    DealerFeature('Offers Received', Icons.local_offer_outlined, [
-      'offers',
-      'dealer leads',
-      'received',
-      'negotiation',
-    ], (_) => openLeads(tab: 1)),
-    DealerFeature('My Offers Sent', Icons.send_outlined, [
-      'offers',
-      'sent',
-      'my offers',
-    ], (_) => openLeads(tab: 1, section: 1)),
-    DealerFeature('Connections', Icons.link, [
-      'connection',
-      'request',
-      'deal room request',
-    ], (_) => openLeads(tab: 1, section: 2)),
-    DealerFeature('Deal Rooms', Icons.meeting_room_outlined, [
-      'deal room',
-      'deal',
-      'chat',
-    ], (_) => openLeads(tab: 1, section: 3)),
-    DealerFeature('RC Check', Icons.assignment_outlined, [
-      'services',
-      'rc',
-      'challan',
-      'registration',
-      'owner',
-      'mobile',
-      'rc check',
-    ], (_) => openRcCheck()),
-    DealerFeature('Service History', Icons.build_outlined, [
-      'services',
-      'service history',
-    ], (_) => openServiceHistory()),
-    DealerFeature('Insurance', Icons.shield_outlined, [
-      'services',
-      'insurance',
-      'policy',
-      'quote',
-      'renew',
-    ], (_) => openInsurance()),
-    DealerFeature('Car Finance', Icons.account_balance_outlined, [
-      'services',
-      'finance',
-      'loan',
-      'emi',
-    ], (_) => openFinance()),
+    DealerFeature(
+      'OtoBix Auctions',
+      Icons.gavel_outlined,
+      ['buy', 'auction', 'live', 'bid', 'otobuy'],
+      (_) => openAuctions(),
+      module: _buy,
+    ),
+    DealerFeature(
+      'Customer Leads',
+      Icons.groups_outlined,
+      ['leads', 'customer', 'enquiry', 'walk-in'],
+      (_) => openLeads(),
+      module: _leads,
+    ),
+    DealerFeature(
+      'Offers Received',
+      Icons.local_offer_outlined,
+      ['offers', 'dealer leads', 'received', 'negotiation'],
+      (_) => openLeads(tab: 1),
+      module: _leads,
+    ),
+    DealerFeature(
+      'My Offers Sent',
+      Icons.send_outlined,
+      ['offers', 'sent', 'my offers'],
+      (_) => openLeads(tab: 1, section: 1),
+      module: _leads,
+    ),
+    DealerFeature(
+      'Connections',
+      Icons.link,
+      ['connection', 'request', 'deal room request'],
+      (_) => openLeads(tab: 1, section: 2),
+      module: _leads,
+    ),
+    DealerFeature(
+      'Deal Rooms',
+      Icons.meeting_room_outlined,
+      ['deal room', 'deal', 'chat'],
+      (_) => openLeads(tab: 1, section: 3),
+      module: _leads,
+    ),
+    DealerFeature(
+      'RC Check',
+      Icons.assignment_outlined,
+      [
+        'services',
+        'rc',
+        'challan',
+        'registration',
+        'owner',
+        'mobile',
+        'rc check',
+      ],
+      (_) => openRcCheck(),
+      module: _services,
+    ),
+    DealerFeature(
+      'Service History',
+      Icons.build_outlined,
+      ['services', 'service history'],
+      (_) => openServiceHistory(),
+      module: _services,
+    ),
+    DealerFeature(
+      'Insurance',
+      Icons.shield_outlined,
+      ['services', 'insurance', 'policy', 'quote', 'renew'],
+      (_) => openInsurance(),
+      module: _services,
+    ),
+    DealerFeature(
+      'Car Finance',
+      Icons.account_balance_outlined,
+      ['services', 'finance', 'loan', 'emi'],
+      (_) => openFinance(),
+      module: _services,
+    ),
     DealerFeature('Activity Log', Icons.history, [
       'activity',
       'log',
       'history',
       'notifications',
     ], (_) => openActivityLog()),
-    DealerFeature('Upgrade Membership', Icons.upgrade, [
-      'membership',
-      'upgrade',
-      'renew',
-      'plan',
-      'pro',
-      'payment',
-    ], (_) => openUpgrade()),
+    DealerFeature(
+      'Upgrade Membership',
+      Icons.upgrade,
+      ['membership', 'upgrade', 'renew', 'plan', 'pro', 'payment'],
+      (_) => openUpgrade(),
+      module: _membership,
+    ),
   ];
 
-  // Dealer Home modules OtoBix can switch off from the CRM (App Access). Every
-  // way into one — its tile, a drawer, the feature search, a notification —
-  // comes through here, so a locked module explains itself and opens nothing.
+  // Dealer Home modules OtoBix can switch off from the CRM (App Access). Home
+  // hides a module that is off; anything that still points at one (a
+  // notification, an old activity) comes through here, explains it and opens
+  // nothing.
   static const _sell = DealerMembershipController.moduleSell;
   static const _buy = DealerMembershipController.moduleBuy;
   static const _services = DealerMembershipController.moduleServices;
@@ -176,6 +211,23 @@ class DealerMembershipNavigator {
     if (_can([code])) open();
   }
 
+  /// Whether a module is on for this dealer, so Home shows it at all.
+  static bool isShown(String? module) =>
+      module == null || DealerMembershipController.to.moduleEnabled(module);
+
+  /// The modules a notification or activity target belongs to (any one on is
+  /// enough: chats and deal rooms serve both Buy and Sell).
+  static List<String> _targetModules(String type) => switch (type) {
+    'RC_CHECK' || 'SERVICE_HISTORY' => [_services],
+    'LISTING' => [_sell],
+    'EXCHANGE_LISTING' || 'REQUIREMENT' => [_buy],
+    'NEGOTIATION' || 'CONNECTION' || 'DEAL_ROOM' => [_buy, _sell],
+    'LEAD' || 'LEADS' => [_leads],
+    _ => [_membership],
+  };
+
+  static bool isTargetShown(String type) => _targetModules(type).any(isShown);
+
   static void openMembership() => _ifEnabled(
     _membership,
     () => Get.to(() => const MembershipDashboardPage()),
@@ -186,9 +238,8 @@ class DealerMembershipNavigator {
 
   static void openLeads({int tab = 0, int section = 0}) => _ifEnabled(
     _leads,
-    () => Get.to(
-      () => DealerLeadsPage(initialTab: tab, dealerSection: section),
-    ),
+    () =>
+        Get.to(() => DealerLeadsPage(initialTab: tab, dealerSection: section)),
   );
 
   static void openActivityLog() => Get.to(() => const ActivityLogPage());
@@ -204,9 +255,8 @@ class DealerMembershipNavigator {
   static void openAddCustomerCar() => _ifEnabled(
     _sell,
     () => Get.to(
-      () => const CarIntakePage(
-        ownership: DealerInventoryCarModel.customerOwned,
-      ),
+      () =>
+          const CarIntakePage(ownership: DealerInventoryCarModel.customerOwned),
     ),
   );
 
@@ -374,6 +424,7 @@ class DealerMembershipNavigator {
       ]);
 
   static Future<void> openTarget(String type, String id) async {
+    if (!_can(_targetModules(type))) return;
     switch (type) {
       case 'RC_CHECK':
         return openRcCheck();
@@ -385,17 +436,13 @@ class DealerMembershipNavigator {
         return openExchangeListing(id);
       case 'REQUIREMENT':
         return openDealerInventory(tab: 1);
-      // Shared by buyer and seller: open while either module is on.
       case 'NEGOTIATION':
-        if (!_can([_buy, _sell])) return;
         final n = await DealerNegotiationsController.to.get(id);
         if (n != null) openNegotiation(n);
         return;
       case 'CONNECTION':
-        if (!_can([_buy, _sell])) return;
         return openConnection(id);
       case 'DEAL_ROOM':
-        if (!_can([_buy, _sell])) return;
         return openDealRoom(id);
       case 'LEAD':
       case 'LEADS':

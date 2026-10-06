@@ -53,21 +53,11 @@ class _DealerHomePageState extends State<DealerHomePage> {
               _buildSearchBar(),
               if (_query.isNotEmpty) _buildSearchResults(),
               const SizedBox(height: 14),
+              // Each of these hides itself while OtoBix has its module off
+              // (CRM App Access), spacing included.
               _buildMembershipCard(),
-              const SizedBox(height: 10),
               _buildPromoBanner(),
-              const SizedBox(height: 16),
-              const Text(
-                'Modules',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 15,
-                  color: AppColors.black,
-                ),
-              ),
-              const SizedBox(height: 10),
               _buildModuleGrid(),
-              const SizedBox(height: 20),
               Row(
                 children: [
                   const Text(
@@ -189,13 +179,14 @@ class _DealerHomePageState extends State<DealerHomePage> {
     );
   }
 
-  Widget _buildSearchResults() {
+  Widget _buildSearchResults() => Obx(() {
     final matches =
         DealerMembershipNavigator.features
             .where(
               (f) =>
-                  f.label.toLowerCase().contains(_query) ||
-                  f.keywords.any((k) => k.contains(_query)),
+                  DealerMembershipNavigator.isShown(f.module) &&
+                  (f.label.toLowerCase().contains(_query) ||
+                      f.keywords.any((k) => k.contains(_query))),
             )
             .toList();
     return Padding(
@@ -237,12 +228,17 @@ class _DealerHomePageState extends State<DealerHomePage> {
                 ),
       ),
     );
-  }
+  });
 
   Widget _buildMembershipCard() {
     return Obx(() {
       final m = controller.membership.value;
-      if (m == null) return const SizedBox.shrink();
+      if (m == null ||
+          !controller.moduleEnabled(
+            DealerMembershipController.moduleMembership,
+          )) {
+        return const SizedBox.shrink();
+      }
       final month =
           m.cycleStartAt == null
               ? ''
@@ -328,43 +324,51 @@ class _DealerHomePageState extends State<DealerHomePage> {
           ),
           const SizedBox(height: 10),
           const DealerRenewalBanner(margin: EdgeInsets.zero),
+          const SizedBox(height: 10),
         ],
       );
     });
   }
 
-  Widget _buildPromoBanner() {
-    return InkWell(
-      onTap: DealerMembershipNavigator.openAddCustomerCar,
-      borderRadius: BorderRadius.circular(14),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppColors.green.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(14),
-        ),
-        child: const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'SELL YOUR CAR, GET THE BEST PRICE',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-                color: AppColors.green,
+  // Adds a customer's car, so it belongs to Sell.
+  Widget _buildPromoBanner() => Obx(() {
+    if (!controller.moduleEnabled(DealerMembershipController.moduleSell)) {
+      return const SizedBox.shrink();
+    }
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: InkWell(
+        onTap: DealerMembershipNavigator.openAddCustomerCar,
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.green.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: const Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'SELL YOUR CAR, GET THE BEST PRICE',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                  color: AppColors.green,
+                ),
               ),
-            ),
-            SizedBox(height: 4),
-            Text(
-              'Verified buyers · instant payment',
-              style: TextStyle(fontSize: 12, color: AppColors.black),
-            ),
-          ],
+              SizedBox(height: 4),
+              Text(
+                'Verified buyers · instant payment',
+                style: TextStyle(fontSize: 12, color: AppColors.black),
+              ),
+            ],
+          ),
         ),
       ),
     );
-  }
+  });
 
   Widget _buildModuleGrid() {
     final modules = <_ModuleItem>[
@@ -405,84 +409,88 @@ class _DealerHomePageState extends State<DealerHomePage> {
       ),
     ];
 
-    // Read here, not in itemBuilder (which runs outside Obx), so a tab OtoBix
-    // switches off from the CRM locks at once.
+    // Only the modules OtoBix has on for this dealer (CRM App Access); one
+    // switched off disappears at once. Filtered here, not in itemBuilder
+    // (which runs outside Obx).
     return Obx(() {
-      final enabled = [for (final m in modules) controller.moduleEnabled(m.code)];
-      return GridView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemCount: modules.length,
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3,
-          mainAxisSpacing: 10,
-          crossAxisSpacing: 10,
-          childAspectRatio: 1.0,
-        ),
-        itemBuilder: (context, i) {
-          final m = modules[i];
-          final on = enabled[i];
-          final color = on ? m.color : AppColors.grey;
-          return InkWell(
-            // Locked: the navigator explains it and opens nothing.
-            onTap: m.onTap,
-            borderRadius: BorderRadius.circular(10),
-            child: Stack(
-              children: [
-                Container(
+      final shown =
+          modules.where((m) => controller.moduleEnabled(m.code)).toList();
+      if (shown.isEmpty) return const SizedBox.shrink();
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Modules',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 15,
+              color: AppColors.black,
+            ),
+          ),
+          const SizedBox(height: 10),
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: shown.length,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3,
+              mainAxisSpacing: 10,
+              crossAxisSpacing: 10,
+              childAspectRatio: 1.0,
+            ),
+            itemBuilder: (context, i) {
+              final m = shown[i];
+              return InkWell(
+                onTap: m.onTap,
+                borderRadius: BorderRadius.circular(10),
+                child: Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: color.withValues(alpha: on ? 0.1 : 0.08),
-                    border: Border.all(color: color, width: 0.75),
+                    color: m.color.withValues(alpha: 0.1),
+                    border: Border.all(color: m.color, width: 0.75),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      on
-                          ? Image.asset(m.iconAsset, width: 66, height: 66)
-                          : Opacity(
-                            opacity: 0.45,
-                            child: ColorFiltered(
-                              colorFilter: _greyscale,
-                              child: Image.asset(
-                                m.iconAsset,
-                                width: 66,
-                                height: 66,
-                              ),
-                            ),
-                          ),
+                      Image.asset(m.iconAsset, width: 66, height: 66),
                       const SizedBox(height: 6),
                       Text(
                         m.label,
                         textAlign: TextAlign.center,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
-                          color: on ? AppColors.black : AppColors.grey,
+                          color: AppColors.black,
                         ),
                       ),
                     ],
                   ),
                 ),
-                if (!on)
-                  const Positioned(
-                    top: 6,
-                    right: 6,
-                    child: Icon(Icons.lock, size: 16, color: AppColors.grey),
-                  ),
-              ],
-            ),
-          );
-        },
+              );
+            },
+          ),
+          const SizedBox(height: 20),
+        ],
       );
     });
   }
 
   Widget _buildActivity() {
     return Obx(() {
-      final pending = controller.pendingActivities;
-      final latest = controller.latestActivities;
+      // Nothing that would open a module OtoBix has off.
+      final pending =
+          controller.pendingActivities
+              .where(
+                (p) => DealerMembershipNavigator.isTargetShown(p.targetType),
+              )
+              .toList();
+      final latest =
+          controller.latestActivities
+              .where(
+                (a) => DealerMembershipNavigator.isTargetShown(a.targetType),
+              )
+              .toList();
       if (controller.isLoadingHome.value && pending.isEmpty && latest.isEmpty) {
         return const Padding(
           padding: EdgeInsets.all(20),
@@ -639,11 +647,3 @@ class _ModuleItem {
   final VoidCallback onTap;
   _ModuleItem(this.label, this.code, this.iconAsset, this.color, this.onTap);
 }
-
-// A locked module's icon, in grey.
-const _greyscale = ColorFilter.matrix(<double>[
-  0.2126, 0.7152, 0.0722, 0, 0, //
-  0.2126, 0.7152, 0.0722, 0, 0, //
-  0.2126, 0.7152, 0.0722, 0, 0, //
-  0, 0, 0, 1, 0, //
-]);
