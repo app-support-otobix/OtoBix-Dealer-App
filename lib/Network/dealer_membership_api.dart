@@ -21,6 +21,10 @@ class DealerMembershipApi {
 
   static const _timeout = Duration(seconds: 45);
 
+  /// Told first when the server refuses a call because OtoBix switched that
+  /// Dealer Home tab off (CRM App Access), so every screen reacts the same.
+  static void Function(DealerApiException e)? onModuleDisabled;
+
   static Future<dynamic> get(String url) =>
       _send(() => ApiService.get(endpoint: url));
 
@@ -96,10 +100,12 @@ class DealerMembershipApi {
                 serverMessage.trim().isNotEmpty
             ? serverMessage
             : 'Something went wrong. Please try again later.';
-    throw DealerApiException(
+    final error = DealerApiException(
       message,
       code: code,
       statusCode: response.statusCode,
     );
+    if (code == 'MODULE_DISABLED') onModuleDisabled?.call(error);
+    throw error;
   }
 }

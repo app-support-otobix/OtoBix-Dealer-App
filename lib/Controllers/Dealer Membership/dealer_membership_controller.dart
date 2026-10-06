@@ -68,6 +68,7 @@ class DealerMembershipController extends GetxController {
       SocketEvents.dealerActivityCreated,
       _onActivityEvent,
     );
+    DealerMembershipApi.onModuleDisabled = _onModuleDisabled;
     syncSession();
   }
 
@@ -110,6 +111,7 @@ class DealerMembershipController extends GetxController {
       SocketEvents.dealerActivityCreated,
       _onActivityEvent,
     );
+    DealerMembershipApi.onModuleDisabled = null;
     _razorpay.dispose();
     super.onClose();
   }
@@ -468,9 +470,23 @@ class DealerMembershipController extends GetxController {
     return false;
   }
 
-  void _showModuleLockedDialog(String message) {
+  bool _explainingModuleOff = false;
+
+  // OtoBix switched a tab off (CRM App Access) while one of its screens was
+  // open: back to Home, which no longer shows it, and say why once even when
+  // several of the screen's calls are refused together.
+  Future<void> _onModuleDisabled(DealerApiException e) async {
+    if (_explainingModuleOff) return;
+    _explainingModuleOff = true;
+    refreshMembership();
+    Get.until((route) => route.isFirst);
+    await _showModuleLockedDialog(e.message);
+    _explainingModuleOff = false;
+  }
+
+  Future<void> _showModuleLockedDialog(String message) async {
     if (Get.isDialogOpen == true) return;
-    Get.dialog(
+    await Get.dialog(
       AlertDialog(
         title: const Row(
           children: [
@@ -496,10 +512,7 @@ class DealerMembershipController extends GetxController {
         _showUpgradeDialog(e.message);
         return;
       case 'MODULE_DISABLED':
-        // Switched off from the CRM while this screen was open: lock the tile.
-        _showModuleLockedDialog(e.message);
-        refreshMembership();
-        return;
+        return; // already handled when the call failed (_onModuleDisabled)
       default:
         _toast(title, e.message, ToastType.error);
     }
