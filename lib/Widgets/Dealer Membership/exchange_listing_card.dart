@@ -6,6 +6,7 @@ import 'package:otobix/Models/Dealer%20Membership/dealer_exchange_model.dart';
 import 'package:otobix/Utils/app_colors.dart';
 import 'package:otobix/Utils/global_functions.dart';
 import 'package:otobix/Views/Dealer%20Membership/dealer_membership_navigator.dart';
+import 'package:otobix/Views/Dealer%20Panel/show_image_page.dart';
 import 'package:otobix/Widgets/Dealer%20Membership/dealer_common_widgets.dart';
 import 'package:otobix/Widgets/Dealer%20Membership/showroom_location_widgets.dart';
 import 'package:otobix/Widgets/Dealer%20Membership/vehicle_spec_sheet.dart';
@@ -20,6 +21,10 @@ const _demoDistancesKm = <double>[4.2, 8.5, 12, 17, 24, 33, 46, 58, 72];
 double _demoDistanceKm(DealerExchangeListingModel l) =>
     _demoDistancesKm[l.listingCode.codeUnits.fold<int>(0, (a, c) => a + c) %
         _demoDistancesKm.length];
+
+/// Every photo of the car, full screen: swipe through, pinch to zoom.
+void _openImages(List<String> images) =>
+    Get.to(() => ShowImagePage(imageUrls: images));
 
 class ExchangeListingCard extends StatelessWidget {
   final DealerExchangeListingModel listing;
@@ -37,7 +42,12 @@ class ExchangeListingCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              CarThumbnail(imageUrl: l.images.isEmpty ? '' : l.images.first),
+              GestureDetector(
+                onTap: l.images.isEmpty ? null : () => _openImages(l.images),
+                child: CarThumbnail(
+                  imageUrl: l.images.isEmpty ? '' : l.images.first,
+                ),
+              ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -64,6 +74,33 @@ class ExchangeListingCard extends StatelessWidget {
                           ),
                       ],
                     ),
+                    if (l.images.isNotEmpty)
+                      InkWell(
+                        onTap: () => _openImages(l.images),
+                        borderRadius: BorderRadius.circular(4),
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 6, bottom: 2),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.photo_library_outlined,
+                                size: 15,
+                                color: AppColors.green,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                'View Images (${l.images.length})',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.green,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                   ],
                 ),
               ),
