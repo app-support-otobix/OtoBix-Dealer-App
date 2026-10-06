@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -43,6 +45,18 @@ class _MyAppState extends State<MyApp> {
       navigatorKey:
           Get.key, // enables Get.* navigation from services (for route to specific screen via notification click)
       debugShowCheckedModeBanner: false,
+      // All text one size larger than designed (13 -> 14). A phone set to
+      // small text still gets at least that.
+      builder: (context, child) {
+        final media = MediaQuery.of(context);
+        final phoneScale = media.textScaler.scale(14) / 14;
+        return MediaQuery(
+          data: media.copyWith(
+            textScaler: TextScaler.linear(max(phoneScale, 1.0) * 1.08),
+          ),
+          child: child!,
+        );
+      },
       theme: ThemeData(
         brightness: Brightness.light,
         // fontFamily: 'Poppins',
