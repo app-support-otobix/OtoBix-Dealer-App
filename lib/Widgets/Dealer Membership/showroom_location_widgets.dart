@@ -53,7 +53,11 @@ class DistanceBadge extends StatelessWidget {
 class ShowroomLocationCard extends StatelessWidget {
   final bool promptOnly;
   final VoidCallback? onSaved;
-  const ShowroomLocationCard({super.key, this.promptOnly = false, this.onSaved});
+  const ShowroomLocationCard({
+    super.key,
+    this.promptOnly = false,
+    this.onSaved,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -133,9 +137,12 @@ class ShowroomLocationCard extends StatelessWidget {
 class _ShowroomLocationSheet extends StatefulWidget {
   const _ShowroomLocationSheet();
 
+  // GetX already lifts the sheet above the keyboard. ignoreSafeArea: false
+  // keeps the status bar's height in MediaQuery for the cap in build().
   static Future<bool?> show() => Get.bottomSheet<bool>(
     const _ShowroomLocationSheet(),
     isScrollControlled: true,
+    ignoreSafeArea: false,
     backgroundColor: AppColors.white,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
@@ -163,64 +170,70 @@ class _ShowroomLocationSheetState extends State<_ShowroomLocationSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final media = MediaQuery.of(context);
     return Padding(
-      // Keeps the field and its suggestions above the keyboard.
-      padding: EdgeInsets.fromLTRB(
-        16,
-        16,
-        16,
-        16 + MediaQuery.viewInsetsOf(context).bottom,
-      ),
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Set your showroom location',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 4),
-            const Text(
-              'Other dealers never see it, only how far their cars are from you.',
-              style: TextStyle(fontSize: 12, color: AppColors.grey),
-            ),
-            const SizedBox(height: 14),
-            AddressSearchField(
-              controller: _address,
-              autofocus: true,
-              decoration: const InputDecoration(
-                hintText: 'Search your showroom name or address',
-                hintStyle: TextStyle(fontSize: 13),
-                prefixIcon: Icon(Icons.search, size: 18),
-                isDense: true,
-                border: OutlineInputBorder(),
+      padding: const EdgeInsets.all(16),
+      child: ConstrainedBox(
+        // However many suggestions show, the sheet stops below the status
+        // bar and scrolls instead.
+        constraints: BoxConstraints(
+          maxHeight:
+              media.size.height -
+              media.viewInsets.bottom -
+              media.padding.top -
+              48,
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Set your showroom location',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
-              onPicked: (place) => _save(place: place),
-            ),
-            const SizedBox(height: 8),
-            Obx(
-              () =>
-                  _controller.isLocating.value
-                      ? const Padding(
-                        padding: EdgeInsets.all(10),
-                        child: Center(
-                          child: SizedBox(
-                            width: 22,
-                            height: 22,
-                            child: CircularProgressIndicator(strokeWidth: 2),
+              const SizedBox(height: 4),
+              const Text(
+                'Other dealers never see it, only how far their cars are from you.',
+                style: TextStyle(fontSize: 12, color: AppColors.grey),
+              ),
+              const SizedBox(height: 14),
+              AddressSearchField(
+                controller: _address,
+                autofocus: true,
+                decoration: const InputDecoration(
+                  hintText: 'Search your showroom name or address',
+                  hintStyle: TextStyle(fontSize: 13),
+                  prefixIcon: Icon(Icons.search, size: 18),
+                  isDense: true,
+                  border: OutlineInputBorder(),
+                ),
+                onPicked: (place) => _save(place: place),
+              ),
+              const SizedBox(height: 8),
+              Obx(
+                () =>
+                    _controller.isLocating.value
+                        ? const Padding(
+                          padding: EdgeInsets.all(10),
+                          child: Center(
+                            child: SizedBox(
+                              width: 22,
+                              height: 22,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          ),
+                        )
+                        : TextButton.icon(
+                          onPressed: _save,
+                          icon: const Icon(Icons.my_location, size: 18),
+                          label: const Text(
+                            "Use my current location (I'm at the showroom)",
                           ),
                         ),
-                      )
-                      : TextButton.icon(
-                        onPressed: _save,
-                        icon: const Icon(Icons.my_location, size: 18),
-                        label: const Text(
-                          "Use my current location (I'm at the showroom)",
-                        ),
-                      ),
-            ),
-          ],
+              ),
+            ],
+          ),
         ),
       ),
     );
