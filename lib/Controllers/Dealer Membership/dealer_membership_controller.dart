@@ -10,6 +10,7 @@ import 'package:otobix/Controllers/Dealer%20Membership/dealer_paged_list.dart';
 import 'package:otobix/Controllers/Dealer%20Membership/dealer_requirements_controller.dart';
 import 'package:otobix/Models/Dealer%20Membership/dealer_activity_model.dart';
 import 'package:otobix/Models/Dealer%20Membership/dealer_membership_model.dart';
+import 'package:otobix/Models/place_model.dart';
 import 'package:otobix/Network/dealer_membership_api.dart';
 import 'package:otobix/Network/socket_service.dart';
 import 'package:otobix/Services/razorpay_payment_service.dart';
@@ -272,17 +273,21 @@ class DealerMembershipController extends GetxController {
 
   final isLocating = false.obs;
 
-  /// Reads the phone's GPS (the dealer is asked to do this at the showroom) and
-  /// saves it as the showroom location; other dealers' cars then show their
-  /// distance from it. Only the distance ever reaches other dealers.
-  Future<bool> setShowroomLocation() async {
+  /// Saves the showroom location from a searched address ([place], which has a
+  /// position) or else the phone's GPS (the dealer is asked to do this at the
+  /// showroom); other dealers' cars then show their distance from it. Only the
+  /// distance ever reaches other dealers.
+  Future<bool> setShowroomLocation({PlaceDetailsModel? place}) async {
     if (isLocating.value) return false;
     isLocating.value = true;
     try {
-      final position = await _currentPosition();
+      final gps = place == null ? await _currentPosition() : null;
       final data = await DealerMembershipApi.put(
         AppUrls.dealerShowroomLocation,
-        {'latitude': position.latitude, 'longitude': position.longitude},
+        {
+          'latitude': place?.latitude ?? gps!.latitude,
+          'longitude': place?.longitude ?? gps!.longitude,
+        },
       );
       membership.value = DealerMembershipModel.fromJson(
         Map<String, dynamic>.from(data),

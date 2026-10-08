@@ -5,6 +5,7 @@ import 'package:otobix/Controllers/registration_form_controller.dart';
 import 'package:otobix/Utils/app_colors.dart';
 import 'package:otobix/Utils/app_constants.dart';
 import 'package:otobix/Utils/app_icons.dart';
+import 'package:otobix/Widgets/address_search_field.dart';
 import 'package:otobix/Widgets/button_widget.dart';
 import 'package:otobix/Widgets/dropdown_widget.dart';
 
@@ -798,8 +799,19 @@ class RegistrationFormPage extends StatelessWidget {
                     child: Row(
                       children: [
                         Expanded(
-                          child: TextFormField(
+                          child: AddressSearchField(
+                            key: ObjectKey(controller),
                             controller: controller,
+                            otpVerificationToken: verificationToken,
+                            onPicked:
+                                (place) => getxController.setAddressPlace(
+                                  controller,
+                                  place,
+                                ),
+                            onCleared:
+                                () => getxController.clearAddressPlace(
+                                  controller,
+                                ),
                             decoration: InputDecoration(
                               prefixIcon: Icon(
                                 Icons.location_city,
@@ -813,7 +825,10 @@ class RegistrationFormPage extends StatelessWidget {
                               contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 10,
                               ),
-                              hintText: "Enter Address ${index + 1}",
+                              hintText:
+                                  index == 0
+                                      ? "Search your showroom name or address"
+                                      : "Search or enter Address ${index + 1}",
                               hintStyle: TextStyle(
                                 color: AppColors.grey.withValues(alpha: .5),
                                 fontSize: 12,

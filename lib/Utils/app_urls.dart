@@ -16,6 +16,11 @@ class AppUrls {
 
   static String get register => "${baseUrl}auth/register";
 
+  // Showroom address search (Google Places through the backend)
+  static String get placesAutocomplete => "${baseUrl}places/autocomplete";
+
+  static String get placesDetails => "${baseUrl}places/details";
+
   static String get forgetPassword => "${baseUrl}auth/forget-password";
 
   static String get logout => "${baseUrl}auth/logout";

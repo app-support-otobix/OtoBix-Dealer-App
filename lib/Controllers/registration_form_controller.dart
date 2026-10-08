@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:otobix/Models/place_model.dart';
 import 'package:otobix/Models/user_model.dart';
 import 'package:otobix/Network/api_service.dart';
 import 'package:otobix/Utils/app_constants.dart';
@@ -24,6 +25,7 @@ class RegistrationFormController extends GetxController {
     secondaryContactPersonController.clear();
     secondaryMobileController.clear();
     addressControllers.clear();
+    addressPlaces.clear();
     selectedEntityType = null;
     selectedState = null;
     touchedFields.clear();
@@ -100,6 +102,29 @@ class RegistrationFormController extends GetxController {
 
   List<TextEditingController> addressControllers = [];
 
+  /// The place picked from the suggestions for an address field. The first
+  /// address with one is sent as the showroom location, which puts this
+  /// dealer's cars in nearest-first order for other dealers.
+  final Map<TextEditingController, PlaceDetailsModel> addressPlaces = {};
+
+  void setAddressPlace(
+    TextEditingController controller,
+    PlaceDetailsModel place,
+  ) {
+    addressPlaces[controller] = place;
+    if (selectedState == null) {
+      final state = place.state.toLowerCase();
+      selectedState = indianStates.firstWhereOrNull(
+        (s) => s.toLowerCase() == state,
+      );
+    }
+    update();
+  }
+
+  void clearAddressPlace(TextEditingController controller) {
+    addressPlaces.remove(controller);
+  }
+
   void filterStates(String query) {
     if (query.isEmpty) {
       filteredStates = List.from(indianStates);
@@ -125,7 +150,7 @@ class RegistrationFormController extends GetxController {
   }
 
   void removeAddressField(int index) {
-    addressControllers.removeAt(index);
+    addressPlaces.remove(addressControllers.removeAt(index));
     update();
   }
 
@@ -193,10 +218,21 @@ class RegistrationFormController extends GetxController {
         updatedAt: DateTime.now(),
       );
 
+      final showroom =
+          addressControllers
+              .map((c) => addressPlaces[c])
+              .whereType<PlaceDetailsModel>()
+              .firstOrNull;
+
       // Add verification token to the request body
       final requestBody = {
         ...userModel.toJson(),
         "otpVerificationToken": verificationToken,
+        if (showroom != null)
+          "showroomLocation": {
+            "latitude": showroom.latitude,
+            "longitude": showroom.longitude,
+          },
       };
 
       final response = await ApiService.post(
@@ -317,6 +353,7 @@ class RegistrationFormController extends GetxController {
 
     addressControllers.clear();
     addressControllers.add(TextEditingController());
+    addressPlaces.clear();
 
     // 🔁 Reset validation-related data
     formKey.currentState?.reset();

@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:otobix/Controllers/Dealer%20Membership/dealer_membership_controller.dart';
+import 'package:otobix/Models/place_model.dart';
 import 'package:otobix/Utils/app_colors.dart';
+import 'package:otobix/Widgets/address_search_field.dart';
 
 /// Distance from my showroom to the seller's, coloured by how far it is:
 /// under 20 km green, 20–50 km yellow, over 50 km red.
@@ -97,8 +99,8 @@ class ShowroomLocationCard extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     isSet
-                        ? 'Updated ${DateFormat('d MMM yyyy').format(m!.showroomLocationAt?.toLocal() ?? DateTime.now())} · tap Update while at your showroom to change it'
-                        : 'Set your showroom location while you are at your showroom. Other dealers never see it, only the distance.',
+                        ? 'Updated ${DateFormat('d MMM yyyy').format(m!.showroomLocationAt?.toLocal() ?? DateTime.now())} · tap Update to change it'
+                        : 'Search your showroom address, or use your location while at the showroom. Other dealers never see it, only the distance.',
                     style: const TextStyle(fontSize: 11, color: AppColors.grey),
                   ),
                 ],
@@ -113,13 +115,114 @@ class ShowroomLocationCard extends StatelessWidget {
                 )
                 : TextButton(
                   onPressed: () async {
-                    if (await controller.setShowroomLocation()) onSaved?.call();
+                    if (await _ShowroomLocationSheet.show() == true) {
+                      onSaved?.call();
+                    }
                   },
-                  child: Text(isSet ? 'Update' : 'Use my location'),
+                  child: Text(isSet ? 'Update' : 'Set location'),
                 ),
           ],
         ),
       );
     });
+  }
+}
+
+/// Two ways to set the showroom location: search its address, or read the
+/// phone GPS while at the showroom. Closes with true once one is saved.
+class _ShowroomLocationSheet extends StatefulWidget {
+  const _ShowroomLocationSheet();
+
+  static Future<bool?> show() => Get.bottomSheet<bool>(
+    const _ShowroomLocationSheet(),
+    isScrollControlled: true,
+    backgroundColor: AppColors.white,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+    ),
+  );
+
+  @override
+  State<_ShowroomLocationSheet> createState() => _ShowroomLocationSheetState();
+}
+
+class _ShowroomLocationSheetState extends State<_ShowroomLocationSheet> {
+  final _address = TextEditingController();
+  final _controller = DealerMembershipController.to;
+
+  @override
+  void dispose() {
+    _address.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save({PlaceDetailsModel? place}) async {
+    final saved = await _controller.setShowroomLocation(place: place);
+    if (saved && mounted) Navigator.of(context).pop(true);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      // Keeps the field and its suggestions above the keyboard.
+      padding: EdgeInsets.fromLTRB(
+        16,
+        16,
+        16,
+        16 + MediaQuery.viewInsetsOf(context).bottom,
+      ),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Set your showroom location',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              'Other dealers never see it, only how far their cars are from you.',
+              style: TextStyle(fontSize: 12, color: AppColors.grey),
+            ),
+            const SizedBox(height: 14),
+            AddressSearchField(
+              controller: _address,
+              autofocus: true,
+              decoration: const InputDecoration(
+                hintText: 'Search your showroom name or address',
+                hintStyle: TextStyle(fontSize: 13),
+                prefixIcon: Icon(Icons.search, size: 18),
+                isDense: true,
+                border: OutlineInputBorder(),
+              ),
+              onPicked: (place) => _save(place: place),
+            ),
+            const SizedBox(height: 8),
+            Obx(
+              () =>
+                  _controller.isLocating.value
+                      ? const Padding(
+                        padding: EdgeInsets.all(10),
+                        child: Center(
+                          child: SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        ),
+                      )
+                      : TextButton.icon(
+                        onPressed: _save,
+                        icon: const Icon(Icons.my_location, size: 18),
+                        label: const Text(
+                          "Use my current location (I'm at the showroom)",
+                        ),
+                      ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
