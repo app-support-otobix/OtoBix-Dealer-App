@@ -13,6 +13,11 @@ class DealerInventoryCarModel {
   final String ownership;
   final String customerName;
   final String customerPhone;
+
+  /// A customer car's own place (private to this dealer); null when not set.
+  final String carAddress;
+  final double? carLatitude;
+  final double? carLongitude;
   final String registrationNumber;
   final String title;
   final String make;
@@ -42,6 +47,9 @@ class DealerInventoryCarModel {
   final String qcReason;
   final String status;
   final int offerCount;
+
+  /// The highest price dealers are offering now (0 = no open offer).
+  final int bestOffer;
   final int leadCount;
 
   bool get isCustomerCar => ownership == customerOwned;
@@ -55,6 +63,9 @@ class DealerInventoryCarModel {
       ownership = _str(j['ownership']),
       customerName = _str(j['customerName']),
       customerPhone = _str(j['customerPhone']),
+      carAddress = _str(j['carAddress']),
+      carLatitude = (j['carLocation']?['latitude'] as num?)?.toDouble(),
+      carLongitude = (j['carLocation']?['longitude'] as num?)?.toDouble(),
       registrationNumber = _str(j['registrationNumber']),
       title = _str(j['title']),
       make = _str(j['make']),
@@ -84,6 +95,7 @@ class DealerInventoryCarModel {
       qcReason = _str(j['qc']?['reason']),
       status = _str(j['status']),
       offerCount = _int(j['offerCount']),
+      bestOffer = _int(j['bestOffer']),
       leadCount = _int(j['leadCount']);
 }
 

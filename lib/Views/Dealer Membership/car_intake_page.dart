@@ -9,6 +9,7 @@ import 'package:otobix/Utils/global_functions.dart';
 import 'package:otobix/Widgets/Dealer%20Membership/car_images_picker.dart';
 import 'package:otobix/Widgets/Dealer%20Membership/dealer_common_widgets.dart';
 import 'package:otobix/Widgets/Dealer%20Membership/vehicle_spec_sheet.dart';
+import 'package:otobix/Widgets/address_search_field.dart';
 import 'package:otobix/Widgets/app_bar_widget.dart';
 import 'package:otobix/Widgets/button_widget.dart';
 
@@ -35,6 +36,12 @@ class _CarIntakePageState extends State<CarIntakePage> {
   final _customerName = TextEditingController();
   final _customerPhone = TextEditingController();
   final _isFetching = false.obs;
+
+  // A customer car's own place: other dealers' distances are measured to it.
+  // A dealer's own car is at their showroom, known since registration.
+  final _carAddress = TextEditingController();
+  double? _carLat;
+  double? _carLng;
 
   DealerRcPrefillModel? _facts;
   String? _transmission;
@@ -76,6 +83,9 @@ class _CarIntakePageState extends State<CarIntakePage> {
       _city.text = car.city;
       _customerName.text = car.customerName;
       _customerPhone.text = car.customerPhone;
+      _carAddress.text = car.carAddress;
+      _carLat = car.carLatitude;
+      _carLng = car.carLongitude;
       _imageUrls = List.of(car.images);
     } else {
       _city.text = membership.membership.value?.city ?? '';
@@ -93,6 +103,7 @@ class _CarIntakePageState extends State<CarIntakePage> {
       _city,
       _customerName,
       _customerPhone,
+      _carAddress,
     ]) {
       c.dispose();
     }
@@ -132,8 +143,11 @@ class _CarIntakePageState extends State<CarIntakePage> {
     }
     if (_imageUrls.isEmpty) return 'Add at least one car photo.';
     if (_amount(_kms) <= 0) return 'Enter the kilometers driven.';
-    if (_city.text.trim().isEmpty) return 'Enter the city the car is in.';
     if (_isCustomerCar) {
+      if (_carLat == null || _carLng == null) {
+        return "Add where the car is: search the customer's address or use your current location.";
+      }
+      if (_city.text.trim().isEmpty) return 'Enter the city the car is in.';
       if (_amount(_exchangePrice) <= 0) return 'Enter the expected price.';
       final phone = _customerPhone.text.trim();
       if (phone.isNotEmpty && !RegExp(r'^[6-9][0-9]{9}$').hasMatch(phone)) {
@@ -162,7 +176,9 @@ class _CarIntakePageState extends State<CarIntakePage> {
       'transmission': _transmission,
       'images': _imageUrls,
       'kms': _amount(_kms),
-      'city': _city.text.trim(),
+      // A dealer's own car: the dealer's city (the server fills it in when blank).
+      if (_isCustomerCar || _city.text.trim().isNotEmpty)
+        'city': _city.text.trim(),
       'description': _description.text.trim(),
       'exchangeEnabled': _isCustomerCar || _exchangeEnabled,
       'exchangePrice': _amount(_exchangePrice),
@@ -174,6 +190,11 @@ class _CarIntakePageState extends State<CarIntakePage> {
       if (_isCustomerCar) ...{
         'customerName': _customerName.text.trim(),
         'customerPhone': _customerPhone.text.trim(),
+        'carLocation': {
+          'latitude': _carLat,
+          'longitude': _carLng,
+          'address': _carAddress.text.trim(),
+        },
       },
     };
     if (_isEdit) body.remove('registrationNumber');
@@ -491,10 +512,93 @@ class _CarIntakePageState extends State<CarIntakePage> {
             hint: 'Condition, ownership, service notes',
             maxLines: 2,
           ),
-          const SizedBox(height: 6),
-          _field('City', _city, hint: 'e.g. Kolkata'),
+          // A dealer's own car is in the dealer's city, known since registration.
+          if (_isCustomerCar) ...[
+            const SizedBox(height: 6),
+            _field('City', _city, hint: 'e.g. Kolkata'),
+          ],
         ],
       ),
+    );
+  }
+
+  /// The phone's GPS as the car's place: the dealer is with the car.
+  Future<void> _useCurrentLocation() async {
+    final position = await membership.phonePosition();
+    if (position == null || !mounted) return;
+    _carAddress.clear(); // first: clearing a picked address drops its position
+    setState(() {
+      _carLat = position.latitude;
+      _carLng = position.longitude;
+    });
+  }
+
+  Widget _carLocation() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Where is the car? *',
+          style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 4),
+        AddressSearchField(
+          controller: _carAddress,
+          decoration: InputDecoration(
+            isDense: true,
+            hintText: "Search the customer's address",
+            hintStyle: const TextStyle(fontSize: 12),
+            prefixIcon: const Icon(Icons.search, size: 18),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 10,
+              vertical: 8,
+            ),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+          onPicked:
+              (place) => setState(() {
+                _carLat = place.latitude;
+                _carLng = place.longitude;
+                if (place.city.isNotEmpty) _city.text = place.city;
+              }),
+          onCleared:
+              () => setState(() {
+                _carLat = null;
+                _carLng = null;
+              }),
+        ),
+        Obx(
+          () =>
+              membership.isLocating.value
+                  ? const Padding(
+                    padding: EdgeInsets.all(8),
+                    child: SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  )
+                  : TextButton.icon(
+                    onPressed: _useCurrentLocation,
+                    icon: const Icon(Icons.my_location, size: 16),
+                    label: const Text(
+                      "Use my current location (I'm at the car)",
+                      style: TextStyle(fontSize: 12),
+                    ),
+                  ),
+        ),
+        Text(
+          _carLat == null
+              ? 'Other dealers see how far the car is from them, never where it is.'
+              : _carAddress.text.trim().isEmpty
+              ? "Your current location is saved as the car's place."
+              : "Car's place saved. Other dealers see only the distance.",
+          style: TextStyle(
+            fontSize: 10,
+            color: _carLat == null ? AppColors.grey : AppColors.green,
+          ),
+        ),
+      ],
     );
   }
 
@@ -523,6 +627,8 @@ class _CarIntakePageState extends State<CarIntakePage> {
             number: true,
             maxLength: 10,
           ),
+          const SizedBox(height: 8),
+          _carLocation(),
         ],
       ),
     );

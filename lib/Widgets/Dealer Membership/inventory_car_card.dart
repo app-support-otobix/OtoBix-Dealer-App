@@ -175,6 +175,11 @@ class InventoryCarCard extends StatelessWidget {
                   count: car.offerCount,
                   label: 'Dealer Offers',
                   color: AppColors.deepOrange,
+                  // The best price on the table, without opening the offers.
+                  note:
+                      car.bestOffer > 0
+                          ? 'Best offer ${GlobalFunctions.formatRupees(car.bestOffer)}'
+                          : '',
                   onTap: onOffers,
                 ),
               ),
@@ -193,12 +198,16 @@ class _CounterButton extends StatelessWidget {
   final Color color;
   final VoidCallback onTap;
 
+  /// A line in red under the label; empty shows nothing.
+  final String note;
+
   const _CounterButton({
     required this.icon,
     required this.count,
     required this.label,
     required this.color,
     required this.onTap,
+    this.note = '',
   });
 
   @override
@@ -225,11 +234,30 @@ class _CounterButton extends StatelessWidget {
               ),
               const SizedBox(width: 4),
               Expanded(
-                child: Text(
-                  label,
-                  style: const TextStyle(fontSize: 11, color: AppColors.black),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: AppColors.black,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    if (note.isNotEmpty)
+                      Text(
+                        note,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.red,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                  ],
                 ),
               ),
               Icon(Icons.chevron_right, size: 16, color: color),

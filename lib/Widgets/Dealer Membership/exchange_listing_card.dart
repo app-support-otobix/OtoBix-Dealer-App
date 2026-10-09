@@ -112,7 +112,7 @@ class ExchangeListingCard extends StatelessWidget {
             children: [
               Expanded(
                 child: PriceBox(
-                  label: 'Their Price',
+                  label: 'Seller Price',
                   value: GlobalFunctions.formatRupees(l.exchangePrice),
                   color: AppColors.blue,
                 ),
@@ -191,7 +191,9 @@ class ExchangeListingCard extends StatelessWidget {
   }
 }
 
-/// Your price for this car, sent to the seller without opening the chat.
+/// Your price for this car, sent to the seller without opening the chat. Once
+/// sent it stays in the box (the pencil sends a new one), even after the
+/// seller counters.
 class _QuickOfferBox extends StatefulWidget {
   final DealerExchangeListingModel listing;
   const _QuickOfferBox({required this.listing});
@@ -202,10 +204,24 @@ class _QuickOfferBox extends StatefulWidget {
 
 class _QuickOfferBoxState extends State<_QuickOfferBox> {
   final _amount = TextEditingController();
+  final _focus = FocusNode();
+  bool _editing = false; // changing a price already sent
+
+  @override
+  void initState() {
+    super.initState();
+    // Leaving the field empty goes back to showing the price already sent.
+    _focus.addListener(() {
+      if (!_focus.hasFocus && _editing && _amount.text.trim().isEmpty) {
+        setState(() => _editing = false);
+      }
+    });
+  }
 
   @override
   void dispose() {
     _amount.dispose();
+    _focus.dispose();
     super.dispose();
   }
 
@@ -215,6 +231,7 @@ class _QuickOfferBoxState extends State<_QuickOfferBox> {
     FocusScope.of(context).unfocus();
     if (await DealerExchangeController.to.quickOffer(widget.listing, amount)) {
       _amount.clear();
+      if (mounted) setState(() => _editing = false);
     }
   }
 
@@ -229,6 +246,11 @@ class _QuickOfferBoxState extends State<_QuickOfferBox> {
         'CLOSED',
       ].contains(offer?.displayStatus);
       final sending = controller.offeringOn.value == widget.listing.id;
+      final myPrice = closed || _editing ? 0 : (offer?.myAmount ?? 0);
+      final waiting = const [
+        'OFFER SENT',
+        'COUNTERED',
+      ].contains(offer?.displayStatus);
       return Container(
         padding: const EdgeInsets.fromLTRB(10, 8, 4, 4),
         decoration: BoxDecoration(
@@ -254,12 +276,60 @@ class _QuickOfferBoxState extends State<_QuickOfferBox> {
                   ),
                 ),
               )
+            else if (myPrice > 0)
+              Row(
+                children: [
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 4, bottom: 6),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              GlobalFunctions.formatRupees(myPrice),
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.green,
+                              ),
+                            ),
+                          ),
+                          if (waiting)
+                            const Text(
+                              'Waiting for the seller',
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: AppColors.grey,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: 'Send a new price',
+                    onPressed: () {
+                      setState(() => _editing = true);
+                      _focus.requestFocus();
+                    },
+                    icon: const Icon(
+                      Icons.edit_outlined,
+                      color: AppColors.green,
+                      size: 20,
+                    ),
+                  ),
+                ],
+              )
             else
               Row(
                 children: [
                   Expanded(
                     child: TextField(
                       controller: _amount,
+                      focusNode: _focus,
                       keyboardType: TextInputType.number,
                       inputFormatters: [
                         FilteringTextInputFormatter.digitsOnly,
@@ -306,7 +376,8 @@ class _QuickOfferBoxState extends State<_QuickOfferBox> {
   }
 }
 
-/// Where the seller stands on your offer.
+/// Where the seller stands on your offer. Your own price is in the Your Offer
+/// box, so only the seller's side (a counter, agreed, rejected) shows here.
 class _MyOfferStatus extends StatelessWidget {
   final DealerExchangeListingModel listing;
   const _MyOfferStatus({required this.listing});
@@ -320,14 +391,6 @@ class _MyOfferStatus extends StatelessWidget {
       }
       final amount = GlobalFunctions.formatRupees(o.amount);
       final (String text, Color color) = switch (o.displayStatus) {
-        'OFFER SENT' => (
-          'You offered $amount · waiting for the seller',
-          AppColors.deepOrange,
-        ),
-        'COUNTERED' => (
-          'You countered $amount · waiting for the seller',
-          AppColors.deepOrange,
-        ),
         'ACTION NEEDED' => (
           'Seller countered $amount · send a new price or open the chat',
           AppColors.red,

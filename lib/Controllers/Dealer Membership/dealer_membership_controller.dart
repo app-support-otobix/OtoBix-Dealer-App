@@ -282,13 +282,11 @@ class DealerMembershipController extends GetxController {
     isLocating.value = true;
     try {
       final gps = place == null ? await _currentPosition() : null;
-      final data = await DealerMembershipApi.put(
-        AppUrls.dealerShowroomLocation,
-        {
-          'latitude': place?.latitude ?? gps!.latitude,
-          'longitude': place?.longitude ?? gps!.longitude,
-        },
-      );
+      final data =
+          await DealerMembershipApi.put(AppUrls.dealerShowroomLocation, {
+            'latitude': place?.latitude ?? gps!.latitude,
+            'longitude': place?.longitude ?? gps!.longitude,
+          });
       membership.value = DealerMembershipModel.fromJson(
         Map<String, dynamic>.from(data),
       );
@@ -304,6 +302,21 @@ class DealerMembershipController extends GetxController {
     } on DealerApiException catch (e) {
       _toast('Could not save the location', e.message, ToastType.error);
       return false;
+    } finally {
+      isLocating.value = false;
+    }
+  }
+
+  /// The phone's GPS position (e.g. where a customer's car is), or null with a
+  /// toast saying why (GPS off, permission refused, no fix).
+  Future<Position?> phonePosition() async {
+    if (isLocating.value) return null;
+    isLocating.value = true;
+    try {
+      return await _currentPosition();
+    } on _LocationUnavailable catch (e) {
+      _toast('Location not available', e.message, ToastType.error);
+      return null;
     } finally {
       isLocating.value = false;
     }

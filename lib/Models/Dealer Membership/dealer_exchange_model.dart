@@ -10,24 +10,41 @@ class DealerMyOfferModel {
   final String negotiationId;
   final String
   displayStatus; // OFFER SENT | COUNTERED | ACTION NEEDED | AGREED | ...
-  final int amount;
+  final int amount; // the latest price on the thread, from either side
   final bool byMe;
   final int agreedAmount;
+
+  /// My own latest price, still known after the seller counters (0 = none).
+  final int myAmount;
 
   DealerMyOfferModel.fromJson(Map<String, dynamic> j)
     : negotiationId = _str(j['negotiationId']),
       displayStatus = _str(j['displayStatus']),
       amount = _int(j['amount']),
       byMe = j['byMe'] == true,
-      agreedAmount = _int(j['agreedAmount']);
+      agreedAmount = _int(j['agreedAmount']),
+      myAmount = _myAmount(
+        _int(j['myAmount']),
+        j['byMe'] == true,
+        _int(j['amount']),
+      );
 
-  /// From the conversation the quick offer returns.
+  /// From the conversation the quick offer returns (I am the buyer there).
   DealerMyOfferModel.fromNegotiation(Map<String, dynamic> j)
     : negotiationId = _str(j['id']),
       displayStatus = _str(j['displayStatus']),
       amount = _int(j['lastOffer']?['amount']),
       byMe = j['lastOffer']?['byMe'] == true,
-      agreedAmount = _int(j['agreedAmount']);
+      agreedAmount = _int(j['agreedAmount']),
+      myAmount = _myAmount(
+        _int(j['prices']?['buyer']),
+        j['lastOffer']?['byMe'] == true,
+        _int(j['lastOffer']?['amount']),
+      );
+
+  // A backend that does not send my own price yet: the latest one, if it is mine.
+  static int _myAmount(int mine, bool byMe, int latest) =>
+      mine > 0 ? mine : (byMe ? latest : 0);
 }
 
 class DealerExchangeListingModel {
