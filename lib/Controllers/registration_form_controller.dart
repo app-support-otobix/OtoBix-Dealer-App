@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:otobix/Models/Dealer%20Membership/dealer_membership_model.dart';
 import 'package:otobix/Models/place_model.dart';
 import 'package:otobix/Models/user_model.dart';
 import 'package:otobix/Network/api_service.dart';
@@ -44,6 +45,7 @@ class RegistrationFormController extends GetxController {
 
     // NEW: load entity names for dropdown
     fetchEntityNames();
+    fetchRegisterAsOptions();
   }
 
   @override
@@ -79,6 +81,15 @@ class RegistrationFormController extends GetxController {
 
   final RxList<String> entityTypes = <String>[].obs; // used by dropdown
   String? selectedEntityType;
+
+  // "Register as": New Car Dealer, Used Car Dealer or Broker, each with the
+  // plans it gets (from the server; the fallback has no plan details).
+  List<DealerRegisterAsModel> registerAsOptions = const [
+    DealerRegisterAsModel('New-Car Dealer', 'New Car Dealer'),
+    DealerRegisterAsModel('Used Car Dealer', 'Used Car Dealer'),
+    DealerRegisterAsModel('Broker', 'Broker'),
+  ];
+  String? selectedDealerType;
 
   List<String> filteredStates = [];
   List<String> indianStates = AppConstants.indianStates;
@@ -228,6 +239,8 @@ class RegistrationFormController extends GetxController {
       final requestBody = {
         ...userModel.toJson(),
         "otpVerificationToken": verificationToken,
+        if (userRole == AppConstants.roles.dealer)
+          "dealerType": selectedDealerType,
         if (showroom != null)
           "showroomLocation": {
             "latitude": showroom.latitude,
@@ -349,6 +362,7 @@ class RegistrationFormController extends GetxController {
 
     obscurePassword.value = true;
     selectedEntityType = null;
+    selectedDealerType = null;
     selectedState = null;
 
     addressControllers.clear();
@@ -486,6 +500,25 @@ class RegistrationFormController extends GetxController {
       ]);
     }
     update(); // refresh GetBuilder
+  }
+
+  Future<void> fetchRegisterAsOptions() async {
+    try {
+      final resp = await ApiService.get(
+        endpoint: AppUrls.dealerRegistrationOptions,
+      );
+      if (resp.statusCode != 200) return;
+      final data = (jsonDecode(resp.body) as Map<String, dynamic>)['data'];
+      final options = [
+        for (final o in (data?['options'] as List? ?? const []))
+          if (o is Map)
+            DealerRegisterAsModel.fromJson(Map<String, dynamic>.from(o)),
+      ];
+      if (options.isNotEmpty) registerAsOptions = options;
+      update();
+    } catch (e) {
+      debugPrint('Register-as options not loaded: $e');
+    }
   }
 
   // Fetch entity documents

@@ -42,7 +42,7 @@ class DealerRenewalBanner extends StatelessWidget {
         subtitle =
             m.isGrace
                 ? 'Your ${m.plan?.name ?? 'membership'} has ended. Everything keeps working until the grace period ends.'
-                : m.plan?.code == 'PROMO'
+                : m.plan?.isTrial == true
                 ? 'Your free trial ends soon. Upgrade to keep your services running.'
                 : 'Your plan ends soon. Upgrade to keep your services running.';
         color = m.isGrace ? AppColors.red : AppColors.deepOrange;

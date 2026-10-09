@@ -38,6 +38,8 @@ class DealerFeature {
   final void Function(BuildContext context) open;
   // The Dealer Home module it belongs to; hidden while OtoBix has it off.
   final String? module;
+  // Hidden from brokers (they have no My Inventory).
+  final bool dealersOnly;
 
   const DealerFeature(
     this.label,
@@ -45,6 +47,7 @@ class DealerFeature {
     this.keywords,
     this.open, {
     this.module,
+    this.dealersOnly = false,
   });
 }
 
@@ -65,6 +68,7 @@ class DealerMembershipNavigator {
       ['sell', 'inventory', 'my cars', 'upload', 'stock', 'listing'],
       (_) => openSell(),
       module: _sell,
+      dealersOnly: true,
     ),
     DealerFeature(
       "My Customer's Inventory",
@@ -214,6 +218,11 @@ class DealerMembershipNavigator {
   /// Whether a module is on for this dealer, so Home shows it at all.
   static bool isShown(String? module) =>
       module == null || DealerMembershipController.to.moduleEnabled(module);
+
+  /// Whether Home's feature search lists [f] for this dealer.
+  static bool isFeatureShown(DealerFeature f) =>
+      isShown(f.module) &&
+      !(f.dealersOnly && DealerMembershipController.to.isBroker);
 
   /// The modules a notification or activity target belongs to (any one on is
   /// enough: chats and deal rooms serve both Buy and Sell).
