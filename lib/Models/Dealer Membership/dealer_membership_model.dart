@@ -16,8 +16,13 @@ class DealerPlanModel {
   final int priceRupees;
   final int pointsPerCycle;
   final int listingCap;
+  // Broker plans: customer cars only, this many a cycle.
+  final int customerCarsPerCycle;
+  final bool isBroker;
   final int cycleDays;
   final List<String> benefits;
+
+  bool get isTrial => priceRupees == 0;
 
   DealerPlanModel.fromJson(Map<String, dynamic> j)
     : code = _str(j['code']),
@@ -25,8 +30,29 @@ class DealerPlanModel {
       priceRupees = _int(j['priceRupees']),
       pointsPerCycle = _int(j['pointsPerCycle']),
       listingCap = _int(j['listingCap']),
+      customerCarsPerCycle = _int(j['customerCarsPerCycle']),
+      isBroker = j['broker'] == true,
       cycleDays = _int(j['cycleDays']),
       benefits = _strings(j['benefits']);
+}
+
+/// A "Register as" choice on the registration form (New Car Dealer, Used Car
+/// Dealer, Broker) with the plans it gets.
+class DealerRegisterAsModel {
+  final String dealerType;
+  final String label;
+  final List<DealerPlanModel> plans;
+
+  const DealerRegisterAsModel(
+    this.dealerType,
+    this.label, [
+    this.plans = const [],
+  ]);
+
+  DealerRegisterAsModel.fromJson(Map<String, dynamic> j)
+    : dealerType = _str(j['dealerType']),
+      label = _str(j['label']),
+      plans = _maps(j['plans']).map(DealerPlanModel.fromJson).toList();
 }
 
 class DealerPaymentMethodModel {
@@ -178,6 +204,8 @@ class DealerMembershipModel {
 
   bool get isActive => status == active || status == grace;
   bool get isGrace => status == grace;
+  // Brokers see Sell (My Customer's Inventory) and Membership only.
+  bool get isBroker => plan?.isBroker ?? false;
   bool moduleEnabled(String code) => modules[code] ?? true;
 
   DealerMembershipModel.fromJson(Map<String, dynamic> j)

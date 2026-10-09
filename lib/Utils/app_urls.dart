@@ -209,6 +209,10 @@ class AppUrls {
 
   static String get _dealerMembership => "${baseUrl}dealer-membership/";
 
+  // Before login: "Register as" choices and their plans.
+  static String get dealerRegistrationOptions =>
+      "${_dealerMembership}registration-options";
+
   static String get dealerMembershipConfig => "${_dealerMembership}config";
 
   static String get dealerMembershipHome => "${_dealerMembership}home";

@@ -84,6 +84,8 @@ class DealerMembershipController extends GetxController {
         await SharedPrefsHelper.getString(SharedPrefsHelper.userIdKey) ?? '';
     if (userId == _sessionUserId) return;
     if (_sessionUserId.isNotEmpty) {
+      // Plans and dealer types follow the dealer (broker or not).
+      config.value = null;
       membership.value = null;
       dealerName.value = '';
       newLeads.value = 0;
@@ -472,6 +474,9 @@ class DealerMembershipController extends GetxController {
   /// On until the membership says otherwise, so a slow load never locks a tab.
   bool moduleEnabled(String code) =>
       membership.value?.moduleEnabled(code) ?? true;
+
+  /// Brokers: Sell (My Customer's Inventory) and Membership only.
+  bool get isBroker => membership.value?.isBroker ?? false;
 
   /// True when the dealer may open [code]; otherwise says it is locked.
   bool requireModule(String code) => requireAnyModule([code]);

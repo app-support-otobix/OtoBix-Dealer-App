@@ -184,7 +184,7 @@ class _DealerHomePageState extends State<DealerHomePage> {
         DealerMembershipNavigator.features
             .where(
               (f) =>
-                  DealerMembershipNavigator.isShown(f.module) &&
+                  DealerMembershipNavigator.isFeatureShown(f) &&
                   (f.label.toLowerCase().contains(_query) ||
                       f.keywords.any((k) => k.contains(_query))),
             )
