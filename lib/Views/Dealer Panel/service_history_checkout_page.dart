@@ -405,18 +405,23 @@ class ServiceHistoryCheckoutPage extends StatelessWidget {
   }
 
   Widget _buildCheckoutButton() {
-    return ButtonWidget(
-      text: 'Proceed to Checkout',
-      // isLoading: serviceHistoryCheckoutController.isSubmitServiceHistoryRequestLoading,
-      isLoading: false.obs,
-      onTap:
-          () => serviceHistoryCheckoutController.submitServiceHistoryRequest(),
-      width: 250,
-      height: 35,
-      elevation: 2,
-      borderRadius: 22,
-      fontSize: 13,
-      backgroundColor: AppColors.red,
+    final c = serviceHistoryCheckoutController;
+    return Obx(
+      () => ButtonWidget(
+        text:
+            c.canPayWithPoints
+                ? 'Pay with ${c.pointsPrice} points'
+                : 'Proceed to Checkout',
+        // isLoading: serviceHistoryCheckoutController.isSubmitServiceHistoryRequestLoading,
+        isLoading: false.obs,
+        onTap: () => c.submitServiceHistoryRequest(),
+        width: 250,
+        height: 35,
+        elevation: 2,
+        borderRadius: 22,
+        fontSize: 13,
+        backgroundColor: AppColors.red,
+      ),
     );
   }
 }

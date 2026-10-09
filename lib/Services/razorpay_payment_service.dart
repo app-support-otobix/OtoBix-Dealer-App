@@ -134,6 +134,29 @@ class RazorpayPaymentService {
     }
   }
 
+  void openOrder({
+    required String keyId,
+    required String orderId,
+    required int amountPaise,
+    required String name,
+    required String description,
+    required String customerEmail,
+    required String customerPhone,
+  }) {
+    if (_razorpay == null) {
+      throw Exception("Payment system not ready. Please try again.");
+    }
+    _razorpay!.open({
+      "key": keyId,
+      "amount": amountPaise,
+      "currency": "INR",
+      "name": name,
+      "description": description,
+      "order_id": orderId,
+      "prefill": {"email": customerEmail, "contact": customerPhone},
+    });
+  }
+
   /// ✅ Verify payment on backend (returns false if not verified)
   Future<bool> verifyOnBackend({
     required PaymentSuccessData success,

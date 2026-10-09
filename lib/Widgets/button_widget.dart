@@ -38,11 +38,13 @@ class ButtonWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: isLoading.value ? null : onTap,
-      borderRadius: BorderRadius.circular(borderRadius),
-      child: Obx(
-        () => Material(
+    // The tap handler lives inside Obx so it is disabled the moment
+    // isLoading turns true - otherwise a second tap sends the request twice.
+    return Obx(
+      () => InkWell(
+        onTap: isLoading.value ? null : onTap,
+        borderRadius: BorderRadius.circular(borderRadius),
+        child: Material(
           elevation: elevation,
           borderRadius: BorderRadius.circular(borderRadius),
           child: Container(

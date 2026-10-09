@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:otobix/Models/Dealer%20Membership/dealer_membership_model.dart';
+import 'package:otobix/Models/place_model.dart';
 import 'package:otobix/Models/user_model.dart';
 import 'package:otobix/Network/api_service.dart';
 import 'package:otobix/Utils/app_constants.dart';
@@ -24,6 +26,7 @@ class RegistrationFormController extends GetxController {
     secondaryContactPersonController.clear();
     secondaryMobileController.clear();
     addressControllers.clear();
+    addressPlaces.clear();
     selectedEntityType = null;
     selectedState = null;
     touchedFields.clear();
@@ -42,6 +45,7 @@ class RegistrationFormController extends GetxController {
 
     // NEW: load entity names for dropdown
     fetchEntityNames();
+    fetchRegisterAsOptions();
   }
 
   @override
@@ -78,6 +82,15 @@ class RegistrationFormController extends GetxController {
   final RxList<String> entityTypes = <String>[].obs; // used by dropdown
   String? selectedEntityType;
 
+  // "Register as": New Car Dealer, Used Car Dealer or Broker, each with the
+  // plans it gets (from the server; the fallback has no plan details).
+  List<DealerRegisterAsModel> registerAsOptions = const [
+    DealerRegisterAsModel('New-Car Dealer', 'New Car Dealer'),
+    DealerRegisterAsModel('Used Car Dealer', 'Used Car Dealer'),
+    DealerRegisterAsModel('Broker', 'Broker'),
+  ];
+  String? selectedDealerType;
+
   List<String> filteredStates = [];
   List<String> indianStates = AppConstants.indianStates;
 
@@ -99,6 +112,29 @@ class RegistrationFormController extends GetxController {
       TextEditingController();
 
   List<TextEditingController> addressControllers = [];
+
+  /// The place picked from the suggestions for an address field. The first
+  /// address with one is sent as the showroom location, which puts this
+  /// dealer's cars in nearest-first order for other dealers.
+  final Map<TextEditingController, PlaceDetailsModel> addressPlaces = {};
+
+  void setAddressPlace(
+    TextEditingController controller,
+    PlaceDetailsModel place,
+  ) {
+    addressPlaces[controller] = place;
+    if (selectedState == null) {
+      final state = place.state.toLowerCase();
+      selectedState = indianStates.firstWhereOrNull(
+        (s) => s.toLowerCase() == state,
+      );
+    }
+    update();
+  }
+
+  void clearAddressPlace(TextEditingController controller) {
+    addressPlaces.remove(controller);
+  }
 
   void filterStates(String query) {
     if (query.isEmpty) {
@@ -125,7 +161,7 @@ class RegistrationFormController extends GetxController {
   }
 
   void removeAddressField(int index) {
-    addressControllers.removeAt(index);
+    addressPlaces.remove(addressControllers.removeAt(index));
     update();
   }
 
@@ -193,10 +229,23 @@ class RegistrationFormController extends GetxController {
         updatedAt: DateTime.now(),
       );
 
+      final showroom =
+          addressControllers
+              .map((c) => addressPlaces[c])
+              .whereType<PlaceDetailsModel>()
+              .firstOrNull;
+
       // Add verification token to the request body
       final requestBody = {
         ...userModel.toJson(),
         "otpVerificationToken": verificationToken,
+        if (userRole == AppConstants.roles.dealer)
+          "dealerType": selectedDealerType,
+        if (showroom != null)
+          "showroomLocation": {
+            "latitude": showroom.latitude,
+            "longitude": showroom.longitude,
+          },
       };
 
       final response = await ApiService.post(
@@ -313,10 +362,12 @@ class RegistrationFormController extends GetxController {
 
     obscurePassword.value = true;
     selectedEntityType = null;
+    selectedDealerType = null;
     selectedState = null;
 
     addressControllers.clear();
     addressControllers.add(TextEditingController());
+    addressPlaces.clear();
 
     // 🔁 Reset validation-related data
     formKey.currentState?.reset();
@@ -449,6 +500,25 @@ class RegistrationFormController extends GetxController {
       ]);
     }
     update(); // refresh GetBuilder
+  }
+
+  Future<void> fetchRegisterAsOptions() async {
+    try {
+      final resp = await ApiService.get(
+        endpoint: AppUrls.dealerRegistrationOptions,
+      );
+      if (resp.statusCode != 200) return;
+      final data = (jsonDecode(resp.body) as Map<String, dynamic>)['data'];
+      final options = [
+        for (final o in (data?['options'] as List? ?? const []))
+          if (o is Map)
+            DealerRegisterAsModel.fromJson(Map<String, dynamic>.from(o)),
+      ];
+      if (options.isNotEmpty) registerAsOptions = options;
+      update();
+    } catch (e) {
+      debugPrint('Register-as options not loaded: $e');
+    }
   }
 
   // // Fetch entity documents

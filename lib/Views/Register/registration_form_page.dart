@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:otobix/Controllers/registration_form_controller.dart';
+import 'package:otobix/Models/Dealer%20Membership/dealer_membership_model.dart';
 import 'package:otobix/Utils/app_colors.dart';
 import 'package:otobix/Utils/app_constants.dart';
 import 'package:otobix/Utils/app_icons.dart';
+import 'package:otobix/Utils/global_functions.dart';
+import 'package:otobix/Widgets/address_search_field.dart';
 import 'package:otobix/Widgets/button_widget.dart';
 import 'package:otobix/Widgets/dropdown_widget.dart';
 
@@ -80,6 +83,10 @@ class RegistrationFormPage extends StatelessWidget {
                   child: Column(
                     children: [
                       SizedBox(height: 10),
+                      if (userRole == AppConstants.roles.dealer) ...[
+                        _buildRegisterAs(),
+                        SizedBox(height: 20),
+                      ],
                       _buildLocationDropdown(),
                       SizedBox(height: 20),
                       _buildCustomTextField(
@@ -441,6 +448,140 @@ class RegistrationFormPage extends StatelessWidget {
     );
   }
 
+  // New Car Dealer / Used Car Dealer / Broker, then what the chosen one gets.
+  Widget _buildRegisterAs() {
+    return GetBuilder<RegistrationFormController>(
+      builder: (getxController) {
+        final selected = getxController.registerAsOptions.firstWhereOrNull(
+          (o) => o.dealerType == getxController.selectedDealerType,
+        );
+        return FormField<String>(
+          validator:
+              (_) =>
+                  getxController.selectedDealerType == null
+                      ? 'Please choose how you are registering'
+                      : null,
+          builder: (formFieldState) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                RichText(
+                  text: TextSpan(
+                    text: 'Register as',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                      color: AppColors.grey,
+                    ),
+                    children: [
+                      TextSpan(
+                        text: ' *',
+                        style: TextStyle(
+                          color: AppColors.red,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (final o in getxController.registerAsOptions)
+                      ChoiceChip(
+                        label: Text(o.label, style: TextStyle(fontSize: 12)),
+                        selected: o == selected,
+                        selectedColor: AppColors.green.withValues(alpha: 0.2),
+                        onSelected: (_) {
+                          getxController.selectedDealerType = o.dealerType;
+                          getxController.update();
+                          formFieldState.didChange(o.dealerType);
+                        },
+                      ),
+                  ],
+                ),
+                if (formFieldState.hasError)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 10, top: 4),
+                    child: Text(
+                      formFieldState.errorText ?? '',
+                      style: TextStyle(
+                        color: AppColors.validationErrorRed,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                if (selected != null && selected.plans.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  _buildPlansCard(selected.plans),
+                ],
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildPlansCard(List<DealerPlanModel> plans) {
+    final trial = plans.firstWhereOrNull((p) => p.isTrial);
+    final paid = plans.where((p) => !p.isTrial).toList();
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.green.withValues(alpha: 0.06),
+        border: Border.all(color: AppColors.green.withValues(alpha: 0.4)),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (trial != null && paid.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Text(
+                'Starts with ${trial.name}, free for ${trial.cycleDays} days. '
+                'Then ${paid.map((p) => '${p.name} at ${GlobalFunctions.formatRupees(p.priceRupees)}').join(' or ')} a month.',
+                style: TextStyle(fontSize: 12, color: AppColors.black),
+              ),
+            ),
+          for (final p in plans) ...[
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  p.name.toUpperCase(),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                    color: AppColors.blue,
+                  ),
+                ),
+                Text(
+                  p.isTrial
+                      ? 'Free · ${p.cycleDays} days'
+                      : '${GlobalFunctions.formatRupees(p.priceRupees)} / ${p.cycleDays} days',
+                  style: TextStyle(fontSize: 11, color: AppColors.grey),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            for (final line in [
+              '${GlobalFunctions.formatNumber(p.pointsPerCycle)} OtoBix Points each cycle',
+              ...p.benefits,
+            ])
+              Text('• $line', style: TextStyle(fontSize: 12)),
+            if (p != plans.last) const SizedBox(height: 10),
+          ],
+        ],
+      ),
+    );
+  }
+
   Widget _buildEntityTypeDropdown(BuildContext context) {
     return GetBuilder<RegistrationFormController>(
       builder: (getxController) {
@@ -798,8 +939,19 @@ class RegistrationFormPage extends StatelessWidget {
                     child: Row(
                       children: [
                         Expanded(
-                          child: TextFormField(
+                          child: AddressSearchField(
+                            key: ObjectKey(controller),
                             controller: controller,
+                            otpVerificationToken: verificationToken,
+                            onPicked:
+                                (place) => getxController.setAddressPlace(
+                                  controller,
+                                  place,
+                                ),
+                            onCleared:
+                                () => getxController.clearAddressPlace(
+                                  controller,
+                                ),
                             decoration: InputDecoration(
                               prefixIcon: Icon(
                                 Icons.location_city,
@@ -813,7 +965,10 @@ class RegistrationFormPage extends StatelessWidget {
                               contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 10,
                               ),
-                              hintText: "Enter Address ${index + 1}",
+                              hintText:
+                                  index == 0
+                                      ? "Search your showroom name or address"
+                                      : "Search or enter Address ${index + 1}",
                               hintStyle: TextStyle(
                                 color: AppColors.grey.withValues(alpha: .5),
                                 fontSize: 12,
