@@ -247,15 +247,19 @@ class _CounterButton extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                     if (note.isNotEmpty)
-                      Text(
-                        note,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.red,
+                      // Shrinks to fit a half-width button rather than cut the amount.
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          note,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.red,
+                          ),
+                          maxLines: 1,
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                       ),
                   ],
                 ),

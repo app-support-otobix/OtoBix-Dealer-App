@@ -330,6 +330,10 @@ class _QuickOfferBoxState extends State<_QuickOfferBox> {
                     child: TextField(
                       controller: _amount,
                       focusNode: _focus,
+                      // On Android closing the keyboard keeps the focus; a tap
+                      // elsewhere lets go of it (and an empty box goes back to
+                      // the price already sent).
+                      onTapOutside: (_) => _focus.unfocus(),
                       keyboardType: TextInputType.number,
                       inputFormatters: [
                         FilteringTextInputFormatter.digitsOnly,

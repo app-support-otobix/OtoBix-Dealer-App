@@ -87,7 +87,9 @@ class _CarIntakePageState extends State<CarIntakePage> {
       _carLat = car.carLatitude;
       _carLng = car.carLongitude;
       _imageUrls = List.of(car.images);
-    } else {
+    } else if (!_isCustomerCar) {
+      // A dealer's own car is in their city; a customer's car takes the city
+      // of the place picked for it (or the RC's).
       _city.text = membership.membership.value?.city ?? '';
     }
   }
