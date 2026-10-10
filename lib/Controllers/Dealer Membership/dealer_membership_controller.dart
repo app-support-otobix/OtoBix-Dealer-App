@@ -69,6 +69,7 @@ class DealerMembershipController extends GetxController {
       SocketEvents.dealerActivityCreated,
       _onActivityEvent,
     );
+    SocketService.instance.on(SocketEvents.connect, _joinDealerRoom);
     DealerMembershipApi.onModuleDisabled = _onModuleDisabled;
     syncSession();
   }
@@ -84,6 +85,9 @@ class DealerMembershipController extends GetxController {
         await SharedPrefsHelper.getString(SharedPrefsHelper.userIdKey) ?? '';
     if (userId == _sessionUserId) return;
     if (_sessionUserId.isNotEmpty) {
+      SocketService.instance.leaveRoom(
+        '${SocketEvents.userRoom}$_sessionUserId',
+      );
       // Plans and dealer types follow the dealer (broker or not).
       config.value = null;
       membership.value = null;
@@ -100,8 +104,15 @@ class DealerMembershipController extends GetxController {
       Get.delete<DealerLeadsController>(force: true);
     }
     _sessionUserId = userId;
-    SocketService.instance.joinDealerRoom();
+    _joinDealerRoom();
     await loadHome();
+  }
+
+  // Dealer Hub events come to the dealer's user room. A reconnect drops the
+  // socket's rooms, so it is joined again on every connect.
+  void _joinDealerRoom([dynamic _]) {
+    if (_sessionUserId.isEmpty) return;
+    SocketService.instance.joinRoom('${SocketEvents.userRoom}$_sessionUserId');
   }
 
   @override
@@ -114,6 +125,7 @@ class DealerMembershipController extends GetxController {
       SocketEvents.dealerActivityCreated,
       _onActivityEvent,
     );
+    SocketService.instance.off(SocketEvents.connect, _joinDealerRoom);
     DealerMembershipApi.onModuleDisabled = null;
     _razorpay.dispose();
     super.onClose();

@@ -1,6 +1,4 @@
-import 'package:otobix/Network/api_service.dart';
 import 'package:otobix/Utils/socket_events.dart';
-import 'package:otobix/helpers/shared_prefs_helper.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:flutter/foundation.dart';
 
@@ -49,31 +47,6 @@ class SocketService {
     debugPrint('Joined room: $roomId');
   }
 
-  bool _dealerRoomWanted = false;
-
-  Future<void> joinDealerRoom({bool isRetry = false}) async {
-    _dealerRoomWanted = true;
-    final token =
-        await SharedPrefsHelper.getString(SharedPrefsHelper.accessTokenKey) ??
-        '';
-    if (token.isEmpty) return;
-    socket.emitWithAck(
-      SocketEvents.dealerJoin,
-      {'token': token},
-      ack: (response) async {
-        if (response is Map && response['ok'] != true) {
-          debugPrint('Dealer room join refused: ${response['code']}');
-          // Access tokens last 15 minutes: refresh a stale one and join again once.
-          if (response['code'] == 'TOKEN_EXPIRED' &&
-              !isRetry &&
-              await ApiService.refreshAccessToken()) {
-            joinDealerRoom(isRetry: true);
-          }
-        }
-      },
-    );
-  }
-
   // Leave a room
   void leaveRoom(String roomId) {
     socket.emit(SocketEvents.leaveRoom, roomId);
@@ -116,7 +89,6 @@ class SocketService {
       SocketEvents.joinRoom,
       SocketEvents.auctionCompletedCarsSectionRoom,
     );
-    if (_dealerRoomWanted) joinDealerRoom();
 
     // ✅ Let the app know socket is reconnected (e.g., via callback or stream)
     debugPrint('🔄 Socket reconnected, rooms rejoined');

@@ -257,10 +257,6 @@ class ApiService {
     }
   }
 
-  // -------------- Refresh Access Token (outside HTTP, e.g. socket joins) --------------
-  static Future<bool> refreshAccessToken() async =>
-      (await _refreshAccessTokenIfNeeded()).$1;
-
   // -------------- Refresh Access Token API --------------
   static Future<(bool isSuccessful, String message)>
   _refreshAccessToken() async {
