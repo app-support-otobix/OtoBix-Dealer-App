@@ -374,6 +374,23 @@ class ServiceHistoryCheckoutPage extends StatelessWidget {
             '₹ ${serviceHistoryCheckoutController.total.toStringAsFixed(0)}',
             isTotal: true,
           ),
+          Obx(() {
+            final c = serviceHistoryCheckoutController;
+            final points = c.pointsToUse;
+            if (points == 0) return const SizedBox.shrink();
+            return Column(
+              children: [
+                const SizedBox(height: 3),
+                _buildBillRow('Membership points', '- $points'),
+                const SizedBox(height: 3),
+                _buildBillRow(
+                  'To pay online',
+                  '₹ ${c.amountToPay.toStringAsFixed(0)}',
+                  isTotal: true,
+                ),
+              ],
+            );
+          }),
         ],
       ),
     );
@@ -409,8 +426,8 @@ class ServiceHistoryCheckoutPage extends StatelessWidget {
     return Obx(
       () => ButtonWidget(
         text:
-            c.canPayWithPoints
-                ? 'Pay with ${c.pointsPrice} points'
+            c.pointsToUse > 0
+                ? 'Pay ₹${c.amountToPay.toStringAsFixed(0)} + ${c.pointsToUse} points'
                 : 'Proceed to Checkout',
         // isLoading: serviceHistoryCheckoutController.isSubmitServiceHistoryRequestLoading,
         isLoading: false.obs,

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:otobix/Controllers/Dealer%20Membership/dealer_connections_controller.dart';
 import 'package:otobix/Controllers/Dealer%20Membership/dealer_exchange_controller.dart';
@@ -8,9 +7,9 @@ import 'package:otobix/Controllers/Dealer%20Membership/dealer_leads_controller.d
 import 'package:otobix/Controllers/Dealer%20Membership/dealer_negotiations_controller.dart';
 import 'package:otobix/Controllers/Dealer%20Membership/dealer_paged_list.dart';
 import 'package:otobix/Controllers/Dealer%20Membership/dealer_requirements_controller.dart';
+import 'package:otobix/Controllers/razorpay_payment_controller.dart';
 import 'package:otobix/Models/Dealer%20Membership/dealer_activity_model.dart';
 import 'package:otobix/Models/Dealer%20Membership/dealer_membership_model.dart';
-import 'package:otobix/Models/place_model.dart';
 import 'package:otobix/Network/dealer_membership_api.dart';
 import 'package:otobix/Network/socket_service.dart';
 import 'package:otobix/Services/razorpay_payment_service.dart';
@@ -48,19 +47,9 @@ class DealerMembershipController extends GetxController {
   final isSubmitting = false.obs;
   final isPaying = false.obs;
 
-  final _razorpay = RazorpayPaymentService();
-
   @override
   void onInit() {
     super.onInit();
-    _razorpay.init(
-      onSuccess: _onPaymentSuccess,
-      onFailure: (f) {
-        isPaying.value = false;
-        _toast('Payment not completed', f.message, ToastType.error);
-      },
-      onExternalWallet: (_) => isPaying.value = false,
-    );
     SocketService.instance.on(
       SocketEvents.dealerMembershipUpdated,
       _onMembershipEvent,
@@ -127,7 +116,6 @@ class DealerMembershipController extends GetxController {
     );
     SocketService.instance.off(SocketEvents.connect, _joinDealerRoom);
     DealerMembershipApi.onModuleDisabled = null;
-    _razorpay.dispose();
     super.onClose();
   }
 
@@ -250,127 +238,6 @@ class DealerMembershipController extends GetxController {
     loadLedger(reset: true);
   }
 
-  Future<bool> register({
-    required String dealerType,
-    required String city,
-    required String state,
-    required String gstin,
-    required int tradeRadiusKm,
-  }) async {
-    if (isSubmitting.value) return false;
-    isSubmitting.value = true;
-    try {
-      final data =
-          await DealerMembershipApi.post(AppUrls.dealerMembershipRegister, {
-            'dealerType': dealerType,
-            'city': city,
-            'state': state,
-            'gstin': gstin,
-            'tradeRadiusKm': tradeRadiusKm,
-          });
-      membership.value = DealerMembershipModel.fromJson(
-        Map<String, dynamic>.from(data),
-      );
-      _toast(
-        'Details saved',
-        'Your dealer details are updated.',
-        ToastType.success,
-      );
-      return true;
-    } on DealerApiException catch (e) {
-      _toast('Could not save your details', e.message, ToastType.error);
-      return false;
-    } finally {
-      isSubmitting.value = false;
-    }
-  }
-
-  final isLocating = false.obs;
-
-  /// Saves the showroom location from a searched address ([place], which has a
-  /// position) or else the phone's GPS (the dealer is asked to do this at the
-  /// showroom); other dealers' cars then show their distance from it. Only the
-  /// distance ever reaches other dealers.
-  Future<bool> setShowroomLocation({PlaceDetailsModel? place}) async {
-    if (isLocating.value) return false;
-    isLocating.value = true;
-    try {
-      final gps = place == null ? await _currentPosition() : null;
-      final data =
-          await DealerMembershipApi.put(AppUrls.dealerShowroomLocation, {
-            'latitude': place?.latitude ?? gps!.latitude,
-            'longitude': place?.longitude ?? gps!.longitude,
-          });
-      membership.value = DealerMembershipModel.fromJson(
-        Map<String, dynamic>.from(data),
-      );
-      _toast(
-        'Showroom location saved',
-        "Other dealers' cars now show how far they are from you.",
-        ToastType.success,
-      );
-      return true;
-    } on _LocationUnavailable catch (e) {
-      _toast('Location not available', e.message, ToastType.error);
-      return false;
-    } on DealerApiException catch (e) {
-      _toast('Could not save the location', e.message, ToastType.error);
-      return false;
-    } finally {
-      isLocating.value = false;
-    }
-  }
-
-  /// The phone's GPS position (e.g. where a customer's car is), or null with a
-  /// toast saying why (GPS off, permission refused, no fix).
-  Future<Position?> phonePosition() async {
-    if (isLocating.value) return null;
-    isLocating.value = true;
-    try {
-      return await _currentPosition();
-    } on _LocationUnavailable catch (e) {
-      _toast('Location not available', e.message, ToastType.error);
-      return null;
-    } finally {
-      isLocating.value = false;
-    }
-  }
-
-  Future<Position> _currentPosition() async {
-    if (!await Geolocator.isLocationServiceEnabled()) {
-      throw const _LocationUnavailable(
-        'Turn on location (GPS) on your phone and try again.',
-      );
-    }
-    var permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-    }
-    if (permission == LocationPermission.deniedForever) {
-      await Geolocator.openAppSettings();
-      throw const _LocationUnavailable(
-        'Allow location for OtoBix in Settings, then try again.',
-      );
-    }
-    if (permission == LocationPermission.denied) {
-      throw const _LocationUnavailable(
-        'Allow location access to set your showroom location.',
-      );
-    }
-    try {
-      return await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.high,
-          timeLimit: Duration(seconds: 20),
-        ),
-      );
-    } catch (_) {
-      throw const _LocationUnavailable(
-        'Could not get a GPS fix. Step outside or near a window and try again.',
-      );
-    }
-  }
-
   Future<bool> requestOfflinePayment(
     DealerPlanModel plan, {
     String reference = '',
@@ -400,44 +267,56 @@ class DealerMembershipController extends GetxController {
     }
   }
 
+  /// UPI: pays through the app's shared Razorpay flow (its order and
+  /// verification are kept in the payments collection), then the server checks
+  /// that payment against the plan and starts it.
   Future<void> purchasePlan(DealerPlanModel plan) async {
     if (isPaying.value) return;
     isPaying.value = true;
     try {
-      final order = Map<String, dynamic>.from(
-        await DealerMembershipApi.post(AppUrls.dealerMembershipCreateOrder, {
-          'planCode': plan.code,
-        }),
-      );
-      _razorpay.openOrder(
-        keyId: order['keyId'].toString(),
-        orderId: order['orderId'].toString(),
-        amountPaise: (order['amountPaise'] as num).toInt(),
-        name: AppConstants.appDisplayName,
-        description: '${plan.name} membership',
-        customerEmail:
-            await SharedPrefsHelper.getString(SharedPrefsHelper.userEmailKey) ??
-            '',
-        customerPhone:
-            await SharedPrefsHelper.getString(
-              SharedPrefsHelper.userPhoneNumberKey,
-            ) ??
-            '',
-      );
-    } on DealerApiException catch (e) {
-      isPaying.value = false;
-      _toast('Could not start payment', e.message, ToastType.error);
-    } catch (_) {
-      isPaying.value = false;
-      _toast('Could not start payment', 'Please try again.', ToastType.error);
-    }
-  }
+      final userId =
+          await SharedPrefsHelper.getString(SharedPrefsHelper.userIdKey) ?? '';
+      final payment =
+          Get.isRegistered<RazorpayPaymentController>()
+              ? Get.find<RazorpayPaymentController>()
+              : Get.put(RazorpayPaymentController());
+      final PaymentSuccessData success;
+      try {
+        success = await payment.pay(
+          amountRupees: plan.priceRupees.toDouble(),
+          name: AppConstants.appDisplayName,
+          description: '${plan.name} membership',
+          email:
+              await SharedPrefsHelper.getString(
+                SharedPrefsHelper.userEmailKey,
+              ) ??
+              '',
+          phone:
+              await SharedPrefsHelper.getString(
+                SharedPrefsHelper.userPhoneNumberKey,
+              ) ??
+              '',
+          notes: {
+            'purpose': 'dealer_membership',
+            'userId': userId,
+            'planCode': plan.code,
+          },
+          receipt: 'dealer_membership_${DateTime.now().millisecondsSinceEpoch}',
+          userId: userId,
+          meta: {'planCode': plan.code},
+        );
+      } catch (e) {
+        _toast(
+          'Payment not completed',
+          e.toString().replaceAll('Exception: ', ''),
+          ToastType.error,
+        );
+        return;
+      }
 
-  Future<void> _onPaymentSuccess(PaymentSuccessData success) async {
-    try {
       final data = await DealerMembershipApi.post(
         AppUrls.dealerMembershipVerifyPayment,
-        success.toJson(),
+        {'planCode': plan.code, ...success.toJson()},
       );
       membership.value = DealerMembershipModel.fromJson(
         Map<String, dynamic>.from(data),
@@ -587,10 +466,4 @@ class DealerMembershipController extends GetxController {
       type: type,
     );
   }
-}
-
-/// Why the phone could not give a showroom location, in the dealer's words.
-class _LocationUnavailable implements Exception {
-  final String message;
-  const _LocationUnavailable(this.message);
 }

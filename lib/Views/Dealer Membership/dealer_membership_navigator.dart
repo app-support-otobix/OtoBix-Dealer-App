@@ -16,7 +16,7 @@ import 'package:otobix/Views/Dealer%20Membership/deal_chat_page.dart';
 import 'package:otobix/Views/Dealer%20Membership/deal_room_page.dart';
 import 'package:otobix/Views/Dealer%20Membership/dealer_inventory_page.dart';
 import 'package:otobix/Views/Dealer%20Membership/dealer_leads_page.dart';
-import 'package:otobix/Views/Dealer%20Membership/dealer_registration_page.dart';
+import 'package:otobix/Views/Dealer%20Membership/dealer_profile_update_page.dart';
 import 'package:otobix/Views/Dealer%20Membership/dealer_sell_page.dart';
 import 'package:otobix/Views/Dealer%20Membership/exchange_listing_page.dart';
 import 'package:otobix/Views/Dealer%20Membership/finance_page.dart';
@@ -258,8 +258,8 @@ class DealerMembershipNavigator {
     () => Get.to(() => const UpgradeMembershipPage()),
   );
 
-  static void openDealerDetails() =>
-      Get.to(() => const DealerRegistrationPage());
+  static void openDealerProfileUpdate() =>
+      Get.to(() => const DealerProfileUpdatePage());
 
   static void openAddCustomerCar() => _ifEnabled(
     _sell,

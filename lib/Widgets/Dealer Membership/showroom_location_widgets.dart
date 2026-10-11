@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:otobix/Controllers/Dealer%20Membership/dealer_membership_controller.dart';
+import 'package:otobix/Controllers/Dealer%20Membership/dealer_profile_update_controller.dart';
 import 'package:otobix/Models/place_model.dart';
 import 'package:otobix/Utils/app_colors.dart';
 import 'package:otobix/Widgets/address_search_field.dart';
@@ -61,9 +62,10 @@ class ShowroomLocationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = DealerMembershipController.to;
+    final membership = DealerMembershipController.to.membership;
+    final controller = DealerProfileUpdateController.to;
     return Obx(() {
-      final m = controller.membership.value;
+      final m = membership.value;
       final isSet = m?.hasShowroomLocation ?? false;
       if (promptOnly && (m == null || isSet)) return const SizedBox.shrink();
       return Container(
@@ -155,7 +157,7 @@ class _ShowroomLocationSheet extends StatefulWidget {
 
 class _ShowroomLocationSheetState extends State<_ShowroomLocationSheet> {
   final _address = TextEditingController();
-  final _controller = DealerMembershipController.to;
+  final _controller = DealerProfileUpdateController.to;
 
   @override
   void dispose() {

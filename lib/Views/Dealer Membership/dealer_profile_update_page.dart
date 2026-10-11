@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:otobix/Controllers/Dealer%20Membership/dealer_membership_controller.dart';
+import 'package:otobix/Controllers/Dealer%20Membership/dealer_profile_update_controller.dart';
 import 'package:otobix/Utils/app_colors.dart';
 import 'package:otobix/Utils/app_constants.dart';
 import 'package:otobix/Widgets/Dealer%20Membership/dealer_common_widgets.dart';
@@ -8,15 +9,18 @@ import 'package:otobix/Widgets/Dealer%20Membership/showroom_location_widgets.dar
 import 'package:otobix/Widgets/app_bar_widget.dart';
 import 'package:otobix/Widgets/button_widget.dart';
 
-class DealerRegistrationPage extends StatefulWidget {
-  const DealerRegistrationPage({super.key});
+class DealerProfileUpdatePage extends StatefulWidget {
+  const DealerProfileUpdatePage({super.key});
 
   @override
-  State<DealerRegistrationPage> createState() => _DealerRegistrationPageState();
+  State<DealerProfileUpdatePage> createState() =>
+      _DealerProfileUpdatePageState();
 }
 
-class _DealerRegistrationPageState extends State<DealerRegistrationPage> {
+class _DealerProfileUpdatePageState extends State<DealerProfileUpdatePage> {
   final DealerMembershipController controller = DealerMembershipController.to;
+  final DealerProfileUpdateController profile =
+      DealerProfileUpdateController.to;
   final _gstin = TextEditingController();
   final _city = TextEditingController();
   String? _state;
@@ -62,7 +66,7 @@ class _DealerRegistrationPageState extends State<DealerRegistrationPage> {
             : null;
     setState(() => _error = error);
     if (error != null) return;
-    final saved = await controller.register(
+    final saved = await profile.updateProfile(
       dealerType: _dealerType!,
       city: _city.text.trim(),
       state: _state!,
@@ -76,7 +80,7 @@ class _DealerRegistrationPageState extends State<DealerRegistrationPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.white,
-      appBar: AppBarWidget(title: 'Dealer Details'),
+      appBar: AppBarWidget(title: 'Dealer Profile'),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -97,7 +101,7 @@ class _DealerRegistrationPageState extends State<DealerRegistrationPage> {
               const SizedBox(height: 12),
               ButtonWidget(
                 text: 'Save Details',
-                isLoading: controller.isSubmitting,
+                isLoading: profile.isSubmitting,
                 width: double.infinity,
                 onTap: _save,
               ),

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:otobix/Controllers/Dealer%20Membership/dealer_inventory_controller.dart';
 import 'package:otobix/Controllers/Dealer%20Membership/dealer_membership_controller.dart';
+import 'package:otobix/Controllers/Dealer%20Membership/dealer_profile_update_controller.dart';
 import 'package:otobix/Models/Dealer%20Membership/dealer_inventory_car_model.dart';
 import 'package:otobix/Utils/app_colors.dart';
 import 'package:otobix/Utils/global_functions.dart';
@@ -526,7 +527,7 @@ class _CarIntakePageState extends State<CarIntakePage> {
 
   /// The phone's GPS as the car's place: the dealer is with the car.
   Future<void> _useCurrentLocation() async {
-    final position = await membership.phonePosition();
+    final position = await DealerProfileUpdateController.to.phonePosition();
     if (position == null || !mounted) return;
     _carAddress.clear(); // first: clearing a picked address drops its position
     setState(() {
@@ -571,7 +572,7 @@ class _CarIntakePageState extends State<CarIntakePage> {
         ),
         Obx(
           () =>
-              membership.isLocating.value
+              DealerProfileUpdateController.to.isLocating.value
                   ? const Padding(
                     padding: EdgeInsets.all(8),
                     child: SizedBox(

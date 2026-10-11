@@ -216,7 +216,7 @@ class AppUrls {
 
   static String get dealerMembership => "${_dealerMembership}membership";
 
-  static String get dealerMembershipRegister =>
+  static String get dealerProfileUpdate =>
       "${_dealerMembership}membership/register";
 
   static String get dealerShowroomLocation =>
@@ -232,9 +232,6 @@ class AppUrls {
   static String get dealerMembershipOfflinePayment =>
       "${_dealerMembership}membership/offline-payment";
 
-  static String get dealerMembershipCreateOrder =>
-      "${_dealerMembership}membership/create-order";
-
   static String get dealerMembershipVerifyPayment =>
       "${_dealerMembership}membership/verify-payment";
 
@@ -243,9 +240,6 @@ class AppUrls {
 
   static String get dealerServicesRcCheckDecline =>
       "${_dealerMembership}services/rc-check/decline";
-
-  static String get dealerServicesServiceHistory =>
-      "${_dealerMembership}services/service-history";
 
   static String get dealerInventory => "${_dealerMembership}inventory";
 

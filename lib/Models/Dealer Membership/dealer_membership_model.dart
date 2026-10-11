@@ -74,6 +74,10 @@ class DealerMembershipConfigModel {
   final List<String> fuelTypes;
   final List<String> transmissions;
   final Map<String, int> serviceCosts;
+
+  /// Most of a Service History report's price points can pay (0.5 = half);
+  /// the rest is paid online.
+  final double serviceHistoryPointsShare;
   final int connectionPoints;
   final int connectionExpiryHours;
   final int maxCarImages;
@@ -103,6 +107,8 @@ class DealerMembershipConfigModel {
             in Map<String, dynamic>.from(j['serviceCosts'] ?? {}).entries)
           e.key: _int(e.value),
       },
+      serviceHistoryPointsShare =
+          (j['serviceHistoryPointsShare'] as num?)?.toDouble() ?? 0,
       connectionPoints = _int(j['connection']?['pointsPerSide']),
       connectionExpiryHours = _int(j['connection']?['expiryHours']),
       maxCarImages = _int(j['maxCarImages']),
