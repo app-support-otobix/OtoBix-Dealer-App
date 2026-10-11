@@ -41,17 +41,12 @@ android {
         versionName = flutter.versionName
     }
 
-    // key.properties (release keystore) is not in git. Without it, a clean
-    // clone could not build at all - not even debug - so the release config is
-    // only created when the file exists, and release falls back to debug keys.
     signingConfigs {
-        if (keystorePropertiesFile.exists()) {
-            create("release") {
-                keyAlias = keystoreProperties["keyAlias"] as String
-                keyPassword = keystoreProperties["keyPassword"] as String
-                storeFile = keystoreProperties["storeFile"]?.let { file(it) }
-                storePassword = keystoreProperties["storePassword"] as String
-            }
+        create("release") {
+            keyAlias = keystoreProperties["keyAlias"] as String
+            keyPassword = keystoreProperties["keyPassword"] as String
+            storeFile = keystoreProperties["storeFile"]?.let { file(it) }
+            storePassword = keystoreProperties["storePassword"] as String
         }
     }
 
@@ -59,9 +54,10 @@ android {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
-            signingConfig =
-                if (keystorePropertiesFile.exists()) signingConfigs.getByName("release")
-                else signingConfigs.getByName("debug")
+            // TODO: Add your own signing config for the release build.
+            // Signing with the debug keys for now, so `flutter run --release` works.
+            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 }
