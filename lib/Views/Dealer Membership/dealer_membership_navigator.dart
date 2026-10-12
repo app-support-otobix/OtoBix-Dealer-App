@@ -258,6 +258,12 @@ class DealerMembershipNavigator {
     () => Get.to(() => const UpgradeMembershipPage()),
   );
 
+  /// Buy more points for the current cycle (the top-up).
+  static void openAddPoints() => _ifEnabled(
+    _membership,
+    () => Get.to(() => const UpgradeMembershipPage(addPoints: true)),
+  );
+
   static void openDealerProfileUpdate() =>
       Get.to(() => const DealerProfileUpdatePage());
 

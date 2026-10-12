@@ -10,9 +10,20 @@ List<Map<String, dynamic>> _maps(dynamic v) => [
     if (e is Map) Map.from(e),
 ];
 
-class DealerPlanModel {
+/// Something a dealer pays for from Membership: a plan, or a points top-up.
+/// The server takes the price from its own table, by [code].
+abstract interface class DealerPurchasable {
+  String get code;
+  String get name;
+  int get priceRupees;
+}
+
+class DealerPlanModel implements DealerPurchasable {
+  @override
   final String code;
+  @override
   final String name;
+  @override
   final int priceRupees;
   final int pointsPerCycle;
   final int listingCap;
@@ -36,6 +47,26 @@ class DealerPlanModel {
       benefits = _strings(j['benefits']);
 }
 
+/// More points for the current cycle (1,000 for ₹1,000): usable for any
+/// feature, until the cycle ends.
+class DealerTopUpModel implements DealerPurchasable {
+  @override
+  final String code;
+  @override
+  final String name;
+  @override
+  final int priceRupees;
+  final int points;
+  final List<String> benefits;
+
+  DealerTopUpModel.fromJson(Map<String, dynamic> j)
+    : code = _str(j['code']),
+      name = _str(j['name']),
+      priceRupees = _int(j['priceRupees']),
+      points = _int(j['points']),
+      benefits = _strings(j['benefits']);
+}
+
 /// A "Register as" choice on the registration form (New Car Dealer, Used Car
 /// Dealer, Broker) with the plans it gets.
 class DealerRegisterAsModel {
@@ -48,6 +79,13 @@ class DealerRegisterAsModel {
     this.label, [
     this.plans = const [],
   ]);
+
+  /// The choices when the server's list (with plan details) can't be loaded.
+  static const fallback = [
+    DealerRegisterAsModel('New-Car Dealer', 'New Car Dealer (NCD)'),
+    DealerRegisterAsModel('Used Car Dealer', 'Used Car Dealer (UCD)'),
+    DealerRegisterAsModel('Broker', 'Broker'),
+  ];
 
   DealerRegisterAsModel.fromJson(Map<String, dynamic> j)
     : dealerType = _str(j['dealerType']),
@@ -69,6 +107,7 @@ class DealerPaymentMethodModel {
 class DealerMembershipConfigModel {
   final List<DealerPlanModel> plans;
   final DealerPlanModel? promo;
+  final DealerTopUpModel? topUp;
   final List<DealerPaymentMethodModel> paymentMethods;
   final List<String> dealerTypes;
   final List<String> fuelTypes;
@@ -94,6 +133,10 @@ class DealerMembershipConfigModel {
       promo =
           j['promo'] is Map
               ? DealerPlanModel.fromJson(Map<String, dynamic>.from(j['promo']))
+              : null,
+      topUp =
+          j['topUp'] is Map
+              ? DealerTopUpModel.fromJson(Map<String, dynamic>.from(j['topUp']))
               : null,
       paymentMethods =
           _maps(
@@ -128,6 +171,8 @@ class DealerMembershipConfigModel {
 
 class DealerCycleSummaryModel {
   final int allocated;
+  // Points added by top-ups this cycle.
+  final int toppedUp;
   final int reserved;
   final int pendingReservations;
   final int consumed;
@@ -135,6 +180,7 @@ class DealerCycleSummaryModel {
 
   DealerCycleSummaryModel.fromJson(Map<String, dynamic> j)
     : allocated = _int(j['allocated']),
+      toppedUp = _int(j['toppedUp']),
       reserved = _int(j['reserved']),
       pendingReservations = _int(j['pendingReservations']),
       consumed = _int(j['consumed']),
@@ -167,12 +213,17 @@ class DealerUsageModel {
 class DealerPendingPaymentModel {
   final String code;
   final String planCode;
+  // What it buys, e.g. "Dealer Pro" or "1,000 OtoBix Points".
+  final String name;
+  final bool isTopUp;
   final int amountRupees;
   final DateTime? requestedAt;
 
   DealerPendingPaymentModel.fromJson(Map<String, dynamic> j)
     : code = _str(j['code']),
       planCode = _str(j['planCode']),
+      name = _str(j['name']),
+      isTopUp = j['isTopUp'] == true,
       amountRupees = _int(j['amountRupees']),
       requestedAt = _date(j['requestedAt']);
 }
@@ -183,6 +234,11 @@ class DealerMembershipModel {
 
   final String dealerCode;
   final String dealerType;
+  // Enrolled before registration asked the dealer type: chosen once in the
+  // app before anything else (DealerTypeChoicePage).
+  final bool needsDealerType;
+  // Chose Broker, but OtoBix moves them to the Broker plan from the CRM.
+  final DateTime? brokerRequestedAt;
   final String gstin;
   final String city;
   final String state;
@@ -200,6 +256,8 @@ class DealerMembershipModel {
   final int daysLeft;
   final bool showRenewalWarning;
   final int availablePoints;
+  // Points added by top-ups this cycle (already in availablePoints).
+  final int topUpPoints;
   final int activeListings;
   final List<DealerUsageModel> usage;
   final DealerPendingPaymentModel? pendingPayment;
@@ -224,6 +282,8 @@ class DealerMembershipModel {
               : const {},
       dealerCode = _str(j['dealerCode']),
       dealerType = _str(j['dealerType']),
+      needsDealerType = j['needsDealerType'] == true,
+      brokerRequestedAt = _date(j['brokerRequestedAt']),
       gstin = _str(j['gstin']),
       city = _str(j['city']),
       state = _str(j['state']),
@@ -243,6 +303,7 @@ class DealerMembershipModel {
       daysLeft = _int(j['daysLeft']),
       showRenewalWarning = j['showRenewalWarning'] == true,
       availablePoints = _int(j['availablePoints']),
+      topUpPoints = _int(j['topUpPoints']),
       activeListings = _int(j['activeListings']),
       usage = _maps(j['usage']).map(DealerUsageModel.fromJson).toList(),
       pendingPayment =

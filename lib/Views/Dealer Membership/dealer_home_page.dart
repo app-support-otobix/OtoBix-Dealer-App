@@ -9,6 +9,7 @@ import 'package:otobix/Utils/app_colors.dart';
 import 'package:otobix/Utils/app_images.dart';
 import 'package:otobix/Utils/global_functions.dart';
 import 'package:otobix/Views/Dealer%20Membership/dealer_membership_navigator.dart';
+import 'package:otobix/Views/Dealer%20Membership/dealer_type_choice_page.dart';
 import 'package:otobix/Views/Dealer%20Panel/user_notifications_page.dart';
 import 'package:otobix/Widgets/Dealer%20Membership/dealer_common_widgets.dart';
 import 'package:otobix/Widgets/Dealer%20Membership/dealer_renewal_banner.dart';
@@ -39,6 +40,16 @@ class _DealerHomePageState extends State<DealerHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    // Enrolled before registration asked the dealer type: chosen once, first.
+    return Obx(
+      () =>
+          controller.membership.value?.needsDealerType ?? false
+              ? const DealerTypeChoicePage()
+              : _buildHome(),
+    );
+  }
+
+  Widget _buildHome() {
     return Scaffold(
       backgroundColor: AppColors.white,
       body: SafeArea(

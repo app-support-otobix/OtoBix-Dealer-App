@@ -232,6 +232,10 @@ class AppUrls {
   static String get dealerMembershipOfflinePayment =>
       "${_dealerMembership}membership/offline-payment";
 
+  // Once, for dealers enrolled before registration asked the dealer type.
+  static String get dealerMembershipDealerType =>
+      "${_dealerMembership}membership/dealer-type";
+
   static String get dealerMembershipVerifyPayment =>
       "${_dealerMembership}membership/verify-payment";
 

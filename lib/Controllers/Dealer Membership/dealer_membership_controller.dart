@@ -17,6 +17,7 @@ import 'package:otobix/Utils/app_colors.dart';
 import 'package:otobix/Utils/app_constants.dart';
 import 'package:otobix/Utils/app_urls.dart';
 import 'package:otobix/Utils/socket_events.dart';
+import 'package:otobix/Views/Dealer%20Membership/dealer_type_choice_page.dart';
 import 'package:otobix/Views/Dealer%20Membership/upgrade_membership_page.dart';
 import 'package:otobix/Widgets/toast_widget.dart';
 import 'package:otobix/helpers/shared_prefs_helper.dart';
@@ -119,7 +120,11 @@ class DealerMembershipController extends GetxController {
     super.onClose();
   }
 
-  void _onMembershipEvent(dynamic _) => refreshMembership();
+  void _onMembershipEvent(dynamic _) {
+    refreshMembership();
+    // A confirmed top-up or plan adds a ledger line; Membership shows it too.
+    if (ledger.isNotEmpty) loadLedger(reset: true);
+  }
 
   void _onActivityEvent(dynamic _) => loadHome(silent: true);
 
@@ -238,29 +243,98 @@ class DealerMembershipController extends GetxController {
     loadLedger(reset: true);
   }
 
-  Future<bool> requestOfflinePayment(
-    DealerPlanModel plan, {
-    String reference = '',
-  }) async {
+  /// The dealer types on offer with their plans, for [DealerTypeChoicePage];
+  /// empty when they can't be loaded (the page then has the fallback list).
+  Future<List<DealerRegisterAsModel>> loadRegisterAsOptions() async {
+    try {
+      final data = await DealerMembershipApi.get(
+        AppUrls.dealerRegistrationOptions,
+      );
+      return [
+        for (final o in (data?['options'] as List? ?? const []))
+          if (o is Map)
+            DealerRegisterAsModel.fromJson(Map<String, dynamic>.from(o)),
+      ];
+    } on DealerApiException catch (e) {
+      debugPrint('Dealer types not loaded: ${e.message}');
+      return const [];
+    }
+  }
+
+  /// The dealer type, chosen once by a dealer enrolled before registration
+  /// asked it. Broker moves them to Broker Trial, or OtoBix does it later.
+  Future<bool> chooseDealerType(String dealerType) async {
     if (isSubmitting.value) return false;
     isSubmitting.value = true;
     try {
       final data = await DealerMembershipApi.post(
+        AppUrls.dealerMembershipDealerType,
+        {'dealerType': dealerType},
+      );
+      final m = DealerMembershipModel.fromJson(Map<String, dynamic>.from(data));
+      membership.value = m;
+      // Plans, the top-up and dealer types follow the dealer (broker or not).
+      config.value = null;
+      ensureConfig();
+      if (m.isBroker) {
+        _toast(
+          '${m.plan?.name ?? 'Broker plan'} started',
+          "Add your customers' cars from Sell.",
+          ToastType.success,
+        );
+      } else if (m.brokerRequestedAt != null) {
+        _toast(
+          'Broker plan requested',
+          'OtoBix will move you to the Broker plan. Your current plan keeps working until then.',
+          ToastType.success,
+        );
+      }
+      loadHome(silent: true);
+      return true;
+    } on DealerApiException catch (e) {
+      if (e.code == 'DEALER_TYPE_SET') {
+        await refreshMembership();
+        return true;
+      }
+      _toast('Dealer type not saved', e.message, ToastType.error);
+      return false;
+    } finally {
+      isSubmitting.value = false;
+    }
+  }
+
+  /// Offline payment for a plan or a points top-up; OtoBix confirms it from
+  /// the CRM, which starts the plan or adds the points.
+  Future<bool> requestOfflinePayment(
+    DealerPurchasable item, {
+    String reference = '',
+  }) async {
+    if (isSubmitting.value) return false;
+    isSubmitting.value = true;
+    final isTopUp = item is DealerTopUpModel;
+    try {
+      final data = await DealerMembershipApi.post(
         AppUrls.dealerMembershipOfflinePayment,
-        {'planCode': plan.code, 'reference': reference.trim()},
+        {'planCode': item.code, 'reference': reference.trim()},
       );
       membership.value = DealerMembershipModel.fromJson(
         Map<String, dynamic>.from(data),
       );
       _toast(
-        'Upgrade requested',
-        'OtoBix will confirm your payment and start ${plan.name}.',
+        isTopUp ? 'Points requested' : 'Upgrade requested',
+        isTopUp
+            ? 'OtoBix will confirm your payment and add the points.'
+            : 'OtoBix will confirm your payment and start ${item.name}.',
         ToastType.success,
       );
       loadHome(silent: true);
       return true;
     } on DealerApiException catch (e) {
-      _toast('Upgrade not requested', e.message, ToastType.error);
+      _toast(
+        isTopUp ? 'Points not requested' : 'Upgrade not requested',
+        e.message,
+        ToastType.error,
+      );
       return false;
     } finally {
       isSubmitting.value = false;
@@ -269,10 +343,12 @@ class DealerMembershipController extends GetxController {
 
   /// UPI: pays through the app's shared Razorpay flow (its order and
   /// verification are kept in the payments collection), then the server checks
-  /// that payment against the plan and starts it.
-  Future<void> purchasePlan(DealerPlanModel plan) async {
+  /// that payment against the plan or top-up and starts the plan or adds the
+  /// points.
+  Future<void> purchasePlan(DealerPurchasable plan) async {
     if (isPaying.value) return;
     isPaying.value = true;
+    final isTopUp = plan is DealerTopUpModel;
     try {
       final userId =
           await SharedPrefsHelper.getString(SharedPrefsHelper.userIdKey) ?? '';
@@ -285,7 +361,7 @@ class DealerMembershipController extends GetxController {
         success = await payment.pay(
           amountRupees: plan.priceRupees.toDouble(),
           name: AppConstants.appDisplayName,
-          description: '${plan.name} membership',
+          description: isTopUp ? plan.name : '${plan.name} membership',
           email:
               await SharedPrefsHelper.getString(
                 SharedPrefsHelper.userEmailKey,
@@ -322,8 +398,10 @@ class DealerMembershipController extends GetxController {
         Map<String, dynamic>.from(data),
       );
       _toast(
-        'Membership active',
-        'Your points have been allocated.',
+        isTopUp ? 'Points added' : 'Membership active',
+        isTopUp
+            ? 'Use them until your current cycle ends.'
+            : 'Your points have been allocated.',
         ToastType.success,
       );
       loadHome(silent: true);
@@ -375,6 +453,11 @@ class DealerMembershipController extends GetxController {
   /// True when any of [codes] is on (chats and deal rooms serve both Buy and
   /// Sell); otherwise says it is locked.
   bool requireAnyModule(List<String> codes) {
+    // Enrolled before registration asked the dealer type: that comes first.
+    if (membership.value?.needsDealerType ?? false) {
+      Get.to(() => const DealerTypeChoicePage(pushed: true));
+      return false;
+    }
     if (codes.any(moduleEnabled)) return true;
     final names = codes.map((c) => _moduleNames[c] ?? c).join(' and ');
     _showModuleLockedDialog(
@@ -421,9 +504,11 @@ class DealerMembershipController extends GetxController {
   }) {
     switch (e.code) {
       case 'MEMBERSHIP_INACTIVE':
+        _showUpgradeDialog(e.message);
+        return;
       case 'INSUFFICIENT_POINTS':
       case 'ALLOWANCE_EXHAUSTED':
-        _showUpgradeDialog(e.message);
+        _showUpgradeDialog(e.message, offerTopUp: true);
         return;
       case 'MODULE_DISABLED':
         return; // already handled when the call failed (_onModuleDisabled)
@@ -432,25 +517,42 @@ class DealerMembershipController extends GetxController {
     }
   }
 
-  void _showUpgradeDialog(String message) {
+  /// Out of points or of a feature's allowance ([offerTopUp]): adding points
+  /// is offered next to upgrading. A broker has no plan to upgrade to.
+  void _showUpgradeDialog(String message, {bool offerTopUp = false}) {
+    final topUp = offerTopUp && (membership.value?.isActive ?? false);
     Get.dialog(
       AlertDialog(
         title: const Text('Membership', style: TextStyle(fontSize: 16)),
         content: Text(message, style: const TextStyle(fontSize: 13)),
         actions: [
           TextButton(onPressed: Get.back, child: const Text('Later')),
-          TextButton(
-            onPressed: () {
-              Get.back();
-              if (requireModule(moduleMembership)) {
-                Get.to(() => const UpgradeMembershipPage());
-              }
-            },
-            child: const Text(
-              'Upgrade Membership',
-              style: TextStyle(color: AppColors.green),
+          if (topUp)
+            TextButton(
+              onPressed: () {
+                Get.back();
+                if (requireModule(moduleMembership)) {
+                  Get.to(() => const UpgradeMembershipPage(addPoints: true));
+                }
+              },
+              child: const Text(
+                'Add Points',
+                style: TextStyle(color: AppColors.green),
+              ),
             ),
-          ),
+          if (!(topUp && isBroker))
+            TextButton(
+              onPressed: () {
+                Get.back();
+                if (requireModule(moduleMembership)) {
+                  Get.to(() => const UpgradeMembershipPage());
+                }
+              },
+              child: const Text(
+                'Upgrade Membership',
+                style: TextStyle(color: AppColors.green),
+              ),
+            ),
         ],
       ),
     );

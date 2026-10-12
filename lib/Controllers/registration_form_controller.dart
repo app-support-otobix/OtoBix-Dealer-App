@@ -74,21 +74,16 @@ class RegistrationFormController extends GetxController {
     update();
   }
 
-  RxString usernameValidationError = ''.obs;
-
   RxBool isLoading = false.obs;
   String? selectedState;
 
   final RxList<String> entityTypes = <String>[].obs; // used by dropdown
   String? selectedEntityType;
 
-  // "Register as": New Car Dealer, Used Car Dealer or Broker, each with the
+  // Dealer type: New Car Dealer, Used Car Dealer or Broker, each with the
   // plans it gets (from the server; the fallback has no plan details).
-  List<DealerRegisterAsModel> registerAsOptions = const [
-    DealerRegisterAsModel('New-Car Dealer', 'New Car Dealer'),
-    DealerRegisterAsModel('Used Car Dealer', 'Used Car Dealer'),
-    DealerRegisterAsModel('Broker', 'Broker'),
-  ];
+  List<DealerRegisterAsModel> registerAsOptions =
+      DealerRegisterAsModel.fallback;
   String? selectedDealerType;
 
   List<String> filteredStates = [];
@@ -155,6 +150,19 @@ class RegistrationFormController extends GetxController {
     update();
   }
 
+  // Sign-in is by OTP, so the verified number is the dealer's primary mobile
+  // unless they change it. Filled once; clearing it also falls back to it.
+  bool _primaryMobilePrefilled = false;
+
+  void prefillPrimaryMobile(String phoneNumber) {
+    if (_primaryMobilePrefilled) return;
+    _primaryMobilePrefilled = true;
+    final digits = phoneNumber.replaceAll(RegExp(r'[^0-9]'), '');
+    if (digits.length >= 10 && primaryMobileController.text.isEmpty) {
+      primaryMobileController.text = digits.substring(digits.length - 10);
+    }
+  }
+
   void addAddressField() {
     addressControllers.add(TextEditingController());
     update();
@@ -171,13 +179,10 @@ class RegistrationFormController extends GetxController {
     required String verificationToken,
   }) async {
     try {
-      // Trigger username check
-      bool isUsernameValid = await validateUsername();
-
       // Validate form
       bool isFormValid = formKey.currentState!.validate();
 
-      if (!isUsernameValid || !isFormValid) {
+      if (!isFormValid) {
         // Show toast
         ToastWidget.show(
           context: Get.context!,
@@ -188,13 +193,10 @@ class RegistrationFormController extends GetxController {
         // Mark all required fields as touched so errors show
         touchedFields.addAll([
           "State",
-          "Dealer Name",
           "Dealer Email",
           "Dealership Name",
           "Entity Type",
           "Primary Contact Person",
-          "Primary Contact Mobile No.",
-          "Password",
         ]);
 
         update();
@@ -203,16 +205,18 @@ class RegistrationFormController extends GetxController {
 
       isLoading.value = true;
 
+      // No user name or password: sign-in is by OTP, and the server names the
+      // account. An empty primary mobile becomes the verified number.
       final userModel = UserModel(
         userRole: userRole,
         location: selectedState ?? "",
-        userName: dealerNameController.text.trim(),
+        userName: '',
         email: dealerEmailController.text.trim(),
         dealershipName: dealershipNameController.text.trim(),
         entityType: selectedEntityType ?? "",
         primaryContactPerson: primaryContactPersonController.text.trim(),
         primaryContactNumber: primaryMobileController.text.trim(),
-        password: passwordController.text,
+        password: '',
         phoneNumber: contactNumber,
         secondaryContactPerson:
             secondaryContactPersonController.text.isEmpty
@@ -316,39 +320,6 @@ class RegistrationFormController extends GetxController {
   //   }
   // }
 
-  Future<bool> validateUsername() async {
-    String userName = dealerNameController.text.trim();
-
-    // ✅ Only if valid format, then check API for availability
-    try {
-      final response = await ApiService.post(
-        endpoint: AppUrls.checkUsernameExists(userName),
-        body: {},
-      );
-
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> data = json.decode(response.body);
-
-        final bool isAvailable = data['available'] == true;
-
-        if (isAvailable) {
-          usernameValidationError.value = "Username is available ";
-          return true;
-        } else {
-          usernameValidationError.value = "Username already exists";
-          return false;
-        }
-      } else {
-        usernameValidationError.value = "Error checking username";
-        return false;
-      }
-    } catch (e) {
-      debugPrint("Username validation error → $e");
-      usernameValidationError.value = "Error checking username";
-      return false;
-    }
-  }
-
   // Clear fields
   void clearFields() {
     dealerNameController.clear();
@@ -364,6 +335,7 @@ class RegistrationFormController extends GetxController {
     selectedEntityType = null;
     selectedDealerType = null;
     selectedState = null;
+    _primaryMobilePrefilled = false;
 
     addressControllers.clear();
     addressControllers.add(TextEditingController());
@@ -371,7 +343,6 @@ class RegistrationFormController extends GetxController {
 
     // 🔁 Reset validation-related data
     formKey.currentState?.reset();
-    usernameValidationError.value = '';
     touchedFields.clear();
 
     // 🔁 Reset state filtering if needed
@@ -387,10 +358,9 @@ class RegistrationFormController extends GetxController {
     required String verificationToken,
   }) async {
     // 1) run same validations you already have
-    final okUser = await validateUsername();
     final okForm = formKey.currentState?.validate() ?? false;
 
-    if (!okUser || !okForm) {
+    if (!okForm) {
       ToastWidget.show(
         context: Get.context!,
         title: "Please fill all required fields",
@@ -399,13 +369,10 @@ class RegistrationFormController extends GetxController {
 
       touchedFields.addAll([
         "State",
-        "Dealer Name",
         "Dealer Email",
         "Dealership Name",
         "Entity Type",
         "Primary Contact Person",
-        "Primary Contact Mobile No.",
-        "Password",
       ]);
       update();
       return;

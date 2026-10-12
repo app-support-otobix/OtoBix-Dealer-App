@@ -51,8 +51,12 @@ class _DealerProfileUpdatePageState extends State<DealerProfileUpdatePage> {
 
   Future<void> _save() async {
     final gstin = _gstin.text.trim().toUpperCase();
+    // A type the server no longer offers (e.g. an older "Broker" pick) has to
+    // be chosen again.
+    final types = controller.config.value?.dealerTypes ?? const <String>[];
     final error =
-        _dealerType == null
+        _dealerType == null ||
+                (types.isNotEmpty && !types.contains(_dealerType))
             ? 'Select your dealer type.'
             : _city.text.trim().isEmpty
             ? 'Enter the city you trade from.'

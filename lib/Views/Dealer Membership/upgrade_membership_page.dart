@@ -9,8 +9,13 @@ import 'package:otobix/Widgets/app_bar_widget.dart';
 import 'package:otobix/Widgets/button_widget.dart';
 import 'package:otobix/Widgets/toast_widget.dart';
 
+/// Upgrade (or renew) the plan, or with [addPoints] buy more points for the
+/// current cycle. Both pay the same way: UPI or an offline payment OtoBix
+/// confirms.
 class UpgradeMembershipPage extends StatefulWidget {
-  const UpgradeMembershipPage({super.key});
+  const UpgradeMembershipPage({super.key, this.addPoints = false});
+
+  final bool addPoints;
 
   @override
   State<UpgradeMembershipPage> createState() => _UpgradeMembershipPageState();
@@ -34,13 +39,13 @@ class _UpgradeMembershipPageState extends State<UpgradeMembershipPage> {
     super.dispose();
   }
 
-  Future<void> _submit(DealerPlanModel plan) async {
+  Future<void> _submit(DealerPurchasable item) async {
     FocusScope.of(context).unfocus();
     if (_method == 'UPI') {
-      controller.purchasePlan(plan);
+      controller.purchasePlan(item);
       return;
     }
-    await controller.requestOfflinePayment(plan, reference: _reference.text);
+    await controller.requestOfflinePayment(item, reference: _reference.text);
   }
 
   void _comingSoon(DealerPaymentMethodModel method) {
@@ -56,7 +61,9 @@ class _UpgradeMembershipPageState extends State<UpgradeMembershipPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.white,
-      appBar: AppBarWidget(title: 'Upgrade Membership'),
+      appBar: AppBarWidget(
+        title: widget.addPoints ? 'Add Points' : 'Upgrade Membership',
+      ),
       body: SafeArea(
         child: Obx(() {
           final config = controller.config.value;
@@ -73,8 +80,13 @@ class _UpgradeMembershipPageState extends State<UpgradeMembershipPage> {
           final pending = m?.pendingPayment;
           if (pending != null) return _pendingState(config, pending);
 
+          final topUp = widget.addPoints ? config.topUp : null;
+          if (widget.addPoints && (topUp == null || !(m?.isActive ?? false))) {
+            return _noTopUpState();
+          }
           final plans = config.plans;
-          final plan =
+          final DealerPurchasable? plan =
+              topUp ??
               plans.firstWhereOrNull((p) => p.code == _planCode) ??
               plans.firstOrNull;
           final method =
@@ -91,10 +103,16 @@ class _UpgradeMembershipPageState extends State<UpgradeMembershipPage> {
                   style: const TextStyle(fontSize: 12, color: AppColors.grey),
                 ),
               const SizedBox(height: 14),
-              _sectionTitle('Choose a plan'),
-              for (final p in plans) ...[
-                _planTile(p, selected: p.code == plan.code),
+              if (topUp != null) ...[
+                _sectionTitle('Add points'),
+                _topUpTile(topUp),
                 const SizedBox(height: 10),
+              ] else ...[
+                _sectionTitle('Choose a plan'),
+                for (final p in plans) ...[
+                  _planTile(p, selected: p.code == plan.code),
+                  const SizedBox(height: 10),
+                ],
               ],
               const SizedBox(height: 8),
               _sectionTitle('Payment method'),
@@ -121,9 +139,11 @@ class _UpgradeMembershipPageState extends State<UpgradeMembershipPage> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  'Pay OtoBix by bank transfer, cheque or cash. The new plan starts when OtoBix confirms your payment; your current plan keeps working until then.',
-                  style: TextStyle(fontSize: 11, color: AppColors.grey),
+                Text(
+                  topUp != null
+                      ? 'Pay OtoBix by bank transfer, cheque or cash. The points are added when OtoBix confirms your payment.'
+                      : 'Pay OtoBix by bank transfer, cheque or cash. The new plan starts when OtoBix confirms your payment; your current plan keeps working until then.',
+                  style: const TextStyle(fontSize: 11, color: AppColors.grey),
                 ),
               ],
               const SizedBox(height: 16),
@@ -131,7 +151,7 @@ class _UpgradeMembershipPageState extends State<UpgradeMembershipPage> {
                 text:
                     method == 'UPI'
                         ? 'Pay ${GlobalFunctions.formatRupees(plan.priceRupees)}'
-                        : 'Request Upgrade · ${GlobalFunctions.formatRupees(plan.priceRupees)}',
+                        : '${topUp != null ? 'Request Points' : 'Request Upgrade'} · ${GlobalFunctions.formatRupees(plan.priceRupees)}',
                 isLoading:
                     method == 'UPI'
                         ? controller.isPaying
@@ -140,13 +160,73 @@ class _UpgradeMembershipPageState extends State<UpgradeMembershipPage> {
                 onTap: () => _submit(plan),
               ),
               const SizedBox(height: 8),
-              const Text(
-                'A new plan starts a fresh 30-day cycle. Unused points from the current cycle do not carry over.',
-                style: TextStyle(fontSize: 11, color: AppColors.grey),
+              Text(
+                topUp != null
+                    ? 'Added points join this cycle and expire when it ends, like your plan points. They do not carry over.'
+                    : 'A new plan starts a fresh 30-day cycle. Unused points from the current cycle do not carry over.',
+                style: const TextStyle(fontSize: 11, color: AppColors.grey),
               ),
             ],
           );
         }),
+      ),
+    );
+  }
+
+  // Points can be added only while the membership works.
+  Widget _noTopUpState() {
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        const Text(
+          'Points can be added while your membership is active. Renew your membership first.',
+          style: TextStyle(fontSize: 13),
+        ),
+        const SizedBox(height: 16),
+        ButtonWidget(
+          text: 'Renew Membership',
+          isLoading: false.obs,
+          width: double.infinity,
+          onTap: () => Get.off(() => const UpgradeMembershipPage()),
+        ),
+      ],
+    );
+  }
+
+  Widget _topUpTile(DealerTopUpModel t) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.green.withValues(alpha: 0.06),
+        border: Border.all(color: AppColors.green, width: 1.5),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '${GlobalFunctions.formatNumber(t.points)} OTOBIX POINTS',
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.blue,
+                ),
+              ),
+              Text(
+                GlobalFunctions.formatRupees(t.priceRupees),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          for (final line in t.benefits)
+            Text('• $line', style: const TextStyle(fontSize: 12)),
+        ],
       ),
     );
   }
@@ -156,10 +236,12 @@ class _UpgradeMembershipPageState extends State<UpgradeMembershipPage> {
     DealerPendingPaymentModel pending,
   ) {
     final plan =
-        config.plans
-            .firstWhereOrNull((p) => p.code == pending.planCode)
-            ?.name ??
-        pending.planCode;
+        pending.name.isNotEmpty
+            ? pending.name
+            : config.plans
+                    .firstWhereOrNull((p) => p.code == pending.planCode)
+                    ?.name ??
+                pending.planCode;
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -191,9 +273,11 @@ class _UpgradeMembershipPageState extends State<UpgradeMembershipPage> {
                 style: const TextStyle(fontSize: 12, color: AppColors.grey),
               ),
               const SizedBox(height: 10),
-              const Text(
-                'OtoBix will confirm your payment and start the plan. Your current plan keeps working until then.',
-                style: TextStyle(fontSize: 12),
+              Text(
+                pending.isTopUp
+                    ? 'OtoBix will confirm your payment and add the points. You can request something else once this is confirmed.'
+                    : 'OtoBix will confirm your payment and start the plan. Your current plan keeps working until then.',
+                style: const TextStyle(fontSize: 12),
               ),
             ],
           ),
@@ -261,7 +345,8 @@ class _UpgradeMembershipPageState extends State<UpgradeMembershipPage> {
                   ),
                   const SizedBox(height: 6),
                   for (final line in [
-                    '${GlobalFunctions.formatNumber(p.pointsPerCycle)} OtoBix Points each cycle',
+                    if (p.pointsPerCycle > 0)
+                      '${GlobalFunctions.formatNumber(p.pointsPerCycle)} OtoBix Points each cycle',
                     ...p.benefits,
                   ])
                     Text('• $line', style: const TextStyle(fontSize: 12)),

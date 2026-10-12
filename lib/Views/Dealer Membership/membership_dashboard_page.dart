@@ -218,11 +218,41 @@ class _MembershipDashboardPageState extends State<MembershipDashboardPage> {
           if (summary != null && m.isActive) ...[
             const SizedBox(height: 10),
             Text(
-              'This cycle: ${GlobalFunctions.formatNumber(summary.allocated)} allocated · ${summary.consumed} consumed · ${summary.released} released',
+              [
+                'This cycle: ${GlobalFunctions.formatNumber(summary.allocated)} allocated',
+                if (summary.toppedUp > 0)
+                  '${GlobalFunctions.formatNumber(summary.toppedUp)} added',
+                '${summary.consumed} consumed',
+                '${summary.released} released',
+              ].join(' · '),
               style: const TextStyle(fontSize: 11, color: AppColors.grey),
             ),
           ],
-          if (m.dealerType.isEmpty) ...[
+          // Ran out mid-cycle: buy more points for this cycle.
+          if (m.isActive && controller.config.value?.topUp != null) ...[
+            const SizedBox(height: 10),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: DealerMembershipNavigator.openAddPoints,
+                icon: const Icon(Icons.add_circle_outline, size: 18),
+                label: Text(
+                  'Add ${GlobalFunctions.formatNumber(controller.config.value!.topUp!.points)} points · ${GlobalFunctions.formatRupees(controller.config.value!.topUp!.priceRupees)}',
+                  style: const TextStyle(fontSize: 12),
+                ),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.green,
+                  side: const BorderSide(color: AppColors.green),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+            ),
+          ],
+          // Not for a dealer waiting to be moved to the Broker plan: Dealer
+          // Details offers the dealer types only.
+          if (m.dealerType.isEmpty && m.brokerRequestedAt == null) ...[
             const SizedBox(height: 4),
             TextButton(
               onPressed: DealerMembershipNavigator.openDealerProfileUpdate,
@@ -403,7 +433,7 @@ class _MembershipDashboardPageState extends State<MembershipDashboardPage> {
         ),
       const SizedBox(height: 8),
       const Text(
-        'Unused points expire at cycle end — no rollover. Points cannot be bought, transferred or withdrawn.',
+        'Unused points, added ones included, expire at cycle end — no rollover. Points cannot be transferred or withdrawn.',
         style: TextStyle(color: AppColors.grey, fontSize: 11),
       ),
     ];
@@ -413,6 +443,7 @@ class _MembershipDashboardPageState extends State<MembershipDashboardPage> {
     switch (type) {
       case 'MEMBERSHIP_ALLOCATED':
       case 'PROMO_ALLOCATED':
+      case 'TOP_UP':
         return AppColors.green;
       case 'RESERVED':
         return AppColors.deepOrange;
