@@ -9,6 +9,9 @@ void showDealerOptionPicker(
   required void Function(String value) onSelect,
   RxBool? isLoading,
   void Function(String query)? onSearch,
+  // Offers what was typed when no option matches it exactly (e.g. a town
+  // missing from a city list).
+  bool allowTyped = false,
 }) {
   FocusManager.instance.primaryFocus?.unfocus();
   showModalBottomSheet(
@@ -24,6 +27,7 @@ void showDealerOptionPicker(
           onSelect: onSelect,
           isLoading: isLoading,
           onSearch: onSearch,
+          allowTyped: allowTyped,
         ),
   );
 }
@@ -34,6 +38,7 @@ class _DealerOptionPickerSheet extends StatefulWidget {
   final void Function(String value) onSelect;
   final RxBool? isLoading;
   final void Function(String query)? onSearch;
+  final bool allowTyped;
 
   const _DealerOptionPickerSheet({
     required this.title,
@@ -41,6 +46,7 @@ class _DealerOptionPickerSheet extends StatefulWidget {
     required this.onSelect,
     this.isLoading,
     this.onSearch,
+    this.allowTyped = false,
   });
 
   @override
@@ -131,7 +137,12 @@ class _DealerOptionPickerSheetState extends State<_DealerOptionPickerSheet> {
                     child: CircularProgressIndicator(color: AppColors.green),
                   );
                 }
-                if (filtered.isEmpty) {
+                final typed = searchController.text.trim();
+                final offerTyped =
+                    widget.allowTyped &&
+                    typed.isNotEmpty &&
+                    !all.any((e) => e.toLowerCase() == query.value);
+                if (filtered.isEmpty && !offerTyped) {
                   return const Center(
                     child: Text(
                       'No results found',
@@ -139,25 +150,50 @@ class _DealerOptionPickerSheetState extends State<_DealerOptionPickerSheet> {
                     ),
                   );
                 }
+                // The typed name comes last, so the matches are seen first.
                 return ListView.separated(
-                  itemCount: filtered.length,
+                  itemCount: filtered.length + (offerTyped ? 1 : 0),
                   separatorBuilder:
                       (_, __) => Divider(
                         height: 1,
                         color: AppColors.grey.withValues(alpha: 0.25),
                       ),
-                  itemBuilder:
-                      (_, i) => ListTile(
+                  itemBuilder: (_, i) {
+                    if (i == filtered.length) {
+                      return ListTile(
                         dense: true,
+                        leading: const Icon(
+                          Icons.edit_location_alt_outlined,
+                          size: 20,
+                          color: AppColors.green,
+                        ),
                         title: Text(
-                          filtered[i],
-                          style: const TextStyle(fontSize: 13),
+                          'Use "$typed"',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        subtitle: const Text(
+                          'Not in the list',
+                          style: TextStyle(fontSize: 11),
                         ),
                         onTap: () {
-                          widget.onSelect(filtered[i]);
+                          widget.onSelect(typed);
                           Navigator.pop(context);
                         },
-                      ),
+                      );
+                    }
+                    final option = filtered[i];
+                    return ListTile(
+                      dense: true,
+                      title: Text(option, style: const TextStyle(fontSize: 13)),
+                      onTap: () {
+                        widget.onSelect(option);
+                        Navigator.pop(context);
+                      },
+                    );
+                  },
                 );
               }),
             ),

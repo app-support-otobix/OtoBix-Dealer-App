@@ -4,7 +4,9 @@ import 'package:otobix/Controllers/Dealer%20Membership/dealer_membership_control
 import 'package:otobix/Controllers/Dealer%20Membership/dealer_profile_update_controller.dart';
 import 'package:otobix/Utils/app_colors.dart';
 import 'package:otobix/Utils/app_constants.dart';
+import 'package:otobix/Utils/indian_cities.dart';
 import 'package:otobix/Widgets/Dealer%20Membership/dealer_common_widgets.dart';
+import 'package:otobix/Widgets/Dealer%20Membership/dealer_option_picker.dart';
 import 'package:otobix/Widgets/Dealer%20Membership/showroom_location_widgets.dart';
 import 'package:otobix/Widgets/app_bar_widget.dart';
 import 'package:otobix/Widgets/button_widget.dart';
@@ -22,7 +24,7 @@ class _DealerProfileUpdatePageState extends State<DealerProfileUpdatePage> {
   final DealerProfileUpdateController profile =
       DealerProfileUpdateController.to;
   final _gstin = TextEditingController();
-  final _city = TextEditingController();
+  String? _city;
   String? _state;
   String? _dealerType;
   double _radiusKm = 100;
@@ -35,9 +37,20 @@ class _DealerProfileUpdatePageState extends State<DealerProfileUpdatePage> {
     final m = controller.membership.value;
     if (m != null) {
       _dealerType = m.dealerType.isEmpty ? null : m.dealerType;
-      _city.text = m.city;
       _gstin.text = m.gstin;
-      _state = AppConstants.indianStates.contains(m.state) ? m.state : null;
+      // Older records were given the registration state as their city
+      // ("West Bengal"); that belongs in State. Delhi, Chandigarh and
+      // Puducherry are cities too, so those stay.
+      final city = m.city.trim();
+      final cityAsState = _matchState(city);
+      final misplaced =
+          cityAsState != null &&
+          !IndianCities.of(cityAsState).contains(cityAsState);
+      _city = city.isEmpty || misplaced ? null : city;
+      _state =
+          _matchState(m.state) ??
+          cityAsState ??
+          (_city == null ? null : IndianCities.stateOf(_city!));
       _radiusKm = m.tradeRadiusKm.clamp(10, 500).toDouble();
     }
   }
@@ -45,8 +58,47 @@ class _DealerProfileUpdatePageState extends State<DealerProfileUpdatePage> {
   @override
   void dispose() {
     _gstin.dispose();
-    _city.dispose();
     super.dispose();
+  }
+
+  String? _matchState(String value) {
+    final v = value.trim().toLowerCase();
+    if (v.isEmpty) return null;
+    return AppConstants.indianStates.firstWhereOrNull(
+      (s) => s.toLowerCase() == v,
+    );
+  }
+
+  void _pickState() {
+    showDealerOptionPicker(
+      context,
+      title: 'Select state',
+      options: <String>[...AppConstants.indianStates].obs,
+      onSelect:
+          (state) => setState(() {
+            // A city of the old state is not one of the new state's.
+            if (state != _state &&
+                !IndianCities.of(state).contains(_city ?? '')) {
+              _city = null;
+            }
+            _state = state;
+            _error = null;
+          }),
+    );
+  }
+
+  void _pickCity() {
+    showDealerOptionPicker(
+      context,
+      title: 'Select city in $_state',
+      options: <String>[...IndianCities.of(_state)].obs,
+      allowTyped: true,
+      onSelect:
+          (city) => setState(() {
+            _city = city;
+            _error = null;
+          }),
+    );
   }
 
   Future<void> _save() async {
@@ -58,10 +110,10 @@ class _DealerProfileUpdatePageState extends State<DealerProfileUpdatePage> {
         _dealerType == null ||
                 (types.isNotEmpty && !types.contains(_dealerType))
             ? 'Select your dealer type.'
-            : _city.text.trim().isEmpty
-            ? 'Enter the city you trade from.'
             : _state == null
             ? 'Select your state.'
+            : _city == null
+            ? 'Select the city you trade from.'
             : gstin.isNotEmpty &&
                 !RegExp(
                   r'^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$',
@@ -72,7 +124,7 @@ class _DealerProfileUpdatePageState extends State<DealerProfileUpdatePage> {
     if (error != null) return;
     final saved = await profile.updateProfile(
       dealerType: _dealerType!,
-      city: _city.text.trim(),
+      city: _city!,
       state: _state!,
       gstin: gstin,
       tradeRadiusKm: _radiusKm.round(),
@@ -159,40 +211,20 @@ class _DealerProfileUpdatePageState extends State<DealerProfileUpdatePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _labeledField('City', _city, hint: 'e.g. Kolkata'),
-              const SizedBox(height: 10),
-              const Text(
-                'State',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+              DealerPickerField(
+                label: 'State',
+                hintText: 'Select state',
+                value: _state,
+                onTap: _pickState,
               ),
-              const SizedBox(height: 6),
-              DropdownButtonFormField<String>(
-                initialValue: _state,
-                isExpanded: true,
-                hint: const Text(
-                  'Select state',
-                  style: TextStyle(fontSize: 13),
-                ),
-                style: const TextStyle(fontSize: 13, color: AppColors.black),
-                decoration: InputDecoration(
-                  isDense: true,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 12,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                items: [
-                  for (final s in AppConstants.indianStates)
-                    DropdownMenuItem(value: s, child: Text(s)),
-                ],
-                onChanged:
-                    (v) => setState(() {
-                      _state = v;
-                      _error = null;
-                    }),
+              const SizedBox(height: 10),
+              DealerPickerField(
+                label: 'City',
+                hintText:
+                    _state == null ? 'Select a state first' : 'Select city',
+                value: _city,
+                enabled: _state != null,
+                onTap: _pickCity,
               ),
               const SizedBox(height: 10),
               const Text(
