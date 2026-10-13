@@ -86,6 +86,7 @@ class DealerMembershipController extends GetxController {
       pendingActivities.clear();
       latestActivities.clear();
       ledger.clear();
+      _ledgerPage = 0;
       Get.delete<DealerInventoryController>(force: true);
       Get.delete<DealerExchangeController>(force: true);
       Get.delete<DealerRequirementsController>(force: true);
@@ -122,8 +123,9 @@ class DealerMembershipController extends GetxController {
 
   void _onMembershipEvent(dynamic _) {
     refreshMembership();
-    // A confirmed top-up or plan adds a ledger line; Membership shows it too.
-    if (ledger.isNotEmpty) loadLedger(reset: true);
+    // A confirmed top-up or plan adds a ledger line; Membership shows it too
+    // once its ledger has been opened (even when it had no lines yet).
+    if (_ledgerPage > 0) loadLedger(reset: true);
   }
 
   void _onActivityEvent(dynamic _) => loadHome(silent: true);
