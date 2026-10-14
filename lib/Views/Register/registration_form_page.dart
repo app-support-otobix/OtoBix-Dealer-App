@@ -21,7 +21,7 @@ class RegistrationFormPage extends StatelessWidget {
     required this.phoneNumber,
     required this.verificationToken,
   }) {
-    getxController.prefillPrimaryMobile(phoneNumber);
+    getxController.setPhoneNumber(phoneNumber);
   }
 
   final RegistrationFormController getxController = Get.put(
@@ -91,6 +91,15 @@ class RegistrationFormPage extends StatelessWidget {
                       _buildLocationDropdown(),
                       SizedBox(height: 20),
                       _buildCustomTextField(
+                        icon: Icons.phone_android,
+                        label: "Phone Number",
+                        controller: getxController.phoneNumberController,
+                        hintText: "Your verified number",
+                        keyboardType: TextInputType.phone,
+                        isRequired: true,
+                        readOnly: true,
+                      ),
+                      _buildCustomTextField(
                         icon: Icons.email,
                         label: "Email",
                         controller: getxController.dealerEmailController,
@@ -152,26 +161,6 @@ class RegistrationFormPage extends StatelessWidget {
                         ),
                       if (userRole == AppConstants.roles.dealer)
                         _buildCustomTextField(
-                          icon: Icons.phone_android,
-                          label: "Primary Contact Mobile No. (Optional)",
-                          controller: getxController.primaryMobileController,
-                          hintText: "Your verified number is used if empty",
-                          keyboardType: TextInputType.phone,
-                          isRequired: false,
-                          maxLengthTen: true,
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return null;
-                            }
-                            final phoneRegex = RegExp(r'^[6-9]\d{9}$');
-                            if (!phoneRegex.hasMatch(value.trim())) {
-                              return 'Enter a valid 10-digit mobile number';
-                            }
-                            return null;
-                          },
-                        ),
-                      if (userRole == AppConstants.roles.dealer)
-                        _buildCustomTextField(
                           icon: Icons.person_outline,
                           label: "Secondary Contact Person (Optional)",
                           controller:
@@ -179,29 +168,6 @@ class RegistrationFormPage extends StatelessWidget {
                           hintText: "e.g. Pawan Singh",
                           keyboardType: TextInputType.text,
                           isRequired: false,
-                        ),
-                      if (userRole == AppConstants.roles.dealer)
-                        _buildCustomTextField(
-                          icon: Icons.phone_android,
-                          label: "Secondary Contact Mobile No. (Optional)",
-                          controller: getxController.secondaryMobileController,
-                          hintText: "e.g. 9123456789",
-                          keyboardType: TextInputType.phone,
-                          isRequired: false,
-                          maxLengthTen: true,
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return null;
-                            }
-
-                            final phoneRegex = RegExp(r'^[6-9]\d{9}$');
-
-                            if (!phoneRegex.hasMatch(value.trim())) {
-                              return 'Enter a valid 10-digit mobile number';
-                            }
-
-                            return null;
-                          },
                         ),
                       // _buildCustomTextField(
                       //   icon: Icons.lock,
@@ -529,10 +495,12 @@ class RegistrationFormPage extends StatelessWidget {
     Function(String?)? validator,
     Function(String)? onChanged,
     bool maxLengthTen = false,
+    bool readOnly = false,
   }) {
     Widget buildField({required bool obscure}) {
       return TextFormField(
         controller: controller,
+        readOnly: readOnly,
         keyboardType: keyboardType,
         obscureText: isPassword && obscureText != null ? obscure : false,
         maxLength: maxLengthTen ? 10 : null,

@@ -22,9 +22,8 @@ class RegistrationFormController extends GetxController {
     dealerEmailController.clear();
     dealershipNameController.clear();
     primaryContactPersonController.clear();
-    primaryMobileController.clear();
+    phoneNumberController.clear();
     secondaryContactPersonController.clear();
-    secondaryMobileController.clear();
     addressControllers.clear();
     addressPlaces.clear();
     selectedEntityType = null;
@@ -55,9 +54,8 @@ class RegistrationFormController extends GetxController {
     dealerEmailController.dispose();
     dealershipNameController.dispose();
     primaryContactPersonController.dispose();
-    primaryMobileController.dispose();
+    phoneNumberController.dispose();
     secondaryContactPersonController.dispose();
-    secondaryMobileController.dispose();
     passwordController.dispose();
     for (var controller in addressControllers) {
       controller.dispose();
@@ -100,10 +98,8 @@ class RegistrationFormController extends GetxController {
       TextEditingController();
   final TextEditingController primaryContactPersonController =
       TextEditingController();
-  final TextEditingController primaryMobileController = TextEditingController();
+  final TextEditingController phoneNumberController = TextEditingController();
   final TextEditingController secondaryContactPersonController =
-      TextEditingController();
-  final TextEditingController secondaryMobileController =
       TextEditingController();
 
   List<TextEditingController> addressControllers = [];
@@ -150,16 +146,14 @@ class RegistrationFormController extends GetxController {
     update();
   }
 
-  // Sign-in is by OTP, so the verified number is the dealer's primary mobile
-  // unless they change it. Filled once; clearing it also falls back to it.
-  bool _primaryMobilePrefilled = false;
-
-  void prefillPrimaryMobile(String phoneNumber) {
-    if (_primaryMobilePrefilled) return;
-    _primaryMobilePrefilled = true;
+  // The number verified by OTP, shown read-only: the server registers the
+  // account (and the dealer's contact number) on it.
+  void setPhoneNumber(String phoneNumber) {
     final digits = phoneNumber.replaceAll(RegExp(r'[^0-9]'), '');
-    if (digits.length >= 10 && primaryMobileController.text.isEmpty) {
-      primaryMobileController.text = digits.substring(digits.length - 10);
+    final number =
+        digits.length >= 10 ? digits.substring(digits.length - 10) : digits;
+    if (phoneNumberController.text != number) {
+      phoneNumberController.text = number;
     }
   }
 
@@ -205,8 +199,8 @@ class RegistrationFormController extends GetxController {
 
       isLoading.value = true;
 
-      // No user name or password: sign-in is by OTP, and the server names the
-      // account. An empty primary mobile becomes the verified number.
+      // No user name, password or contact numbers: sign-in is by OTP, and the
+      // server names the account and uses the verified number.
       final userModel = UserModel(
         userRole: userRole,
         location: selectedState ?? "",
@@ -215,17 +209,12 @@ class RegistrationFormController extends GetxController {
         dealershipName: dealershipNameController.text.trim(),
         entityType: selectedEntityType ?? "",
         primaryContactPerson: primaryContactPersonController.text.trim(),
-        primaryContactNumber: primaryMobileController.text.trim(),
         password: '',
         phoneNumber: contactNumber,
         secondaryContactPerson:
             secondaryContactPersonController.text.isEmpty
                 ? null
                 : secondaryContactPersonController.text.trim(),
-        secondaryContactNumber:
-            secondaryMobileController.text.isEmpty
-                ? null
-                : secondaryMobileController.text.trim(),
         addressList: addressControllers.map((e) => e.text).toList(),
         id: '',
         approvalStatus: 'Pending',
@@ -326,16 +315,13 @@ class RegistrationFormController extends GetxController {
     dealerEmailController.clear();
     dealershipNameController.clear();
     primaryContactPersonController.clear();
-    primaryMobileController.clear();
     secondaryContactPersonController.clear();
-    secondaryMobileController.clear();
     passwordController.clear();
 
     obscurePassword.value = true;
     selectedEntityType = null;
     selectedDealerType = null;
     selectedState = null;
-    _primaryMobilePrefilled = false;
 
     addressControllers.clear();
     addressControllers.add(TextEditingController());
