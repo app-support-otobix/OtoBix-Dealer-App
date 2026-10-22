@@ -99,7 +99,7 @@ class AppUpdateService {
       // debugPrint("AppUpdateInfo Response: ${data.toString()}");
 
       return AppUpdateInfoModel.fromJson(data);
-    } catch (_) {
+    } catch (e) {
       return null;
     }
   }

@@ -465,7 +465,7 @@ class _DealerHomePageState extends State<DealerHomePage> {
               crossAxisCount: 3,
               mainAxisSpacing: 10,
               crossAxisSpacing: 10,
-              childAspectRatio: 1.0,
+              childAspectRatio: 0.9,
             ),
             itemBuilder: (context, i) {
               final m = shown[i];
