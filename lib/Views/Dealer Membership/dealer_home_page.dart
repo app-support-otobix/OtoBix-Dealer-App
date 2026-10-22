@@ -13,6 +13,7 @@ import 'package:otobix/Views/Dealer%20Membership/dealer_type_choice_page.dart';
 import 'package:otobix/Views/Dealer%20Panel/user_notifications_page.dart';
 import 'package:otobix/Widgets/Dealer%20Membership/dealer_common_widgets.dart';
 import 'package:otobix/Widgets/Dealer%20Membership/dealer_renewal_banner.dart';
+import 'package:otobix/Widgets/Dealer%20Membership/showroom_location_widgets.dart';
 
 class DealerHomePage extends StatefulWidget {
   const DealerHomePage({super.key});
@@ -25,17 +26,34 @@ class _DealerHomePageState extends State<DealerHomePage> {
   final DealerMembershipController controller = DealerMembershipController.to;
   final _searchController = TextEditingController();
   String _query = '';
+  late final Worker _membershipWorker;
 
   @override
   void initState() {
     super.initState();
     controller.syncSession();
+    // A dealer with no showroom location is asked for it once the membership
+    // is in, whether it loads now or already had.
+    _membershipWorker = ever(
+      controller.membership,
+      (_) => _askForShowroomLocation(),
+    );
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => _askForShowroomLocation(),
+    );
   }
 
   @override
   void dispose() {
+    _membershipWorker.dispose();
     _searchController.dispose();
     super.dispose();
+  }
+
+  void _askForShowroomLocation() {
+    if (mounted && controller.shouldAskForShowroomLocation()) {
+      askForShowroomLocation();
+    }
   }
 
   @override

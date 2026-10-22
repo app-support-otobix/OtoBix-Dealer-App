@@ -134,15 +134,23 @@ class ShowroomLocationCard extends StatelessWidget {
   }
 }
 
+/// Asks a dealer who has no showroom location yet (enrolled before registration
+/// asked for the address) to set one, when Dealer Home opens. Closes with true
+/// once one is saved; Later asks again the next time the app opens.
+Future<bool?> askForShowroomLocation() =>
+    _ShowroomLocationSheet.show(asking: true);
+
 /// Two ways to set the showroom location: search its address, or read the
 /// phone GPS while at the showroom. Closes with true once one is saved.
 class _ShowroomLocationSheet extends StatefulWidget {
-  const _ShowroomLocationSheet();
+  /// Opened by the app rather than by the dealer: says why, and offers Later.
+  final bool asking;
+  const _ShowroomLocationSheet({this.asking = false});
 
   // GetX already lifts the sheet above the keyboard. ignoreSafeArea: false
   // keeps the status bar's height in MediaQuery for the cap in build().
-  static Future<bool?> show() => Get.bottomSheet<bool>(
-    const _ShowroomLocationSheet(),
+  static Future<bool?> show({bool asking = false}) => Get.bottomSheet<bool>(
+    _ShowroomLocationSheet(asking: asking),
     isScrollControlled: true,
     ignoreSafeArea: false,
     backgroundColor: AppColors.white,
@@ -190,14 +198,24 @@ class _ShowroomLocationSheetState extends State<_ShowroomLocationSheet> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Set your showroom location',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              Text(
+                widget.asking
+                    ? 'Add your showroom location'
+                    : 'Set your showroom location',
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 4),
-              const Text(
-                'Other dealers never see it, only how far their cars are from you.',
-                style: TextStyle(fontSize: 12, color: AppColors.grey),
+              Text(
+                widget.asking
+                    ? 'Distances now come from Google Maps. Search your '
+                        "showroom's address so other dealers' cars show "
+                        'exactly how far they are from you. They never see '
+                        'it, only the distance.'
+                    : 'Other dealers never see it, only how far their cars are from you.',
+                style: const TextStyle(fontSize: 12, color: AppColors.grey),
               ),
               const SizedBox(height: 14),
               AddressSearchField(
@@ -234,6 +252,17 @@ class _ShowroomLocationSheetState extends State<_ShowroomLocationSheet> {
                           ),
                         ),
               ),
+              if (widget.asking)
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: const Text(
+                      'Later',
+                      style: TextStyle(color: AppColors.grey),
+                    ),
+                  ),
+                ),
             ],
           ),
         ),

@@ -81,6 +81,7 @@ class DealerMembershipController extends GetxController {
       // Plans and dealer types follow the dealer (broker or not).
       config.value = null;
       membership.value = null;
+      _askedForShowroomLocation = false;
       dealerName.value = '';
       newLeads.value = 0;
       pendingActivities.clear();
@@ -97,6 +98,25 @@ class DealerMembershipController extends GetxController {
     _sessionUserId = userId;
     _joinDealerRoom();
     await loadHome();
+  }
+
+  // Dealers enrolled before registration asked for the showroom address have
+  // no position, so Dealer Exchange shows no distances to or from them. Dealer
+  // Home asks for it once each time the app opens until it is set: after the
+  // dealer type, and never brokers (customer cars only, no Buy).
+  bool _askedForShowroomLocation = false;
+
+  bool shouldAskForShowroomLocation() {
+    final m = membership.value;
+    if (_askedForShowroomLocation ||
+        m == null ||
+        m.hasShowroomLocation ||
+        m.needsDealerType ||
+        m.isBroker) {
+      return false;
+    }
+    _askedForShowroomLocation = true;
+    return true;
   }
 
   // Dealer Hub events come to the dealer's user room. A reconnect drops the
