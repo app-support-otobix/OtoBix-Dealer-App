@@ -115,6 +115,8 @@ class ServiceHistoryCheckoutController extends GetxController {
       // Points are worked out on the latest balance, then only the rest is
       // paid online; the server takes the points when the request is sent.
       await DealerMembershipController.to.refreshMembership();
+      // The page may have been opened before the grace period began.
+      if (!DealerMembershipController.to.requireServiceHistory()) return;
       final pointsUsed = pointsToUse;
       final amount = total - pointsUsed;
 

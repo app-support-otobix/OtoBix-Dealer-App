@@ -41,7 +41,7 @@ class DealerRenewalBanner extends StatelessWidget {
         title = m.isGrace ? 'Grace period · $days' : 'You have $days';
         subtitle =
             m.isGrace
-                ? 'Your ${m.plan?.name ?? 'membership'} has ended. Everything keeps working until the grace period ends.'
+                ? 'Your ${m.plan?.name ?? 'membership'} has ended. Everything except new Service History reports keeps working until the grace period ends.'
                 : m.plan?.isTrial == true
                 ? 'Your free trial ends soon. Upgrade to keep your services running.'
                 : 'Your plan ends soon. Upgrade to keep your services running.';

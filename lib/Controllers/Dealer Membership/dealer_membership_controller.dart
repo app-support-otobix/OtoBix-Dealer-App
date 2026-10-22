@@ -447,6 +447,17 @@ class DealerMembershipController extends GetxController {
     return true;
   }
 
+  /// No new Service History reports in the grace period (the 7 days after a
+  /// plan or trial ends); reports already bought stay readable. Says so and
+  /// offers the upgrade.
+  bool requireServiceHistory() {
+    if (!(membership.value?.isGrace ?? false)) return true;
+    _showUpgradeDialog(
+      'New Service History reports are paused during your grace period. Upgrade your membership to get one.',
+    );
+    return false;
+  }
+
   // Dealer Home tabs OtoBix can switch off from the CRM (the backend's
   // DEALER_APP_MODULES); the backend refuses their calls too.
   static const moduleSell = 'SELL';
