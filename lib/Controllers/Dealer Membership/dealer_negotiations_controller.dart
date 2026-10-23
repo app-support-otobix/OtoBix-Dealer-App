@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:otobix/Controllers/Dealer%20Membership/dealer_exchange_controller.dart';
 import 'package:otobix/Controllers/Dealer%20Membership/dealer_membership_controller.dart';
 import 'package:otobix/Controllers/Dealer%20Membership/dealer_paged_list.dart';
 import 'package:otobix/Models/Dealer%20Membership/dealer_negotiation_model.dart';
@@ -106,9 +107,14 @@ class DealerNegotiationsController extends GetxController {
 
   Future<DealerNegotiationModel?> _call(Future<dynamic> Function() call) async {
     try {
-      return DealerNegotiationModel.fromJson(
+      final n = DealerNegotiationModel.fromJson(
         Map<String, dynamic>.from(await call()),
       );
+      // The Dealer Inventory card shows my offer on this car too.
+      if (Get.isRegistered<DealerExchangeController>()) {
+        DealerExchangeController.to.trackOffer(n);
+      }
+      return n;
     } on DealerApiException catch (e) {
       membership.handleError(e);
       return null;

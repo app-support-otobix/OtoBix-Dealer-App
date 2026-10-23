@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:otobix/Controllers/Dealer%20Membership/dealer_membership_controller.dart';
 import 'package:otobix/Models/Dealer%20Membership/dealer_exchange_model.dart';
+import 'package:otobix/Models/Dealer%20Membership/dealer_negotiation_model.dart';
 import 'package:otobix/Network/dealer_membership_api.dart';
+import 'package:otobix/Network/socket_service.dart';
 import 'package:otobix/Utils/app_urls.dart';
 import 'package:otobix/Utils/global_functions.dart';
+import 'package:otobix/Utils/socket_events.dart';
 import 'package:otobix/Widgets/toast_widget.dart';
 
 class DealerExchangeController extends GetxController {
@@ -217,13 +220,64 @@ class DealerExchangeController extends GetxController {
     loadMatches(reset: true);
   }
 
-  // Offers sent from the cards this session, by listing id. They override the
-  // listing's own myOffer until the list is next loaded.
+  // Offers that changed after the list loaded (sent from a card or the chat,
+  // or answered by the seller), by listing id. They override the listing's
+  // own myOffer until the list is next loaded.
   final sentOffers = <String, DealerMyOfferModel>{}.obs;
   final offeringOn = ''.obs;
 
   DealerMyOfferModel? myOfferOn(DealerExchangeListingModel l) =>
       sentOffers[l.id] ?? l.myOffer;
+
+  @override
+  void onInit() {
+    super.onInit();
+    SocketService.instance.on(
+      SocketEvents.dealerNegotiationUpdated,
+      _onNegotiationUpdated,
+    );
+  }
+
+  @override
+  void onClose() {
+    SocketService.instance.off(
+      SocketEvents.dealerNegotiationUpdated,
+      _onNegotiationUpdated,
+    );
+    super.onClose();
+  }
+
+  /// Keeps the card's Your Offer box in step with a conversation where I am
+  /// the buyer, wherever it changed.
+  void trackOffer(DealerNegotiationModel n) {
+    if (n.isBuyer && n.carId.isNotEmpty) {
+      sentOffers[n.carId] = DealerMyOfferModel.of(n);
+    }
+  }
+
+  // An offer, counter or acceptance on a conversation a card shows: reload it
+  // so the card changes without reopening the list.
+  Future<void> _onNegotiationUpdated(dynamic data) async {
+    final id = data is Map ? '${data['negotiationId'] ?? ''}' : '';
+    if (id.isEmpty ||
+        ![
+          ...results,
+          ...matches,
+        ].any((l) => myOfferOn(l)?.negotiationId == id)) {
+      return;
+    }
+    try {
+      trackOffer(
+        DealerNegotiationModel.fromJson(
+          Map<String, dynamic>.from(
+            await DealerMembershipApi.get(AppUrls.dealerNegotiation(id)),
+          ),
+        ),
+      );
+    } on DealerApiException catch (e) {
+      debugPrint('Offer not refreshed: ${e.message}'); // the next load has it
+    }
+  }
 
   /// Sends [amount] to the seller from the Dealer Inventory card, without
   /// opening the chat. The card then shows where the seller stands.
@@ -238,8 +292,8 @@ class DealerExchangeController extends GetxController {
         AppUrls.dealerExchangeQuickOffer(listing.id),
         {'amount': amount},
       );
-      sentOffers[listing.id] = DealerMyOfferModel.fromNegotiation(
-        Map<String, dynamic>.from(data),
+      trackOffer(
+        DealerNegotiationModel.fromJson(Map<String, dynamic>.from(data)),
       );
       _toast(
         'Offer sent',
