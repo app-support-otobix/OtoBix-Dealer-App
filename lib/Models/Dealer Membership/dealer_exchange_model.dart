@@ -18,6 +18,9 @@ class DealerMyOfferModel {
   /// My own latest price, still known after the seller counters (0 = none).
   final int myAmount;
 
+  /// The seller's latest price in the chat (0 = they have not countered).
+  final int sellerAmount;
+
   DealerMyOfferModel.fromJson(Map<String, dynamic> j)
     : negotiationId = _str(j['negotiationId']),
       displayStatus = _str(j['displayStatus']),
@@ -27,6 +30,11 @@ class DealerMyOfferModel {
       myAmount = _myAmount(
         _int(j['myAmount']),
         j['byMe'] == true,
+        _int(j['amount']),
+      ),
+      sellerAmount = _myAmount(
+        _int(j['sellerAmount']),
+        j['byMe'] != true,
         _int(j['amount']),
       );
 
@@ -42,11 +50,20 @@ class DealerMyOfferModel {
         n.buyerPrice,
         n.lastOfferByMe,
         n.lastOfferAmount ?? 0,
+      ),
+      sellerAmount = _myAmount(
+        n.sellerPrice,
+        !n.lastOfferByMe,
+        n.lastOfferAmount ?? 0,
       );
 
-  // A backend that does not send my own price yet: the latest one, if it is mine.
-  static int _myAmount(int mine, bool byMe, int latest) =>
-      mine > 0 ? mine : (byMe ? latest : 0);
+  // A backend that does not send a side's own price yet: the latest one, if
+  // that side made it.
+  static int _myAmount(int own, bool theirs, int latest) =>
+      own > 0 ? own : (theirs ? latest : 0);
+
+  /// The price that matters now: the agreed one, else [own].
+  int priceOr(int own) => agreedAmount > 0 ? agreedAmount : own;
 }
 
 class DealerExchangeListingModel {

@@ -110,12 +110,20 @@ class ExchangeListingCard extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // The seller's latest price in the chat, else the asking price.
               Expanded(
-                child: PriceBox(
-                  label: 'Seller Price',
-                  value: GlobalFunctions.formatRupees(l.exchangePrice),
-                  color: AppColors.blue,
-                ),
+                child: Obx(() {
+                  final offer = DealerExchangeController.to.myOfferOn(l);
+                  final price =
+                      offer == null ? 0 : offer.priceOr(offer.sellerAmount);
+                  return PriceBox(
+                    label: 'Seller Price',
+                    value: GlobalFunctions.formatRupees(
+                      price > 0 ? price : l.exchangePrice,
+                    ),
+                    color: AppColors.blue,
+                  );
+                }),
               ),
               const SizedBox(width: 10),
               Expanded(child: _QuickOfferBox(listing: l)),
@@ -193,7 +201,7 @@ class ExchangeListingCard extends StatelessWidget {
 
 /// Your price for this car, sent to the seller without opening the chat. Once
 /// sent it stays in the box (the pencil sends a new one), even after the
-/// seller counters.
+/// seller counters or the Deal Room opens.
 class _QuickOfferBox extends StatefulWidget {
   final DealerExchangeListingModel listing;
   const _QuickOfferBox({required this.listing});
@@ -246,6 +254,8 @@ class _QuickOfferBoxState extends State<_QuickOfferBox> {
         'CLOSED',
       ].contains(offer?.displayStatus);
       final sending = controller.offeringOn.value == widget.listing.id;
+      // Once connected, agreed or closed: the agreed price, else my last one.
+      final closedPrice = closed ? offer!.priceOr(offer.myAmount) : 0;
       final myPrice = closed || _editing ? 0 : (offer?.myAmount ?? 0);
       final waiting = const [
         'OFFER SENT',
@@ -268,7 +278,9 @@ class _QuickOfferBoxState extends State<_QuickOfferBox> {
               Padding(
                 padding: const EdgeInsets.only(top: 4, bottom: 6),
                 child: Text(
-                  GlobalFunctions.formatRupees(offer!.agreedAmount),
+                  closedPrice > 0
+                      ? GlobalFunctions.formatRupees(closedPrice)
+                      : '—',
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w800,
