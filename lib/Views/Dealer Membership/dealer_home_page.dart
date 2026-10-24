@@ -380,7 +380,7 @@ class _DealerHomePageState extends State<DealerHomePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'SELL YOUR CAR, GET THE BEST PRICE',
+                'Gaadi Ka Deal Karo Fix, With OtoBix',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 14,
