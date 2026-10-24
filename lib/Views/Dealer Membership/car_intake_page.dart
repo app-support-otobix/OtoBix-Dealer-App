@@ -293,7 +293,7 @@ class _CarIntakePageState extends State<CarIntakePage> {
               title: 'Car Images',
               child: Obx(
                 () => CarImagesPicker(
-                  maxImageCount: membership.config.value?.maxCarImages ?? 14,
+                  maxImageCount: membership.config.value?.maxCarImages ?? 30,
                   initialUrls: widget.car?.images ?? const [],
                   onChanged:
                       (urls, notReady) => setState(() {
