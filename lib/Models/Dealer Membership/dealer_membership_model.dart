@@ -248,6 +248,10 @@ class DealerMembershipModel {
   final DateTime? showroomLocationAt;
   final String status;
   final DealerPlanModel? plan;
+  // The free Promo trial runs on dates OtoBix set from the CRM and they have
+  // not begun yet: the first and last day (local dates). Null otherwise.
+  final DateTime? trialStartDate;
+  final DateTime? trialEndDate;
   final int cycleNumber;
   final DateTime? cycleStartAt;
   final DateTime? cycleEndAt;
@@ -268,6 +272,7 @@ class DealerMembershipModel {
 
   bool get isActive => status == active || status == grace;
   bool get isGrace => status == grace;
+  bool get trialScheduled => trialStartDate != null;
   // Brokers see Sell (My Customer's Inventory) and Membership only.
   bool get isBroker => plan?.isBroker ?? false;
   bool moduleEnabled(String code) => modules[code] ?? true;
@@ -295,6 +300,8 @@ class DealerMembershipModel {
           j['plan'] is Map
               ? DealerPlanModel.fromJson(Map<String, dynamic>.from(j['plan']))
               : null,
+      trialStartDate = _scheduledTrialDay(j['promoTrial'], 'startDate'),
+      trialEndDate = _scheduledTrialDay(j['promoTrial'], 'endDate'),
       cycleNumber = _int(j['cycleNumber']),
       cycleStartAt = _date(j['cycleStartAt']),
       cycleEndAt = _date(j['cycleEndAt']),
@@ -321,6 +328,13 @@ class DealerMembershipModel {
 
   DealerUsageModel? usageFor(String feature) =>
       usage.where((u) => u.feature == feature).firstOrNull;
+
+  // A day of a SCHEDULED trial. The server sends days as YYYY-MM-DD (India),
+  // read as a local date so it shows as the same day on any phone.
+  static DateTime? _scheduledTrialDay(dynamic trial, String key) =>
+      trial is Map && trial['status'] == 'SCHEDULED'
+          ? DateTime.tryParse(_str(trial[key]))
+          : null;
 }
 
 class DealerLedgerEntryModel {

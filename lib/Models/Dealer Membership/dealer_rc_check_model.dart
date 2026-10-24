@@ -31,9 +31,9 @@ class DealerVehicleFactsModel {
   final String pucUpto;
   final String blacklistStatus;
   final String nocStatus;
-  final String ownerMasked;
-  final String chassisMasked;
-  final String engineMasked;
+  final String ownerName;
+  final String chassisNumber;
+  final String engineNumber;
 
   DealerVehicleFactsModel.fromJson(Map<String, dynamic> j)
     : registrationNumber = _str(j['registrationNumber']),
@@ -63,9 +63,9 @@ class DealerVehicleFactsModel {
       pucUpto = _str(j['pucUpto']),
       blacklistStatus = _str(j['blacklistStatus']),
       nocStatus = _str(j['nocStatus']),
-      ownerMasked = _str(j['ownerMasked']),
-      chassisMasked = _str(j['chassisMasked']),
-      engineMasked = _str(j['engineMasked']);
+      ownerName = _str(j['ownerName']),
+      chassisNumber = _str(j['chassisNumber']),
+      engineNumber = _str(j['engineNumber']);
 }
 
 class DealerChallanModel {

@@ -222,13 +222,9 @@ class _RcChallanCheckPageState extends State<RcChallanCheckPage> {
           ],
         ),
         _subheading('Owner & Identifiers'),
-        _fullWidthField('Owner Name', v.ownerMasked),
-        _fullWidthField('Engine No', v.engineMasked),
-        _fullWidthField('Chassis No', v.chassisMasked),
-        const Text(
-          'Owner personal data is withheld · identifiers are masked.',
-          style: TextStyle(fontSize: 10, color: AppColors.grey),
-        ),
+        _fullWidthField('Owner Name', v.ownerName),
+        _fullWidthField('Engine No', v.engineNumber),
+        _fullWidthField('Chassis No', v.chassisNumber),
       ],
     );
   }

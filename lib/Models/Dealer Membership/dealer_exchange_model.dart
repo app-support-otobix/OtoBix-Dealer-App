@@ -1,3 +1,4 @@
+import 'package:otobix/Models/Dealer%20Membership/dealer_negotiation_model.dart';
 import 'package:otobix/Utils/global_functions.dart';
 
 String _str(dynamic v) => GlobalFunctions.parse<String>(v) ?? '';
@@ -29,17 +30,18 @@ class DealerMyOfferModel {
         _int(j['amount']),
       );
 
-  /// From the conversation the quick offer returns (I am the buyer there).
-  DealerMyOfferModel.fromNegotiation(Map<String, dynamic> j)
-    : negotiationId = _str(j['id']),
-      displayStatus = _str(j['displayStatus']),
-      amount = _int(j['lastOffer']?['amount']),
-      byMe = j['lastOffer']?['byMe'] == true,
-      agreedAmount = _int(j['agreedAmount']),
+  /// From a conversation where I am the buyer: the quick offer's reply, the
+  /// chat, or the seller's answer.
+  DealerMyOfferModel.of(DealerNegotiationModel n)
+    : negotiationId = n.id,
+      displayStatus = n.displayStatus,
+      amount = n.lastOfferAmount ?? 0,
+      byMe = n.lastOfferByMe,
+      agreedAmount = n.agreedAmount,
       myAmount = _myAmount(
-        _int(j['prices']?['buyer']),
-        j['lastOffer']?['byMe'] == true,
-        _int(j['lastOffer']?['amount']),
+        n.buyerPrice,
+        n.lastOfferByMe,
+        n.lastOfferAmount ?? 0,
       );
 
   // A backend that does not send my own price yet: the latest one, if it is mine.

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:otobix/Controllers/Dealer%20Membership/dealer_membership_controller.dart';
 import 'package:otobix/Utils/app_colors.dart';
 import 'package:otobix/Views/Dealer%20Membership/dealer_membership_navigator.dart';
@@ -19,7 +20,7 @@ class DealerRenewalBanner extends StatelessWidget {
       final m = controller.membership.value;
       if (m == null) return const SizedBox.shrink();
       final pending = m.pendingPayment;
-      if (pending == null && !m.showRenewalWarning) {
+      if (pending == null && !m.showRenewalWarning && !m.trialScheduled) {
         return const SizedBox.shrink();
       }
 
@@ -35,6 +36,12 @@ class DealerRenewalBanner extends StatelessWidget {
         title = 'Upgrade to $plan requested';
         subtitle =
             'OtoBix will confirm your offline payment (${pending.code}) and start the plan.';
+        color = AppColors.blue;
+      } else if (m.trialScheduled) {
+        final day = DateFormat('dd-MM-yyyy');
+        title = 'Free trial starts ${day.format(m.trialStartDate!)}';
+        subtitle =
+            'Your Promo Membership runs till ${m.trialEndDate == null ? '' : day.format(m.trialEndDate!)}, free. Or upgrade now to start a plan today.';
         color = AppColors.blue;
       } else {
         final days = '${m.daysLeft} ${m.daysLeft == 1 ? 'day' : 'days'} left';
