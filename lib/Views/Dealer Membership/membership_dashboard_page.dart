@@ -104,6 +104,8 @@ class _MembershipDashboardPageState extends State<MembershipDashboardPage> {
             ? 'Grace period · ends ${m.graceEndAt == null ? '' : date.format(m.graceEndAt!.toLocal())}'
             : m.isActive
             ? 'Day ${m.dayOfCycle} of ${plan?.cycleDays ?? 30} · renews by ${m.cycleEndAt == null ? '' : date.format(m.cycleEndAt!.toLocal())}'
+            : m.trialScheduled
+            ? 'Free trial ${date.format(m.trialStartDate!)} to ${m.trialEndDate == null ? '' : date.format(m.trialEndDate!)}'
             : 'Ended · upgrade to continue';
     final dealerName = controller.dealerName.value;
     return DealerSectionCard(
@@ -162,12 +164,16 @@ class _MembershipDashboardPageState extends State<MembershipDashboardPage> {
                             ? 'GRACE PERIOD'
                             : m.isActive
                             ? 'ACTIVE'
+                            : m.trialScheduled
+                            ? 'STARTS ${DateFormat('dd MMM').format(m.trialStartDate!).toUpperCase()}'
                             : 'ENDED',
                     color:
                         m.isGrace
                             ? AppColors.deepOrange
                             : m.isActive
                             ? AppColors.green
+                            : m.trialScheduled
+                            ? AppColors.blue
                             : AppColors.red,
                     small: true,
                   ),

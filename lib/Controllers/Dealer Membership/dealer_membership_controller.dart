@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:otobix/Controllers/Dealer%20Membership/dealer_connections_controller.dart';
 import 'package:otobix/Controllers/Dealer%20Membership/dealer_exchange_controller.dart';
 import 'package:otobix/Controllers/Dealer%20Membership/dealer_inventory_controller.dart';
@@ -441,7 +442,11 @@ class DealerMembershipController extends GetxController {
   bool requireMembership() {
     final m = membership.value;
     if (m != null && !m.isActive) {
-      _showUpgradeDialog('Your membership has ended. Upgrade to continue.');
+      _showUpgradeDialog(
+        m.trialScheduled
+            ? 'Your free trial starts on ${DateFormat('dd-MM-yyyy').format(m.trialStartDate!)}.'
+            : 'Your membership has ended. Upgrade to continue.',
+      );
       return false;
     }
     return true;
