@@ -396,7 +396,8 @@ class _QuickOfferBoxState extends State<_QuickOfferBox> {
   }
 }
 
-/// The car's OtoBix inspection report (Customer inventory), opened as a PDF.
+/// The car's OtoBix inspection (Customer inventory), on the auction car page:
+/// masked as auctions are.
 class _InspectionReportLink extends StatelessWidget {
   final DealerExchangeListingModel listing;
   const _InspectionReportLink({required this.listing});
@@ -407,7 +408,10 @@ class _InspectionReportLink extends StatelessWidget {
     return Obx(() {
       final loading = controller.reportLoadingFor.value == listing.id;
       return InkWell(
-        onTap: loading ? null : () => controller.openInspectionReport(listing),
+        onTap:
+            loading
+                ? null
+                : () => DealerMembershipNavigator.openCarInspection(listing),
         borderRadius: BorderRadius.circular(4),
         child: Padding(
           padding: const EdgeInsets.only(top: 4, bottom: 2),
@@ -424,7 +428,7 @@ class _InspectionReportLink extends StatelessWidget {
                     ),
                   )
                   : const Icon(
-                    Icons.picture_as_pdf_outlined,
+                    Icons.fact_check_outlined,
                     size: 15,
                     color: AppColors.blue,
                   ),

@@ -5,9 +5,12 @@ import 'package:otobix/Controllers/Dealer%20Membership/dealer_membership_control
 import 'package:otobix/Controllers/Dealer%20Membership/dealer_inventory_controller.dart';
 import 'package:otobix/Controllers/Dealer%20Membership/dealer_negotiations_controller.dart';
 import 'package:otobix/Controllers/bottom_navigation_controller.dart';
+import 'package:otobix/Controllers/home_controller.dart';
 import 'package:otobix/Models/Dealer%20Membership/dealer_exchange_model.dart';
 import 'package:otobix/Models/Dealer%20Membership/dealer_inventory_car_model.dart';
 import 'package:otobix/Models/Dealer%20Membership/dealer_negotiation_model.dart';
+import 'package:otobix/Network/dealer_membership_api.dart';
+import 'package:otobix/Services/notification_router.dart';
 import 'package:otobix/Utils/app_colors.dart';
 import 'package:otobix/Views/Dealer%20Membership/activity_log_page.dart';
 import 'package:otobix/Views/Dealer%20Membership/car_intake_page.dart';
@@ -28,6 +31,7 @@ import 'package:otobix/Views/Dealer%20Membership/request_connection_page.dart';
 import 'package:otobix/Views/Dealer%20Membership/review_offer_page.dart';
 import 'package:otobix/Views/Dealer%20Membership/seller_initiated_connection_page.dart';
 import 'package:otobix/Views/Dealer%20Membership/upgrade_membership_page.dart';
+import 'package:otobix/Views/Dealer%20Panel/car_details_page.dart';
 import 'package:otobix/Views/Dealer%20Panel/service_history_page.dart';
 import 'package:otobix/Widgets/Dealer%20Membership/dealer_renewal_banner.dart';
 import 'package:otobix/Widgets/app_bar_widget.dart';
@@ -307,6 +311,35 @@ class DealerMembershipNavigator {
 
   static void openCustomerInventory() =>
       _ifEnabled(_buy, () => Get.to(() => const CustomerInventoryPage()));
+
+  /// A Customer inventory car's OtoBix inspection, on the auction car page and
+  /// masked as auctions are: view-only (no bidding), registration masked, no
+  /// owner details.
+  static Future<void> openCarInspection(
+    DealerExchangeListingModel listing,
+  ) async {
+    final fc = DealerExchangeController.to;
+    if (fc.reportLoadingFor.value.isNotEmpty) return;
+    fc.reportLoadingFor.value = listing.id;
+    final car = await getCarDetailsForNotification(listing.id);
+    fc.reportLoadingFor.value = '';
+    if (car == null) {
+      return DealerMembershipController.to.handleError(
+        const DealerApiException(
+          'The inspection report could not be loaded. Please try again.',
+        ),
+        title: 'Report unavailable',
+      );
+    }
+    Get.to(
+      () => CarDetailsPage(
+        carId: listing.id,
+        car: car,
+        currentOpenSection: Get.put(HomeController()).defaultSectionScreen,
+        remainingAuctionTime: '00h : 00m : 00s'.obs,
+      ),
+    );
+  }
 
   static Future<void> openExchangeListing(String id) async {
     if (!_can([_buy])) return;

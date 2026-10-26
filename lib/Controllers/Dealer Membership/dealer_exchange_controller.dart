@@ -1,20 +1,15 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:open_filex/open_filex.dart';
 import 'package:otobix/Controllers/Dealer%20Membership/dealer_membership_controller.dart';
 import 'package:otobix/Controllers/Dealer%20Membership/dealer_paged_list.dart';
 import 'package:otobix/Models/Dealer%20Membership/dealer_exchange_model.dart';
 import 'package:otobix/Models/Dealer%20Membership/dealer_negotiation_model.dart';
-import 'package:otobix/Network/api_service.dart';
 import 'package:otobix/Network/dealer_membership_api.dart';
 import 'package:otobix/Network/socket_service.dart';
 import 'package:otobix/Utils/app_urls.dart';
 import 'package:otobix/Utils/global_functions.dart';
 import 'package:otobix/Utils/socket_events.dart';
 import 'package:otobix/Widgets/toast_widget.dart';
-import 'package:path_provider/path_provider.dart';
 
 class DealerExchangeController extends GetxController {
   static DealerExchangeController get to =>
@@ -346,39 +341,6 @@ class DealerExchangeController extends GetxController {
       subtitle: subtitle,
       type: ToastType.success,
     );
-  }
-
-  /// A Customer inventory car's OtoBix inspection report: downloaded with my
-  /// login, then opened in the phone's PDF viewer.
-  Future<void> openInspectionReport(DealerExchangeListingModel listing) async {
-    if (reportLoadingFor.value.isNotEmpty) return;
-    reportLoadingFor.value = listing.id;
-    try {
-      final response = await ApiService.get(
-        endpoint: AppUrls.dealerCustomerCarReport(listing.id),
-      );
-      if (response.statusCode != 200 ||
-          !(response.headers['content-type'] ?? '').contains('pdf')) {
-        throw const DealerApiException(
-          'The inspection report could not be loaded. Please try again.',
-        );
-      }
-      final dir = await getTemporaryDirectory();
-      final file = File('${dir.path}/inspection_report_${listing.id}.pdf');
-      await file.writeAsBytes(response.bodyBytes);
-      await OpenFilex.open(file.path);
-    } on DealerApiException catch (e) {
-      DealerMembershipController.to.handleError(e, title: 'Report unavailable');
-    } catch (_) {
-      DealerMembershipController.to.handleError(
-        const DealerApiException(
-          'The inspection report could not be opened. Please try again.',
-        ),
-        title: 'Report unavailable',
-      );
-    } finally {
-      reportLoadingFor.value = '';
-    }
   }
 
   Future<DealerExchangeListingModel?> getListing(String id) async {

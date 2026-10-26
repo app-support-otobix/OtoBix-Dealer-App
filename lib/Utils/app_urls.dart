@@ -293,9 +293,6 @@ class AppUrls {
         "${_dealerMembership}exchange/customer-cars",
       ).replace(queryParameters: query).toString();
 
-  static String dealerCustomerCarReport(String id) =>
-      "${_dealerMembership}exchange/customer-cars/$id/inspection-report";
-
   static String dealerCustomerCarOffer(String id) =>
       "${_dealerMembership}exchange/customer-cars/$id/offer";
 
