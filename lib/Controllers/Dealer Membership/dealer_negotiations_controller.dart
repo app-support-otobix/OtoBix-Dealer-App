@@ -64,9 +64,13 @@ class DealerNegotiationsController extends GetxController {
   Future<DealerNegotiationModel?> get(String id) =>
       _call(() => DealerMembershipApi.get(AppUrls.dealerNegotiation(id)));
 
-  Future<DealerNegotiationModel?> openForListing(String carId) => _call(
+  Future<DealerNegotiationModel?> openForListing(
+    String carId, {
+    String carSource = '',
+  }) => _call(
     () => DealerMembershipApi.post(AppUrls.dealerNegotiationStart, {
       'carId': carId,
+      if (carSource.isNotEmpty) 'carSource': carSource,
     }),
   );
 

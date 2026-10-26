@@ -98,9 +98,17 @@ class DealerExchangeListingModel {
   final DealerMyOfferModel? myOffer;
   // From my showroom to the seller's; null when either has no location set.
   final double? distanceKm;
+  // PREMIUM_LISTING: a customer's car its owner listed for dealers
+  // (Customer inventory); exchangePrice is then the owner's expected price.
+  final String carSource;
+  final bool hasInspectionReport;
+
+  bool get isPremiumListing => carSource == 'PREMIUM_LISTING';
 
   DealerExchangeListingModel.fromJson(Map<String, dynamic> j)
     : id = _str(j['id']),
+      carSource = _str(j['carSource']),
+      hasInspectionReport = j['hasInspectionReport'] == true,
       listingCode = _str(j['listingCode']),
       registrationNumber = _str(j['registrationNumber']),
       title = _str(j['title']),

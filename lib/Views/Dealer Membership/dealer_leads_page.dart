@@ -187,16 +187,24 @@ class _DealerLeadsPageState extends State<DealerLeadsPage>
 
   Widget _connectionRow(DealerConnectionModel c) {
     final color =
-        {'PENDING': AppColors.deepOrange, 'ACCEPTED': AppColors.green}[c
-            .status] ??
+        {
+          'PENDING': AppColors.deepOrange,
+          'PAYMENT_DUE': AppColors.blue,
+          'ACCEPTED': AppColors.green,
+        }[c.status] ??
         AppColors.grey;
+    // A Premium Listing request reserves nothing: it is paid once accepted.
+    final released =
+        c.isPremiumListing ? 'nothing charged' : 'reservation released';
     final detail = switch (c.status) {
       'PENDING' =>
-        '${c.pointsPerSide} reserved · ${GlobalFunctions.timeLeft(c.expiresAt)}',
+        '${c.isPremiumListing ? 'Free request' : '${c.pointsPerSide} reserved'} · ${GlobalFunctions.timeLeft(c.expiresAt)}',
+      'PAYMENT_DUE' =>
+        'Owner accepted · pay ${GlobalFunctions.formatRupees(c.priceRupees)}',
       'ACCEPTED' => 'Identity revealed · Deal Room open',
-      'DECLINED' => 'Reservation released in full',
-      'EXPIRED' => 'No reply in time · no points charged',
-      _ => 'Withdrawn · reservation released',
+      'DECLINED' => 'Declined · $released',
+      'EXPIRED' => 'No reply in time · nothing charged',
+      _ => 'Withdrawn · $released',
     };
     return InkWell(
       onTap: () => DealerMembershipNavigator.openConnection(c.id),
@@ -218,7 +226,7 @@ class _DealerLeadsPageState extends State<DealerLeadsPage>
                   ),
                   const SizedBox(height: 3),
                   Text(
-                    '${c.initiatedByMe ? 'Sent to' : 'From'} ${c.counterpart.isRevealed ? c.counterpart.name : c.counterpart.dealerCode} · $detail',
+                    '${c.initiatedByMe ? 'Sent to' : 'From'} ${c.counterpart.label} · $detail',
                     style: const TextStyle(fontSize: 11, color: AppColors.grey),
                   ),
                 ],

@@ -235,7 +235,7 @@ class _FindCarsTabState extends State<_FindCarsTab> {
         const SizedBox(height: 10),
         Expanded(
           child: Obx(
-            () => _ListingList(
+            () => ExchangeListingList(
               items: fc.results,
               isLoading: fc.isLoading.value,
               error: fc.error.value,
@@ -477,7 +477,7 @@ class _MatchingTab extends StatelessWidget {
         ),
         Expanded(
           child: Obx(
-            () => _ListingList(
+            () => ExchangeListingList(
               items: fc.matches,
               isLoading: fc.isLoadingMatches.value,
               error: fc.matchesError.value,
@@ -491,61 +491,6 @@ class _MatchingTab extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _ListingList extends StatelessWidget {
-  final List<DealerExchangeListingModel> items;
-  final bool isLoading;
-  final String error;
-  final String emptyMessage;
-  final Future<void> Function() onRefresh;
-  final Future<void> Function() onEndReached;
-
-  const _ListingList({
-    required this.items,
-    required this.isLoading,
-    required this.error,
-    required this.emptyMessage,
-    required this.onRefresh,
-    required this.onEndReached,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return RefreshIndicator(
-      color: AppColors.green,
-      onRefresh: onRefresh,
-      child: DealerStateView(
-        isLoading: isLoading,
-        error: error,
-        isEmpty: items.isEmpty,
-        emptyIcon: Icons.directions_car_outlined,
-        emptyMessage: emptyMessage,
-        onRetry: onRefresh,
-        child: NotificationListener<ScrollNotification>(
-          onNotification: (n) {
-            if (n.metrics.pixels > n.metrics.maxScrollExtent - 300) {
-              onEndReached();
-            }
-            return false;
-          },
-          child: ListView.separated(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-            itemCount: items.length + (isLoading ? 1 : 0),
-            separatorBuilder: (_, __) => const SizedBox(height: 10),
-            itemBuilder: (context, i) {
-              if (i == items.length) {
-                return const Center(
-                  child: CircularProgressIndicator(color: AppColors.green),
-                );
-              }
-              return ExchangeListingCard(listing: items[i]);
-            },
-          ),
-        ),
-      ),
     );
   }
 }

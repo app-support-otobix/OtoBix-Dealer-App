@@ -12,6 +12,7 @@ import 'package:otobix/Utils/app_colors.dart';
 import 'package:otobix/Views/Dealer%20Membership/activity_log_page.dart';
 import 'package:otobix/Views/Dealer%20Membership/car_intake_page.dart';
 import 'package:otobix/Views/Dealer%20Membership/car_leads_offers_page.dart';
+import 'package:otobix/Views/Dealer%20Membership/customer_inventory_page.dart';
 import 'package:otobix/Views/Dealer%20Membership/deal_chat_page.dart';
 import 'package:otobix/Views/Dealer%20Membership/deal_room_page.dart';
 import 'package:otobix/Views/Dealer%20Membership/dealer_inventory_page.dart';
@@ -103,6 +104,13 @@ class DealerMembershipNavigator {
       Icons.filter_alt_outlined,
       ['buy', 'matching', 'match'],
       (_) => openDealerInventory(tab: 2),
+      module: _buy,
+    ),
+    DealerFeature(
+      'Customer Inventory',
+      Icons.workspace_premium_outlined,
+      ['buy', 'customer inventory', 'customer cars', 'premium listing'],
+      (_) => openCustomerInventory(),
       module: _buy,
     ),
     DealerFeature(
@@ -297,6 +305,9 @@ class DealerMembershipNavigator {
     () => Get.to(() => DealerInventoryPage(initialTab: tab)),
   );
 
+  static void openCustomerInventory() =>
+      _ifEnabled(_buy, () => Get.to(() => const CustomerInventoryPage()));
+
   static Future<void> openExchangeListing(String id) async {
     if (!_can([_buy])) return;
     final listing = await DealerExchangeController.to.getListing(id);
@@ -367,17 +378,25 @@ class DealerMembershipNavigator {
   static Future<void> openChatForListing(
     DealerExchangeListingModel listing,
   ) async {
-    final n = await DealerNegotiationsController.to.openForListing(listing.id);
+    final n = await DealerNegotiationsController.to.openForListing(
+      listing.id,
+      carSource: listing.carSource,
+    );
     if (n != null) openChat(n.id);
   }
 
   static Future<void> requestConnectionForListing(
     DealerExchangeListingModel listing,
   ) async {
-    final n = await DealerNegotiationsController.to.openForListing(listing.id);
+    final n = await DealerNegotiationsController.to.openForListing(
+      listing.id,
+      carSource: listing.carSource,
+    );
     if (n == null) return;
     if (n.dealRoomId.isNotEmpty) return openDealRoom(n.dealRoomId);
-    if (n.hasPendingConnection) return openConnection(n.connectionId);
+    if (n.hasPendingConnection || n.awaitsMyPayment) {
+      return openConnection(n.connectionId);
+    }
     openRequestConnection(negotiationId: n.id);
   }
 
@@ -399,6 +418,13 @@ class DealerMembershipNavigator {
       'Dealer Inventory',
       'Active Dealer Stock on OtoBix',
       openDealerInventory,
+    ),
+    _DrawerItem(
+      Icons.workspace_premium_outlined,
+      AppColors.blue,
+      'Customer Inventory',
+      "Customers' cars listed for dealers",
+      openCustomerInventory,
     ),
   ]);
 

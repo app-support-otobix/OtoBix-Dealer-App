@@ -22,8 +22,7 @@ Color dealerOfferStatusColor(String status) {
 }
 
 String dealerOfferNote(DealerNegotiationModel n) {
-  final who =
-      n.counterpart.isRevealed ? n.counterpart.name : n.counterpart.dealerCode;
+  final who = n.counterpart.label;
   final amount = GlobalFunctions.formatLakh(n.lastOfferAmount ?? 0);
   switch (n.displayStatus) {
     case 'ACTION NEEDED':

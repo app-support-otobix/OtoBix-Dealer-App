@@ -238,6 +238,12 @@ class _ReviewOfferPageState extends State<ReviewOfferPage> {
         'Open Deal Room',
         () => DealerMembershipNavigator.openDealRoom(n.dealRoomId),
       );
+    } else if (n.awaitsMyPayment) {
+      primary = _filled(
+        Icons.lock_open_outlined,
+        'Pay ${GlobalFunctions.formatRupees(n.connectionPriceRupees)} · see name and phone',
+        () => DealerMembershipNavigator.openConnection(n.connectionId),
+      );
     } else if (n.hasPendingConnection) {
       primary = _filled(
         Icons.hourglass_top,

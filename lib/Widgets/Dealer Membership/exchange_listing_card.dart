@@ -34,8 +34,10 @@ class ExchangeListingCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = listing;
+    // A customer's car has no showroom, so no demo distance either.
     final distanceKm =
-        l.distanceKm ?? (_showDemoDistance ? _demoDistanceKm(l) : null);
+        l.distanceKm ??
+        (_showDemoDistance && !l.isPremiumListing ? _demoDistanceKm(l) : null);
     return DealerSectionCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -101,6 +103,7 @@ class ExchangeListingCard extends StatelessWidget {
                           ),
                         ),
                       ),
+                    if (l.hasInspectionReport) _InspectionReportLink(listing: l),
                   ],
                 ),
               ),
@@ -110,14 +113,15 @@ class ExchangeListingCard extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // The seller's latest price in the chat, else the asking price.
+              // The seller's latest price in the chat, else the asking price
+              // (on a customer's car, the owner's expected price).
               Expanded(
                 child: Obx(() {
                   final offer = DealerExchangeController.to.myOfferOn(l);
                   final price =
                       offer == null ? 0 : offer.priceOr(offer.sellerAmount);
                   return PriceBox(
-                    label: 'Seller Price',
+                    label: l.isPremiumListing ? 'Expected Price' : 'Seller Price',
                     value: GlobalFunctions.formatRupees(
                       price > 0 ? price : l.exchangePrice,
                     ),
@@ -392,6 +396,55 @@ class _QuickOfferBoxState extends State<_QuickOfferBox> {
   }
 }
 
+/// The car's OtoBix inspection report (Customer inventory), opened as a PDF.
+class _InspectionReportLink extends StatelessWidget {
+  final DealerExchangeListingModel listing;
+  const _InspectionReportLink({required this.listing});
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = DealerExchangeController.to;
+    return Obx(() {
+      final loading = controller.reportLoadingFor.value == listing.id;
+      return InkWell(
+        onTap: loading ? null : () => controller.openInspectionReport(listing),
+        borderRadius: BorderRadius.circular(4),
+        child: Padding(
+          padding: const EdgeInsets.only(top: 4, bottom: 2),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              loading
+                  ? const SizedBox(
+                    width: 15,
+                    height: 15,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: AppColors.blue,
+                    ),
+                  )
+                  : const Icon(
+                    Icons.picture_as_pdf_outlined,
+                    size: 15,
+                    color: AppColors.blue,
+                  ),
+              const SizedBox(width: 4),
+              const Text(
+                'Inspection Report',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.blue,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    });
+  }
+}
+
 /// Where the seller stands on your offer. Your own price is in the Your Offer
 /// box, so only the seller's side (a counter, agreed, rejected) shows here.
 class _MyOfferStatus extends StatelessWidget {
@@ -458,6 +511,64 @@ class _ThinBadge extends StatelessWidget {
           fontSize: 9,
           fontWeight: FontWeight.bold,
           letterSpacing: 0.2,
+        ),
+      ),
+    );
+  }
+}
+
+/// A paged list of listing cards with pull to refresh, loading more as it
+/// nears the end (Find Cars, Matching Inventory, Customer inventory).
+class ExchangeListingList extends StatelessWidget {
+  final List<DealerExchangeListingModel> items;
+  final bool isLoading;
+  final String error;
+  final String emptyMessage;
+  final Future<void> Function() onRefresh;
+  final Future<void> Function() onEndReached;
+
+  const ExchangeListingList({
+    super.key,
+    required this.items,
+    required this.isLoading,
+    required this.error,
+    required this.emptyMessage,
+    required this.onRefresh,
+    required this.onEndReached,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return RefreshIndicator(
+      color: AppColors.green,
+      onRefresh: onRefresh,
+      child: DealerStateView(
+        isLoading: isLoading,
+        error: error,
+        isEmpty: items.isEmpty,
+        emptyIcon: Icons.directions_car_outlined,
+        emptyMessage: emptyMessage,
+        onRetry: onRefresh,
+        child: NotificationListener<ScrollNotification>(
+          onNotification: (n) {
+            if (n.metrics.pixels > n.metrics.maxScrollExtent - 300) {
+              onEndReached();
+            }
+            return false;
+          },
+          child: ListView.separated(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            itemCount: items.length + (isLoading ? 1 : 0),
+            separatorBuilder: (_, __) => const SizedBox(height: 10),
+            itemBuilder: (context, i) {
+              if (i == items.length) {
+                return const Center(
+                  child: CircularProgressIndicator(color: AppColors.green),
+                );
+              }
+              return ExchangeListingCard(listing: items[i]);
+            },
+          ),
         ),
       ),
     );

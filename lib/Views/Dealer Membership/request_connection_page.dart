@@ -105,6 +105,16 @@ class _RequestConnectionPageState extends State<RequestConnectionPage> {
     if (updated != null) connection.value = updated;
   }
 
+  // Premium Listing: the owner accepted; pay to see their name and phone.
+  Future<void> _pay() async {
+    final paid = await controller.pay(connection.value!);
+    if (paid == null) return;
+    connection.value = paid;
+    if (paid.dealRoomId.isNotEmpty) {
+      DealerMembershipNavigator.openDealRoom(paid.dealRoomId, replace: true);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -134,6 +144,9 @@ class _RequestConnectionPageState extends State<RequestConnectionPage> {
   }
 
   List<Widget> _precheck(DealerConnectionPrecheckModel p) {
+    // A Premium Listing car: free to request, paid once the owner accepts.
+    final premium = p.priceRupees > 0;
+    final price = GlobalFunctions.formatRupees(p.priceRupees);
     return [
       DealerSectionCard(
         title: 'Pre-checks',
@@ -145,10 +158,11 @@ class _RequestConnectionPageState extends State<RequestConnectionPage> {
                   ? 'Membership active · ${p.planName}'
                   : 'Membership not active',
             ),
-            _checkRow(
-              p.availablePoints >= p.cost,
-              'Points available: ${p.availablePoints}',
-            ),
+            if (!premium)
+              _checkRow(
+                p.availablePoints >= p.cost,
+                'Points available: ${p.availablePoints}',
+              ),
             _checkRow(
               p.listingActive,
               p.listingActive
@@ -168,8 +182,11 @@ class _RequestConnectionPageState extends State<RequestConnectionPage> {
       ),
       const SizedBox(height: 14),
       Text(
-        '${p.cost} points will be reserved now. Charged only if the other dealer accepts within ${p.expiryHours} hours. '
-        'Declined or expired requests release the reservation in full.',
+        premium
+            ? 'Free to request. If the car owner accepts within ${p.expiryHours} hours, pay $price to see their name and phone. '
+                'Nothing is charged if they decline or do not reply.'
+            : '${p.cost} points will be reserved now. Charged only if the other dealer accepts within ${p.expiryHours} hours. '
+                'Declined or expired requests release the reservation in full.',
         style: const TextStyle(color: AppColors.grey, fontSize: 12),
       ),
       if (!p.canRequest) ...[
@@ -186,7 +203,10 @@ class _RequestConnectionPageState extends State<RequestConnectionPage> {
       const SizedBox(height: 20),
       if (p.canRequest)
         ButtonWidget(
-          text: 'Confirm · Reserve ${p.cost} points',
+          text:
+              premium
+                  ? 'Send request to the owner'
+                  : 'Confirm · Reserve ${p.cost} points',
           isLoading: controller.isActing,
           width: double.infinity,
           onTap: _request,
@@ -205,10 +225,14 @@ class _RequestConnectionPageState extends State<RequestConnectionPage> {
             ? '${c.counterpart.name} · ${c.counterpart.phone}'
             : '${c.counterpart.dealerType} · ${c.counterpart.city} · anonymous';
     final color =
-        {'PENDING': AppColors.deepOrange, 'ACCEPTED': AppColors.green}[c
-            .status] ??
+        {
+          'PENDING': AppColors.deepOrange,
+          'PAYMENT_DUE': AppColors.blue,
+          'ACCEPTED': AppColors.green,
+        }[c.status] ??
         AppColors.grey;
     final canRespond = c.isPending && !c.initiatedByMe;
+    final price = GlobalFunctions.formatRupees(c.priceRupees);
     return [
       DealerSectionCard(
         child: Column(
@@ -216,7 +240,10 @@ class _RequestConnectionPageState extends State<RequestConnectionPage> {
           children: [
             Row(
               children: [
-                DealerStatusChip(label: c.status, color: color),
+                DealerStatusChip(
+                  label: c.isPaymentDue ? 'PAYMENT DUE' : c.status,
+                  color: color,
+                ),
                 const Spacer(),
                 if (c.isPending)
                   Text(
@@ -240,7 +267,9 @@ class _RequestConnectionPageState extends State<RequestConnectionPage> {
               style: const TextStyle(color: AppColors.grey, fontSize: 12),
             ),
             Text(
-              '${c.connectionCode} · ${c.pointsPerSide} points per side',
+              c.isPremiumListing
+                  ? '${c.connectionCode} · $price once the owner accepts'
+                  : '${c.connectionCode} · ${c.pointsPerSide} points per side',
               style: const TextStyle(color: AppColors.grey, fontSize: 11),
             ),
           ],
@@ -267,6 +296,22 @@ class _RequestConnectionPageState extends State<RequestConnectionPage> {
             minimumSize: const Size(double.infinity, 40),
           ),
           child: const Text('Decline'),
+        ),
+      ] else if (c.isPaymentDue && c.initiatedByMe) ...[
+        ButtonWidget(
+          text: 'Pay $price · see name and phone',
+          isLoading: controller.isActing,
+          width: double.infinity,
+          onTap: _pay,
+        ),
+        const SizedBox(height: 10),
+        OutlinedButton(
+          onPressed: controller.isActing.value ? null : _withdraw,
+          style: OutlinedButton.styleFrom(
+            foregroundColor: AppColors.red,
+            minimumSize: const Size(double.infinity, 40),
+          ),
+          child: const Text('Withdraw request'),
         ),
       ] else if (c.isPending)
         OutlinedButton(
@@ -295,6 +340,23 @@ class _RequestConnectionPageState extends State<RequestConnectionPage> {
   }
 
   String _explain(DealerConnectionModel c) {
+    if (c.isPremiumListing) {
+      final price = GlobalFunctions.formatRupees(c.priceRupees);
+      switch (c.status) {
+        case 'PENDING':
+          return 'Waiting for the car owner to accept. Nothing is charged until they do; withdraw any time.';
+        case 'PAYMENT_DUE':
+          return 'The car owner accepted. Pay $price to see their name and phone; the Deal Room opens straight after.';
+        case 'ACCEPTED':
+          return 'Connected · $price paid · the owner\'s name and phone are in the Deal Room.';
+        case 'DECLINED':
+          return 'The car owner declined · nothing was charged.';
+        case 'EXPIRED':
+          return 'Expired without a reply · nothing was charged.';
+        default:
+          return 'Withdrawn · nothing was charged.';
+      }
+    }
     switch (c.status) {
       case 'PENDING':
         return c.initiatedByMe

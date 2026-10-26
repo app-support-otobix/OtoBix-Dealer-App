@@ -287,6 +287,18 @@ class AppUrls {
   static String dealerExchangeQuickOffer(String id) =>
       "${_dealerMembership}exchange/cars/$id/offer";
 
+  // Customer inventory: Premium Listing cars
+  static String dealerCustomerCars(Map<String, String> query) =>
+      Uri.parse(
+        "${_dealerMembership}exchange/customer-cars",
+      ).replace(queryParameters: query).toString();
+
+  static String dealerCustomerCarReport(String id) =>
+      "${_dealerMembership}exchange/customer-cars/$id/inspection-report";
+
+  static String dealerCustomerCarOffer(String id) =>
+      "${_dealerMembership}exchange/customer-cars/$id/offer";
+
   static String get dealerRequirements => "${_dealerMembership}requirements";
 
   static String dealerRequirement(String id) =>
@@ -343,6 +355,9 @@ class AppUrls {
 
   static String dealerConnectionCancel(String id) =>
       "${_dealerMembership}connections/$id/cancel";
+
+  static String dealerConnectionVerifyPayment(String id) =>
+      "${_dealerMembership}connections/$id/verify-payment";
 
   static String dealerDealRooms({required int page, required int limit}) =>
       "${_dealerMembership}deal-rooms?page=$page&limit=$limit";

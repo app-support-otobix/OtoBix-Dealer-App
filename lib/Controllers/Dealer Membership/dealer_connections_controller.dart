@@ -1,13 +1,17 @@
 import 'package:get/get.dart';
 import 'package:otobix/Controllers/Dealer%20Membership/dealer_membership_controller.dart';
 import 'package:otobix/Controllers/Dealer%20Membership/dealer_paged_list.dart';
+import 'package:otobix/Controllers/razorpay_payment_controller.dart';
 import 'package:otobix/Models/Dealer%20Membership/dealer_connection_model.dart';
 import 'package:otobix/Models/Dealer%20Membership/dealer_deal_room_model.dart';
 import 'package:otobix/Network/dealer_membership_api.dart';
 import 'package:otobix/Network/socket_service.dart';
+import 'package:otobix/Services/razorpay_payment_service.dart';
+import 'package:otobix/Utils/app_constants.dart';
 import 'package:otobix/Utils/app_urls.dart';
 import 'package:otobix/Utils/socket_events.dart';
 import 'package:otobix/Widgets/toast_widget.dart';
+import 'package:otobix/helpers/shared_prefs_helper.dart';
 
 class DealerConnectionsController extends GetxController {
   static DealerConnectionsController get to =>
@@ -99,7 +103,7 @@ class DealerConnectionsController extends GetxController {
     () => _connection(
       () => DealerMembershipApi.post(AppUrls.dealerConnectionRequest, target),
     ),
-    success: 'Request sent · points reserved',
+    success: 'Request sent',
   );
 
   Future<DealerConnectionModel?> respond(String id, {required bool accept}) =>
@@ -116,7 +120,61 @@ class DealerConnectionsController extends GetxController {
     () => _connection(
       () => DealerMembershipApi.post(AppUrls.dealerConnectionCancel(id)),
     ),
-    success: 'Request withdrawn · points released',
+    success: 'Request withdrawn',
+  );
+
+  /// Premium Listing: once the car owner accepts, pays through the app's
+  /// shared Razorpay flow; the server checks the payment with Razorpay, then
+  /// opens the Deal Room with the owner's name and phone.
+  Future<DealerConnectionModel?> pay(DealerConnectionModel c) => _act(
+    () async {
+      final userId =
+          await SharedPrefsHelper.getString(SharedPrefsHelper.userIdKey) ?? '';
+      final payment =
+          Get.isRegistered<RazorpayPaymentController>()
+              ? Get.find<RazorpayPaymentController>()
+              : Get.put(RazorpayPaymentController());
+      final PaymentSuccessData success;
+      try {
+        success = await payment.pay(
+          amountRupees: c.priceRupees.toDouble(),
+          name: AppConstants.appDisplayName,
+          description: 'Connect with the owner · ${c.carTitle}',
+          email:
+              await SharedPrefsHelper.getString(
+                SharedPrefsHelper.userEmailKey,
+              ) ??
+              '',
+          phone:
+              await SharedPrefsHelper.getString(
+                SharedPrefsHelper.userPhoneNumberKey,
+              ) ??
+              '',
+          notes: {
+            'purpose': 'premium_listing_connection',
+            'userId': userId,
+            'connectionId': c.id,
+          },
+          receipt: 'premium_connection_${DateTime.now().millisecondsSinceEpoch}',
+          userId: userId,
+          meta: {'connectionId': c.id},
+        );
+      } catch (e) {
+        _toast(
+          'Payment not completed',
+          e.toString().replaceAll('Exception: ', ''),
+          ToastType.error,
+        );
+        return null;
+      }
+      return _connection(
+        () => DealerMembershipApi.post(
+          AppUrls.dealerConnectionVerifyPayment(c.id),
+          success.toJson(),
+        ),
+      );
+    },
+    success: 'Paid · Deal Room open',
   );
 
   Future<DealerDealRoomModel?> getDealRoom(String id) =>
@@ -182,9 +240,18 @@ class DealerConnectionsController extends GetxController {
     }
   }
 
-  void _toast(String title) {
+  void _toast(
+    String title, [
+    String subtitle = '',
+    ToastType type = ToastType.success,
+  ]) {
     final context = Get.context;
     if (context == null) return;
-    ToastWidget.show(context: context, title: title, type: ToastType.success);
+    ToastWidget.show(
+      context: context,
+      title: title,
+      subtitle: subtitle,
+      type: type,
+    );
   }
 }

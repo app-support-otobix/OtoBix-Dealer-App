@@ -13,6 +13,15 @@ class DealerPartyModel {
 
   bool get isRevealed => name.isNotEmpty;
 
+  /// Before the connection: dealer code and type (a Premium Listing car's
+  /// owner has no code, only "Car owner").
+  String get anonymousLabel =>
+      [dealerCode, dealerType].where((s) => s.isNotEmpty).join(' · ');
+
+  /// Their name once revealed, else their dealer code (or "Car owner").
+  String get label =>
+      isRevealed ? name : (dealerCode.isNotEmpty ? dealerCode : dealerType);
+
   DealerPartyModel.fromJson(Map<String, dynamic>? j)
     : dealerCode = _str(j?['dealerCode']),
       dealerType = _str(j?['dealerType']),
@@ -50,14 +59,22 @@ class DealerNegotiationModel {
   final String connectionStatus;
   final bool connectionInitiatedByMe;
   final DateTime? connectionExpiresAt;
+  // Premium Listing: what I pay once the car owner accepts.
+  final int connectionPriceRupees;
   final String dealRoomId;
+  final String carSource; // DEALER | PREMIUM_LISTING
 
   bool get isBuyer => role == 'BUYER';
   bool get awaitsMyReply => displayStatus == 'ACTION NEEDED';
   bool get hasPendingConnection => connectionStatus == 'PENDING';
+  // The car owner accepted my request; I pay to see their name and phone.
+  bool get awaitsMyPayment =>
+      connectionStatus == 'PAYMENT_DUE' && connectionInitiatedByMe;
 
   DealerNegotiationModel.fromJson(Map<String, dynamic> j)
     : id = _str(j['id']),
+      carSource = _str(j['carSource']),
+      connectionPriceRupees = _int(j['connection']?['priceRupees']),
       negotiationCode = _str(j['negotiationCode']),
       role = _str(j['role']),
       carId = _str(j['car']?['id']),

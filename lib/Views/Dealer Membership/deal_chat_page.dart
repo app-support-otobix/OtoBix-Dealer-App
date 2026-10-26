@@ -138,7 +138,7 @@ class _DealChatPageState extends State<DealChatPage> {
     final other =
         n.counterpart.isRevealed
             ? n.counterpart.name
-            : '${n.counterpart.dealerCode} · ${n.counterpart.dealerType}';
+            : n.counterpart.anonymousLabel;
     return Padding(
       padding: const EdgeInsets.fromLTRB(14, 10, 14, 6),
       child: Row(
@@ -210,6 +210,11 @@ class _DealChatPageState extends State<DealChatPage> {
       action = _stripButton(
         'Review Offer',
         () => DealerMembershipNavigator.openReviewOffer(n.id),
+      );
+    } else if (n.awaitsMyPayment) {
+      action = _stripButton(
+        'Pay ${GlobalFunctions.formatRupees(n.connectionPriceRupees)}',
+        () => DealerMembershipNavigator.openConnection(n.connectionId),
       );
     } else if (n.hasPendingConnection) {
       action = Text(

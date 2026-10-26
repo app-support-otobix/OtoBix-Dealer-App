@@ -18,14 +18,19 @@ class DealerConnectionModel {
   final DealerPartyModel counterpart;
   final String status;
   final int pointsPerSide;
+  // Premium Listing: paid once the car owner accepts (no points).
+  final int priceRupees;
   final DateTime? requestedAt;
   final DateTime? expiresAt;
   final String dealRoomId;
 
   bool get isPending => status == 'PENDING';
+  bool get isPremiumListing => priceRupees > 0;
+  bool get isPaymentDue => status == 'PAYMENT_DUE';
 
   DealerConnectionModel.fromJson(Map<String, dynamic> j)
     : id = _str(j['id']),
+      priceRupees = _int(j['priceRupees']),
       connectionCode = _str(j['connectionCode']),
       negotiationId = _str(j['negotiationId']),
       carId = _str(j['car']?['id']),
@@ -51,6 +56,7 @@ class DealerConnectionPrecheckModel {
   final String planName;
   final int availablePoints;
   final int cost;
+  final int priceRupees; // Premium Listing: paid once the owner accepts
   final int expiryHours;
   final bool listingActive;
   final int pendingByMe;
@@ -65,6 +71,7 @@ class DealerConnectionPrecheckModel {
       planName = _str(j['planName']),
       availablePoints = _int(j['availablePoints']),
       cost = _int(j['cost']),
+      priceRupees = _int(j['priceRupees']),
       expiryHours = _int(j['expiryHours']),
       listingActive = j['listingActive'] == true,
       pendingByMe = _int(j['pendingByMe']),
