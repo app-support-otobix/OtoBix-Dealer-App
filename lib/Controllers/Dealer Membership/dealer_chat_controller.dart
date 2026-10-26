@@ -14,6 +14,10 @@ class DealerChatController extends GetxController {
   final String negotiationId;
   DealerChatController(this.negotiationId);
 
+  // Chats on screen now (once per open page), so a push for one of them is
+  // not shown on top of the message already arriving in it.
+  static final openChats = <String>[];
+
   final negotiation = Rxn<DealerNegotiationModel>();
   final messages = <DealerMessageModel>[].obs;
   final isLoading = false.obs;
@@ -30,6 +34,7 @@ class DealerChatController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    openChats.add(negotiationId);
     SocketService.instance.on(SocketEvents.dealerMessageCreated, _onMessage);
     SocketService.instance.on(
       SocketEvents.dealerNegotiationUpdated,
@@ -40,6 +45,7 @@ class DealerChatController extends GetxController {
 
   @override
   void onClose() {
+    openChats.remove(negotiationId);
     SocketService.instance.off(SocketEvents.dealerMessageCreated, _onMessage);
     SocketService.instance.off(
       SocketEvents.dealerNegotiationUpdated,
