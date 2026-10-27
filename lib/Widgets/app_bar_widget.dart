@@ -11,6 +11,7 @@ class AppBarWidget extends StatelessWidget implements PreferredSizeWidget {
   final Color titleColor;
   final double elevation;
   final double? titleSpacing;
+  final IconData? titleIcon;
 
   const AppBarWidget({
     super.key,
@@ -23,6 +24,7 @@ class AppBarWidget extends StatelessWidget implements PreferredSizeWidget {
     this.titleColor = AppColors.green,
     this.elevation = 2,
     this.titleSpacing,
+    this.titleIcon,
   });
 
   @override
@@ -31,14 +33,26 @@ class AppBarWidget extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      title: Text(
-        title,
-        style: TextStyle(
-          color: titleColor,
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
-          letterSpacing: 0.5,
-        ),
+      title: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (titleIcon != null) ...[
+            Icon(titleIcon, color: titleColor, size: 20),
+            const SizedBox(width: 8),
+          ],
+          Flexible(
+            child: Text(
+              title,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: titleColor,
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ),
+        ],
       ),
       leading:
           showBackButton

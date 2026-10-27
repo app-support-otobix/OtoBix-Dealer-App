@@ -7,6 +7,7 @@ import 'package:otobix/Network/api_service.dart';
 import 'package:otobix/Services/auction_countdown_for_notification_car.dart';
 import 'package:otobix/Utils/app_constants.dart';
 import 'package:otobix/Utils/app_urls.dart';
+import 'package:otobix/Views/Dealer%20Membership/dealer_membership_navigator.dart';
 import 'package:otobix/Views/Dealer%20Panel/car_details_page.dart';
 import 'package:otobix/Widgets/toast_widget.dart';
 
@@ -16,6 +17,7 @@ class NotificationRoutes {
   static const String carAddedInLive = 'carAddedInLive';
   static const String carAddedInOtobuy = 'carAddedInOtobuy';
   static const String userOutbidOnCar = 'userOutbidOnCar';
+  static const String dealerMembership = 'dealerMembership';
 }
 
 class NotificationRouter {
@@ -33,6 +35,16 @@ class NotificationRouter {
     final parametersForScreen = Map<String, dynamic>.from(
       data['parametersForScreen'] ?? {},
     );
+
+    if (navigateToScreen == NotificationRoutes.dealerMembership) {
+      Future.microtask(
+        () => DealerMembershipNavigator.openTarget(
+          '${parametersForScreen['targetType'] ?? ''}',
+          '${parametersForScreen['targetId'] ?? ''}',
+        ),
+      );
+      return;
+    }
 
     final Widget? page = await _buildPage(
       navigateToScreen,

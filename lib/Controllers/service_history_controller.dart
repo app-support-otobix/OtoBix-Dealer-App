@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:open_filex/open_filex.dart';
+import 'package:otobix/Controllers/Dealer%20Membership/dealer_membership_controller.dart';
 import 'package:otobix/Models/service_history_reports_model.dart';
 import 'package:otobix/Network/api_service.dart';
 import 'package:otobix/Services/user_activity_log_service.dart';
@@ -87,6 +88,8 @@ class ServiceHistoryController extends GetxController {
 
   // Fetch service history
   Future<void> fetchServiceHistory() async {
+    // No new reports in the grace period; the ones bought stay listed.
+    if (!DealerMembershipController.to.requireServiceHistory()) return;
     final reg = registrationController.text.trim();
     if (reg.isEmpty) {
       ToastWidget.show(
