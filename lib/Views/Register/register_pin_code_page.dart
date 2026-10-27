@@ -134,7 +134,6 @@ class RegisterPinCodePage extends StatelessWidget {
             pinCodeFieldsController.verifyOtp(
               requestId: requestId,
               otp: otpValue,
-              phoneNumber: phoneNumber,
             );
           },
           onChanged: (otpValue) {},

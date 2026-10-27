@@ -12,17 +12,13 @@ import 'package:otobix/Widgets/dropdown_widget.dart';
 
 class RegistrationFormPage extends StatelessWidget {
   final String userRole;
-  final String phoneNumber;
   final String verificationToken;
 
   RegistrationFormPage({
     super.key,
     required this.userRole,
-    required this.phoneNumber,
     required this.verificationToken,
-  }) {
-    getxController.setPhoneNumber(phoneNumber);
-  }
+  });
 
   final RegistrationFormController getxController = Get.put(
     RegistrationFormController(),
@@ -90,15 +86,6 @@ class RegistrationFormPage extends StatelessWidget {
                       ],
                       _buildLocationDropdown(),
                       SizedBox(height: 20),
-                      _buildCustomTextField(
-                        icon: Icons.phone_android,
-                        label: "Phone Number",
-                        controller: getxController.phoneNumberController,
-                        hintText: "Your verified number",
-                        keyboardType: TextInputType.phone,
-                        isRequired: true,
-                        readOnly: true,
-                      ),
                       _buildCustomTextField(
                         icon: Icons.email,
                         label: "Email",
@@ -495,12 +482,10 @@ class RegistrationFormPage extends StatelessWidget {
     Function(String?)? validator,
     Function(String)? onChanged,
     bool maxLengthTen = false,
-    bool readOnly = false,
   }) {
     Widget buildField({required bool obscure}) {
       return TextFormField(
         controller: controller,
-        readOnly: readOnly,
         keyboardType: keyboardType,
         obscureText: isPassword && obscureText != null ? obscure : false,
         maxLength: maxLengthTen ? 10 : null,
@@ -819,7 +804,6 @@ class RegistrationFormPage extends StatelessWidget {
     onTap:
         () => getxController.showTermsAndConditionsThenSubmit(
           userRole: userRole,
-          contactNumber: phoneNumber,
           verificationToken: verificationToken,
         ),
     height: 40,
