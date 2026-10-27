@@ -5,8 +5,7 @@ class AppConstants {
   static const DeploymentEnvironment deploymentEnvironment =
       DeploymentEnvironment.prod;
 
-  static const String appCheckDebugToken =
-      '3DD4FF19-5B1F-41EF-9CA4-28AA9FB0AC21';
+  static const String appCheckDebugToken = 'asdf';
 
   // Other constant classes
   static final Roles roles = Roles();
