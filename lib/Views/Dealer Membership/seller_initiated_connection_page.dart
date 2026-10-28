@@ -170,7 +170,7 @@ class _SellerInitiatedConnectionPageState
                 onPressed: () async {
                   await DealerMembershipNavigator.openRequestConnection(
                     carId: widget.car.id,
-                    buyerDealerCode: c.dealerCode,
+                    buyerRef: c.buyerRef,
                   );
                   _load();
                 },
