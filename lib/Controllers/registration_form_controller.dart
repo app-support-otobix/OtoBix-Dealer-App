@@ -22,7 +22,6 @@ class RegistrationFormController extends GetxController {
     dealerEmailController.clear();
     dealershipNameController.clear();
     primaryContactPersonController.clear();
-    phoneNumberController.clear();
     secondaryContactPersonController.clear();
     addressControllers.clear();
     addressPlaces.clear();
@@ -54,7 +53,6 @@ class RegistrationFormController extends GetxController {
     dealerEmailController.dispose();
     dealershipNameController.dispose();
     primaryContactPersonController.dispose();
-    phoneNumberController.dispose();
     secondaryContactPersonController.dispose();
     passwordController.dispose();
     for (var controller in addressControllers) {
@@ -98,7 +96,6 @@ class RegistrationFormController extends GetxController {
       TextEditingController();
   final TextEditingController primaryContactPersonController =
       TextEditingController();
-  final TextEditingController phoneNumberController = TextEditingController();
   final TextEditingController secondaryContactPersonController =
       TextEditingController();
 
@@ -146,17 +143,6 @@ class RegistrationFormController extends GetxController {
     update();
   }
 
-  // The number verified by OTP, shown read-only: the server registers the
-  // account (and the dealer's contact number) on it.
-  void setPhoneNumber(String phoneNumber) {
-    final digits = phoneNumber.replaceAll(RegExp(r'[^0-9]'), '');
-    final number =
-        digits.length >= 10 ? digits.substring(digits.length - 10) : digits;
-    if (phoneNumberController.text != number) {
-      phoneNumberController.text = number;
-    }
-  }
-
   void addAddressField() {
     addressControllers.add(TextEditingController());
     update();
@@ -169,7 +155,6 @@ class RegistrationFormController extends GetxController {
 
   Future<void> submitForm({
     required String userRole,
-    required String contactNumber,
     required String verificationToken,
   }) async {
     try {
@@ -199,8 +184,8 @@ class RegistrationFormController extends GetxController {
 
       isLoading.value = true;
 
-      // No user name, password or contact numbers: sign-in is by OTP, and the
-      // server names the account and uses the verified number.
+      // No user name, password or phone number: sign-in is by OTP, and the
+      // server names the account and takes the number from the verified OTP.
       final userModel = UserModel(
         userRole: userRole,
         location: selectedState ?? "",
@@ -210,7 +195,7 @@ class RegistrationFormController extends GetxController {
         entityType: selectedEntityType ?? "",
         primaryContactPerson: primaryContactPersonController.text.trim(),
         password: '',
-        phoneNumber: contactNumber,
+        phoneNumber: '',
         secondaryContactPerson:
             secondaryContactPersonController.text.isEmpty
                 ? null
@@ -340,7 +325,6 @@ class RegistrationFormController extends GetxController {
   /// Call this from the Submit button.
   Future<void> showTermsAndConditionsThenSubmit({
     required String userRole,
-    required String contactNumber,
     required String verificationToken,
   }) async {
     // 1) run same validations you already have
@@ -391,11 +375,7 @@ class RegistrationFormController extends GetxController {
 
     // If no terms & conditions found in database, submit form directly
     if (html.trim().isEmpty) {
-      submitForm(
-        userRole: userRole,
-        contactNumber: contactNumber,
-        verificationToken: verificationToken,
-      );
+      submitForm(userRole: userRole, verificationToken: verificationToken);
       return;
     }
 
@@ -405,11 +385,7 @@ class RegistrationFormController extends GetxController {
         title: title,
         html: html,
         onAgree: () {
-          submitForm(
-            userRole: userRole,
-            contactNumber: contactNumber,
-            verificationToken: verificationToken,
-          );
+          submitForm(userRole: userRole, verificationToken: verificationToken);
         },
       ),
       isScrollControlled: true, // allow tall sheet

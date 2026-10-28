@@ -369,11 +369,12 @@ class _DealerHomePageState extends State<DealerHomePage> {
       child: InkWell(
         onTap: DealerMembershipNavigator.openAddCustomerCar,
         borderRadius: BorderRadius.circular(14),
-        child: Container(
+        // Ink, not Container, so the tap ripple shows on the solid green.
+        child: Ink(
           width: double.infinity,
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppColors.green.withValues(alpha: 0.1),
+            color: AppColors.green,
             borderRadius: BorderRadius.circular(14),
           ),
           child: const Column(
@@ -382,15 +383,16 @@ class _DealerHomePageState extends State<DealerHomePage> {
               Text(
                 'Gaadi Ka Deal Karo Fix, With OtoBix',
                 style: TextStyle(
+                  fontFamily: 'Montserrat',
                   fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                  color: AppColors.green,
+                  fontSize: 16.2,
+                  color: AppColors.white,
                 ),
               ),
               SizedBox(height: 4),
               Text(
                 'Verified buyers · instant payment',
-                style: TextStyle(fontSize: 12, color: AppColors.black),
+                style: TextStyle(fontSize: 12, color: AppColors.white),
               ),
             ],
           ),
