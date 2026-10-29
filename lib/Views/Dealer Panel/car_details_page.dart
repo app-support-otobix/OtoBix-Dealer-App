@@ -756,10 +756,13 @@ class _CarDetailsPageState extends State<CarDetailsPage> {
                 Obx(() {
                   final highestBid = highestBidValue.value;
                   final baseBid = widget.car.priceDiscovery * 0.75;
+                  final double actualIncomingBidFromBackend =
+                      widget.car.highestBid.value;
 
                   // use tolerance for floating-point check
-                  final isAnyoneHavePlacedBidYet =
-                      (highestBid - baseBid).abs() > 0.01;
+                  // final isAnyoneHavePlacedBidYet = (highestBid - baseBid).abs() > 0.01;
+                  final bool isAnyoneHavePlacedBidYet =
+                      actualIncomingBidFromBackend > 0;
 
                   final color =
                       widget.currentOpenSection ==
@@ -776,7 +779,6 @@ class _CarDetailsPageState extends State<CarDetailsPage> {
                           );
 
                   return Text(
-                    // 'Rs. ${NumberFormat.decimalPattern('en_IN').format(isAnyoneHavePlacedBidYet ? highestBidValue.value : 0)}/-',
                     'Rs. ${NumberFormat.decimalPattern('en_IN').format(GlobalFunctions.roundToNearestThousand<int>(isAnyoneHavePlacedBidYet ? highestBidValue.value : 0))}/-',
                     key: ValueKey(
                       isAnyoneHavePlacedBidYet ? highestBidValue.value : 0,
