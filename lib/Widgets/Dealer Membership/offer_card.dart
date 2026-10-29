@@ -111,8 +111,8 @@ class NegotiationPricesRow extends StatelessWidget {
   }
 }
 
-/// Who the other dealer is: their dealer code (their name once connected),
-/// dealer type and city.
+/// Who the other dealer is: their masked dealer code (their name and full code
+/// once the connection for this car is accepted), dealer type and city.
 class DealerPartyTile extends StatelessWidget {
   final DealerPartyModel party;
   const DealerPartyTile({super.key, required this.party});

@@ -155,7 +155,7 @@ class _FindCarsTabState extends State<_FindCarsTab> {
                     onSubmitted: _submitSearch,
                     decoration: InputDecoration(
                       isDense: true,
-                      hintText: 'Search registration, make, model, dealer ID',
+                      hintText: 'Search registration, make, model',
                       hintStyle: TextStyle(
                         color: AppColors.grey.withValues(alpha: 0.7),
                         fontSize: 12,

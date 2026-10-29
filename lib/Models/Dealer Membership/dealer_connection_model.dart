@@ -83,7 +83,9 @@ class DealerConnectionPrecheckModel {
 }
 
 class DealerConnectionCandidateModel {
-  final String dealerCode;
+  final String dealerCode; // masked, e.g. DLR-•••••
+  // Names this buyer for this car only, when the seller requests a connection.
+  final String buyerRef;
   final String dealerType;
   final String city;
   final int matchPercent;
@@ -92,6 +94,7 @@ class DealerConnectionCandidateModel {
 
   DealerConnectionCandidateModel.fromJson(Map<String, dynamic> j)
     : dealerCode = _str(j['dealerCode']),
+      buyerRef = _str(j['buyerRef']),
       dealerType = _str(j['dealerType']),
       city = _str(j['city']),
       matchPercent = _int(j['matchPercent']),

@@ -13,8 +13,8 @@ class DealerPartyModel {
 
   bool get isRevealed => name.isNotEmpty;
 
-  /// Before the connection: dealer code and type (a Premium Listing car's
-  /// owner has no code, only "Car owner").
+  /// Before the connection: the masked dealer code and type (a Premium
+  /// Listing car's owner has no code, only "Car owner").
   String get anonymousLabel =>
       [dealerCode, dealerType].where((s) => s.isNotEmpty).join(' · ');
 
