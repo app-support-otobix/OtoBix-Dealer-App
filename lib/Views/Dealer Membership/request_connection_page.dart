@@ -13,14 +13,14 @@ class RequestConnectionPage extends StatefulWidget {
   final String negotiationId;
   final String connectionId;
   final String carId;
-  final String buyerDealerCode;
+  final String buyerRef;
 
   const RequestConnectionPage({
     super.key,
     this.negotiationId = '',
     this.connectionId = '',
     this.carId = '',
-    this.buyerDealerCode = '',
+    this.buyerRef = '',
   });
 
   @override
@@ -36,7 +36,7 @@ class _RequestConnectionPageState extends State<RequestConnectionPage> {
   Map<String, String> get _target =>
       widget.negotiationId.isNotEmpty
           ? {'negotiationId': widget.negotiationId}
-          : {'carId': widget.carId, 'buyerDealerCode': widget.buyerDealerCode};
+          : {'carId': widget.carId, 'buyerRef': widget.buyerRef};
 
   @override
   void initState() {

@@ -386,13 +386,13 @@ class DealerMembershipNavigator {
   static Future<void> openRequestConnection({
     String negotiationId = '',
     String carId = '',
-    String buyerDealerCode = '',
+    String buyerRef = '',
   }) async {
     await Get.to(
       () => RequestConnectionPage(
         negotiationId: negotiationId,
         carId: carId,
-        buyerDealerCode: buyerDealerCode,
+        buyerRef: buyerRef,
       ),
     );
   }
