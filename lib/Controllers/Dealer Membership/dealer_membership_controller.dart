@@ -445,6 +445,8 @@ class DealerMembershipController extends GetxController {
       _showUpgradeDialog(
         m.trialScheduled
             ? 'Your free trial starts on ${DateFormat('dd-MM-yyyy').format(m.trialStartDate!)}.'
+            : m.trialQueued
+            ? 'Your free Promo Membership is queued. OtoBix will let you know when it starts.'
             : 'Your membership has ended. Upgrade to continue.',
       );
       return false;

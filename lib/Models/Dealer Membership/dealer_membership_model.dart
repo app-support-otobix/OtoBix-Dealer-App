@@ -252,6 +252,9 @@ class DealerMembershipModel {
   // not begun yet: the first and last day (local dates). Null otherwise.
   final DateTime? trialStartDate;
   final DateTime? trialEndDate;
+  // Where the dealer stands with the free Promo trial: NOT_SET (no dates yet),
+  // SCHEDULED, DUE, RUNNING, MISSED or ENDED; empty for brokers.
+  final String trialStatus;
   final int cycleNumber;
   final DateTime? cycleStartAt;
   final DateTime? cycleEndAt;
@@ -273,6 +276,10 @@ class DealerMembershipModel {
   bool get isActive => status == active || status == grace;
   bool get isGrace => status == grace;
   bool get trialScheduled => trialStartDate != null;
+  // Waiting for the free Promo trial, with 0 points: OtoBix has not set its
+  // dates yet, or they have not begun.
+  bool get trialQueued =>
+      !isActive && const ['NOT_SET', 'SCHEDULED', 'DUE'].contains(trialStatus);
   // Brokers see Sell (My Customer's Inventory) and Membership only.
   bool get isBroker => plan?.isBroker ?? false;
   bool moduleEnabled(String code) => modules[code] ?? true;
@@ -302,6 +309,8 @@ class DealerMembershipModel {
               : null,
       trialStartDate = _scheduledTrialDay(j['promoTrial'], 'startDate'),
       trialEndDate = _scheduledTrialDay(j['promoTrial'], 'endDate'),
+      trialStatus =
+          j['promoTrial'] is Map ? _str(j['promoTrial']['status']) : '',
       cycleNumber = _int(j['cycleNumber']),
       cycleStartAt = _date(j['cycleStartAt']),
       cycleEndAt = _date(j['cycleEndAt']),
