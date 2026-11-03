@@ -420,10 +420,21 @@ class DealerMembershipController extends GetxController {
       membership.value = DealerMembershipModel.fromJson(
         Map<String, dynamic>.from(data),
       );
+      // A plan bought while another runs waits for it to end.
+      final waiting =
+          (membership.value?.queuedPlans ?? const <DealerQueuedPlanModel>[])
+              .where((q) => q.planCode == plan.code && q.startDate != null)
+              .toList();
       _toast(
-        isTopUp ? 'Points added' : 'Membership active',
+        isTopUp
+            ? 'Points added'
+            : waiting.isNotEmpty
+            ? '${waiting.last.name} bought'
+            : 'Membership active',
         isTopUp
             ? 'Use them until your current cycle ends.'
+            : waiting.isNotEmpty
+            ? 'It starts on ${DateFormat('dd-MM-yyyy').format(waiting.last.startDate!)}, when your current plan ends.'
             : 'Your points have been allocated.',
         ToastType.success,
       );

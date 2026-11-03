@@ -113,10 +113,6 @@ class DealerMembershipConfigModel {
   final List<String> fuelTypes;
   final List<String> transmissions;
   final Map<String, int> serviceCosts;
-
-  /// Most of a Service History report's price points can pay (0.5 = half);
-  /// the rest is paid online.
-  final double serviceHistoryPointsShare;
   final int connectionPoints;
   final int connectionExpiryHours;
   final int maxCarImages;
@@ -150,8 +146,6 @@ class DealerMembershipConfigModel {
             in Map<String, dynamic>.from(j['serviceCosts'] ?? {}).entries)
           e.key: _int(e.value),
       },
-      serviceHistoryPointsShare =
-          (j['serviceHistoryPointsShare'] as num?)?.toDouble() ?? 0,
       connectionPoints = _int(j['connection']?['pointsPerSide']),
       connectionExpiryHours = _int(j['connection']?['expiryHours']),
       maxCarImages = _int(j['maxCarImages']),
@@ -228,6 +222,22 @@ class DealerPendingPaymentModel {
       requestedAt = _date(j['requestedAt']);
 }
 
+/// A plan bought during the current cycle. It waits for that cycle (and any
+/// plan bought before it) to end, then starts with its own points.
+class DealerQueuedPlanModel {
+  final String planCode;
+  final String name;
+  // Days in India, sent as YYYY-MM-DD and read as local dates.
+  final DateTime? startDate;
+  final DateTime? endDate;
+
+  DealerQueuedPlanModel.fromJson(Map<String, dynamic> j)
+    : planCode = _str(j['planCode']),
+      name = _str(j['name']),
+      startDate = DateTime.tryParse(_str(j['startDate'])),
+      endDate = DateTime.tryParse(_str(j['endDate']));
+}
+
 class DealerMembershipModel {
   static const active = 'ACTIVE';
   static const grace = 'GRACE';
@@ -265,6 +275,8 @@ class DealerMembershipModel {
   final int availablePoints;
   // Points added by top-ups this cycle (already in availablePoints).
   final int topUpPoints;
+  // Plans bought during this cycle, each starting when the one before ends.
+  final List<DealerQueuedPlanModel> queuedPlans;
   final int activeListings;
   final List<DealerUsageModel> usage;
   final DealerPendingPaymentModel? pendingPayment;
@@ -320,6 +332,8 @@ class DealerMembershipModel {
       showRenewalWarning = j['showRenewalWarning'] == true,
       availablePoints = _int(j['availablePoints']),
       topUpPoints = _int(j['topUpPoints']),
+      queuedPlans =
+          _maps(j['queuedPlans']).map(DealerQueuedPlanModel.fromJson).toList(),
       activeListings = _int(j['activeListings']),
       usage = _maps(j['usage']).map(DealerUsageModel.fromJson).toList(),
       pendingPayment =
