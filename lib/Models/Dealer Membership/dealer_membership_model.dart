@@ -222,16 +222,16 @@ class DealerPendingPaymentModel {
       requestedAt = _date(j['requestedAt']);
 }
 
-/// A plan bought during the current cycle. It waits for that cycle (and any
-/// plan bought before it) to end, then starts with its own points.
-class DealerQueuedPlanModel {
+/// A plan the dealer is running. Plans stack: one bought while another runs
+/// adds its points and allowances, and each ends on its own date.
+class DealerRunningPlanModel {
   final String planCode;
   final String name;
-  // Days in India, sent as YYYY-MM-DD and read as local dates.
+  // Days in India, sent as YYYY-MM-DD and read as local dates; endDate is its last day.
   final DateTime? startDate;
   final DateTime? endDate;
 
-  DealerQueuedPlanModel.fromJson(Map<String, dynamic> j)
+  DealerRunningPlanModel.fromJson(Map<String, dynamic> j)
     : planCode = _str(j['planCode']),
       name = _str(j['name']),
       startDate = DateTime.tryParse(_str(j['startDate'])),
@@ -275,8 +275,9 @@ class DealerMembershipModel {
   final int availablePoints;
   // Points added by top-ups this cycle (already in availablePoints).
   final int topUpPoints;
-  // Plans bought during this cycle, each starting when the one before ends.
-  final List<DealerQueuedPlanModel> queuedPlans;
+  // The plans running now; more than one when a plan was bought while
+  // another ran (their points and allowances add up).
+  final List<DealerRunningPlanModel> plans;
   final int activeListings;
   final List<DealerUsageModel> usage;
   final DealerPendingPaymentModel? pendingPayment;
@@ -332,8 +333,7 @@ class DealerMembershipModel {
       showRenewalWarning = j['showRenewalWarning'] == true,
       availablePoints = _int(j['availablePoints']),
       topUpPoints = _int(j['topUpPoints']),
-      queuedPlans =
-          _maps(j['queuedPlans']).map(DealerQueuedPlanModel.fromJson).toList(),
+      plans = _maps(j['plans']).map(DealerRunningPlanModel.fromJson).toList(),
       activeListings = _int(j['activeListings']),
       usage = _maps(j['usage']).map(DealerUsageModel.fromJson).toList(),
       pendingPayment =
