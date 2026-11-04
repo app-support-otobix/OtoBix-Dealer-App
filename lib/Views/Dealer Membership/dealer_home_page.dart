@@ -366,35 +366,38 @@ class _DealerHomePageState extends State<DealerHomePage> {
     }
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
-      child: InkWell(
-        onTap: DealerMembershipNavigator.openAddCustomerCar,
+      // Its own Material, so the green and the tap ripple move with the banner.
+      // An Ink here painted on the page's Material, which does not repaint when
+      // the membership card loads above and pushes the banner down: the green
+      // stayed behind under the card and the white text went onto white.
+      child: Material(
+        color: AppColors.green,
         borderRadius: BorderRadius.circular(14),
-        // Ink, not Container, so the tap ripple shows on the solid green.
-        child: Ink(
-          width: double.infinity,
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: AppColors.green,
-            borderRadius: BorderRadius.circular(14),
-          ),
-          child: const Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Gaadi Ka Deal Karo Fix, With OtoBix',
-                style: TextStyle(
-                  fontFamily: 'Montserrat',
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16.2,
-                  color: AppColors.white,
+        child: InkWell(
+          onTap: DealerMembershipNavigator.openAddCustomerCar,
+          borderRadius: BorderRadius.circular(14),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            child: const Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Gaadi Ka Deal Karo Fix, With OtoBix',
+                  style: TextStyle(
+                    fontFamily: 'Montserrat',
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16.2,
+                    color: AppColors.white,
+                  ),
                 ),
-              ),
-              SizedBox(height: 4),
-              Text(
-                'Verified buyers · instant payment',
-                style: TextStyle(fontSize: 12, color: AppColors.white),
-              ),
-            ],
+                SizedBox(height: 4),
+                Text(
+                  'Verified buyers · instant payment',
+                  style: TextStyle(fontSize: 12, color: AppColors.white),
+                ),
+              ],
+            ),
           ),
         ),
       ),

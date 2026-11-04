@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:otobix/Models/place_model.dart';
+import 'package:otobix/Network/dealer_membership_api.dart';
 import 'package:otobix/Network/places_api.dart';
 import 'package:otobix/Utils/app_colors.dart';
 
@@ -49,8 +50,23 @@ class _AddressSearchFieldState extends State<AddressSearchField> {
   String _lastText = '';
   String _pickedText = ''; // what a pick put in the field; not searched again
   List<PlaceSuggestionModel> _options = const [];
+  // Why there is no list: the search failed or found nothing. Empty otherwise.
+  String _note = '';
   bool _located = false;
   bool _fetchingPlace = false;
+
+  static const _unavailable =
+      'Address suggestions are not available right now. Please type the address.';
+
+  // The server's reason when it gave one, else [fallback].
+  static String _reason(Object error, String fallback) =>
+      error is DealerApiException && error.message.isNotEmpty
+          ? error.message
+          : fallback;
+
+  void _setNote(String note) {
+    if (mounted && note != _note) setState(() => _note = note);
+  }
 
   @override
   void initState() {
@@ -86,6 +102,7 @@ class _AddressSearchFieldState extends State<AddressSearchField> {
     if (text == _lastText) return; // only the cursor moved
     _lastText = text;
     _debounce?.cancel();
+    _setNote('');
     if (text.trim().isEmpty && _located) {
       setState(() {
         _located = false;
@@ -108,17 +125,24 @@ class _AddressSearchFieldState extends State<AddressSearchField> {
   Future<void> _suggest(String text) async {
     final search = ++_search;
     List<PlaceSuggestionModel> found;
+    String note;
     try {
       found = await PlacesApi.suggest(
         text,
         sessionToken: _session,
         otpVerificationToken: widget.otpVerificationToken,
       );
+      note =
+          found.isEmpty
+              ? 'No matching places. Try the area or street name, or type the full address.'
+              : '';
     } catch (e) {
       debugPrint('Address suggestions unavailable: $e');
       found = const [];
+      note = _reason(e, _unavailable);
     }
     if (!mounted || search != _search || !_focusNode.hasFocus) return;
+    _setNote(note);
     _showOptions(found);
   }
 
@@ -165,6 +189,12 @@ class _AddressSearchFieldState extends State<AddressSearchField> {
       }
     } catch (e) {
       debugPrint('Address details unavailable: $e');
+      _setNote(
+        _reason(
+          e,
+          'That address could not be loaded. Please pick it again or type the address.',
+        ),
+      );
     } finally {
       _session = PlacesApi.newSessionToken(); // the details call ends a session
       if (mounted) setState(() => _fetchingPlace = false);
@@ -273,6 +303,14 @@ class _AddressSearchFieldState extends State<AddressSearchField> {
                   ),
                 ],
               ),
+            ),
+          ),
+        if (_note.isNotEmpty && _options.isEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 4, left: 4),
+            child: Text(
+              _note,
+              style: const TextStyle(fontSize: 11, color: AppColors.grey),
             ),
           ),
       ],

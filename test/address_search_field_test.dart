@@ -9,6 +9,7 @@ import 'package:otobix/Widgets/address_search_field.dart';
 class _FakeBackend {
   final calls = <(String, Map<String, dynamic>)>[];
   bool failSuggestions = false;
+  bool noSuggestions = false;
   String formattedAddress =
       'Plot 12, Sector V, Bidhannagar, Kolkata, West Bengal 700091, India';
 
@@ -18,6 +19,7 @@ class _FakeBackend {
       if (failSuggestions) {
         throw const DealerApiException('Address suggestions are not available');
       }
+      if (noSuggestions) return {'suggestions': []};
       return {
         'suggestions': [
           {
@@ -187,5 +189,21 @@ void main() {
     expect(find.byType(ListTile), findsNothing);
     expect(controller.text, '12 Park Street, Kolkata');
     expect(picked, isNull);
+    // The dealer is told why, not left with an empty field.
+    expect(find.text('Address suggestions are not available'), findsOneWidget);
+  });
+
+  testWidgets('nothing found says so, and typing again clears it', (
+    tester,
+  ) async {
+    backend.noSuggestions = true;
+    await pumpField(tester);
+    await type(tester, 'Unknown Motors');
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.pump();
+    expect(find.byType(ListTile), findsNothing);
+    expect(find.textContaining('No matching places'), findsOneWidget);
+    await type(tester, 'Unknown Motors Kolkata');
+    expect(find.textContaining('No matching places'), findsNothing);
   });
 }

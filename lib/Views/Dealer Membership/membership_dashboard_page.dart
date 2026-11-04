@@ -106,6 +106,8 @@ class _MembershipDashboardPageState extends State<MembershipDashboardPage> {
             ? 'Day ${m.dayOfCycle} of ${plan?.cycleDays ?? 30} · renews by ${m.cycleEndAt == null ? '' : date.format(m.cycleEndAt!.toLocal())}'
             : m.trialScheduled
             ? 'Free trial ${date.format(m.trialStartDate!)} to ${m.trialEndDate == null ? '' : date.format(m.trialEndDate!)}'
+            : m.trialQueued
+            ? 'Free trial queued · OtoBix will set its dates'
             : 'Ended · upgrade to continue';
     final dealerName = controller.dealerName.value;
     return DealerSectionCard(
@@ -120,7 +122,11 @@ class _MembershipDashboardPageState extends State<MembershipDashboardPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      (plan?.name ?? 'Dealer Membership').toUpperCase(),
+                      (plan?.name ??
+                              (m.trialQueued
+                                  ? 'Promo Membership'
+                                  : 'Dealer Membership'))
+                          .toUpperCase(),
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         color: AppColors.blue,
@@ -164,15 +170,15 @@ class _MembershipDashboardPageState extends State<MembershipDashboardPage> {
                             ? 'GRACE PERIOD'
                             : m.isActive
                             ? 'ACTIVE'
-                            : m.trialScheduled
-                            ? 'STARTS ${DateFormat('dd MMM').format(m.trialStartDate!).toUpperCase()}'
+                            : m.trialQueued
+                            ? 'QUEUED'
                             : 'ENDED',
                     color:
                         m.isGrace
                             ? AppColors.deepOrange
                             : m.isActive
                             ? AppColors.green
-                            : m.trialScheduled
+                            : m.trialQueued
                             ? AppColors.blue
                             : AppColors.red,
                     small: true,
@@ -221,6 +227,19 @@ class _MembershipDashboardPageState extends State<MembershipDashboardPage> {
             statusLine,
             style: const TextStyle(color: AppColors.grey, fontSize: 11),
           ),
+          // Bought plans waiting their turn, each after the one before it.
+          for (final q in m.queuedPlans)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                'Next: ${q.name} · from ${q.startDate == null ? '' : date.format(q.startDate!)}',
+                style: const TextStyle(
+                  color: AppColors.green,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
           if (summary != null && m.isActive) ...[
             const SizedBox(height: 10),
             Text(
