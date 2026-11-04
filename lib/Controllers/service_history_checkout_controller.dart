@@ -7,6 +7,7 @@ import 'package:otobix/Controllers/Dealer%20Membership/dealer_membership_control
 import 'package:otobix/Controllers/razorpay_payment_controller.dart';
 import 'package:otobix/Controllers/service_history_controller.dart';
 import 'package:otobix/Network/api_service.dart';
+import 'package:otobix/Network/dealer_membership_api.dart';
 import 'package:otobix/Services/user_activity_log_service.dart';
 import 'package:otobix/Utils/app_constants.dart';
 import 'package:otobix/Utils/app_urls.dart';
@@ -50,22 +51,20 @@ class ServiceHistoryCheckoutController extends GetxController {
     DealerMembershipController.to.ensureConfig();
   }
 
-  /// Membership points that pay part of the report: at most the server's share
-  /// of the price (half), the dealer's balance and what is left of the Service
-  /// History allowance. The rest ([amountToPay]) is paid online.
+  /// Membership points that pay for the report (1 point = ₹1): as many as the
+  /// dealer's balance and what is left of the Service History allowance give,
+  /// up to the whole price. The rest ([amountToPay]) is paid online.
   int get pointsToUse {
-    final membership = DealerMembershipController.to;
-    final m = membership.membership.value;
-    final share = membership.config.value?.serviceHistoryPointsShare ?? 0;
-    if (m == null || !m.isActive || share <= 0) return 0;
+    final m = DealerMembershipController.to.membership.value;
+    if (m == null || !m.isActive) return 0;
     final allowanceLeft = m.usageFor('SERVICE_HISTORY')?.leftPoints ?? 0;
     return max(
       0,
-      [(total * share).floor(), m.availablePoints, allowanceLeft].reduce(min),
+      [total.round(), m.availablePoints, allowanceLeft].reduce(min),
     );
   }
 
-  double get amountToPay => total - pointsToUse;
+  double get amountToPay => max(total - pointsToUse, 0).toDouble();
 
   final List<String> leftSummaryItems = [
     'Vehicle Service History',
@@ -120,37 +119,47 @@ class ServiceHistoryCheckoutController extends GetxController {
       final pointsUsed = pointsToUse;
       final amount = total - pointsUsed;
 
-      // ✅ 1) Start payment and WAIT for success
-      final RazorpayPaymentController paymentController =
-          Get.isRegistered<RazorpayPaymentController>()
-              ? Get.find<RazorpayPaymentController>()
-              : Get.put(RazorpayPaymentController());
+      // ✅ 1) Pay what the points do not cover and WAIT for success
+      String paymentId = '';
+      if (amount > 0) {
+        final RazorpayPaymentController paymentController =
+            Get.isRegistered<RazorpayPaymentController>()
+                ? Get.find<RazorpayPaymentController>()
+                : Get.put(RazorpayPaymentController());
 
-      final success = await paymentController
-          .pay(
-            amountRupees: amount,
-            name: "Get Service History",
-            description: "Service History Purchase",
-            email: userEmail,
-            phone: userPhone,
-            notes: {"userId": userId, "registrationNumber": registrationNumber},
-            receipt: "service_history_${DateTime.now().millisecondsSinceEpoch}",
-            userId: userId,
-            meta: {
-              "registrationNumber": registrationNumber,
-              "pointsUsed": pointsUsed,
-            },
-          )
-          .timeout(
-            const Duration(minutes: 3),
-            onTimeout: () {
-              throw Exception("Payment timed out. Please try again.");
-            },
-          );
+        final success = await paymentController
+            .pay(
+              amountRupees: amount,
+              name: "Get Service History",
+              description: "Service History Purchase",
+              email: userEmail,
+              phone: userPhone,
+              // The server reads these back from Razorpay to match the payment.
+              notes: {
+                "userId": userId,
+                "registrationNumber": registrationNumber,
+              },
+              receipt:
+                  "service_history_${DateTime.now().millisecondsSinceEpoch}",
+              userId: userId,
+              meta: {
+                "registrationNumber": registrationNumber,
+                "pointsUsed": pointsUsed,
+              },
+            )
+            .timeout(
+              const Duration(minutes: 3),
+              onTimeout: () {
+                throw Exception("Payment timed out. Please try again.");
+              },
+            );
+        paymentId = success.paymentId;
+      }
 
-      // ✅ 2) Payment success => now call actual API with paymentId
+      // ✅ 2) Send the request: with points through Dealer Membership, which
+      // takes them, otherwise the paid flow with the paymentId
       final requestBody = {
-        "paymentId": success.paymentId, // ✅ IMPORTANT
+        if (paymentId.isNotEmpty) "paymentId": paymentId, // ✅ IMPORTANT
         "userId": userId,
         "registrationNumber": registrationNumber,
         "chassisNumber": chassisNumber,
@@ -164,17 +173,31 @@ class ServiceHistoryCheckoutController extends GetxController {
         "rate": rate,
         "gst": gst,
         "total": total,
-        "pointsUsed": pointsUsed,
       };
 
-      final response = await ApiService.post(
-        endpoint: AppUrls.submitServiceHistoryRequest,
-        body: requestBody,
-      );
+      var statusCode = 0;
+      var message = '';
+      if (pointsUsed > 0) {
+        try {
+          await DealerMembershipApi.post(
+            AppUrls.dealerServicesServiceHistory,
+            requestBody,
+          );
+          statusCode = 200;
+        } on DealerApiException catch (e) {
+          statusCode = e.statusCode;
+          message = e.message;
+        }
+      } else {
+        final response = await ApiService.post(
+          endpoint: AppUrls.submitServiceHistoryRequest,
+          body: requestBody,
+        );
+        statusCode = response.statusCode;
+        // debugPrint(response.body);
+      }
 
-      // debugPrint(response.body);
-
-      if (response.statusCode == 200) {
+      if (statusCode == 200) {
         final ServiceHistoryController serviceHistoryController =
             Get.isRegistered<ServiceHistoryController>()
                 ? Get.find<ServiceHistoryController>()
@@ -188,7 +211,7 @@ class ServiceHistoryCheckoutController extends GetxController {
           event: AppConstants.userActivityLogEvents.serviceHistoryPurchased,
           eventDetails: 'User purchased service history',
           metadata: {
-            "paymentId": success.paymentId,
+            "paymentId": paymentId,
             "registrationNumber": registrationNumber,
             "make": make,
             "model": model,
@@ -210,7 +233,9 @@ class ServiceHistoryCheckoutController extends GetxController {
                   : 'Service history request successfully submitted.',
           type: ToastType.success,
         );
-      } else if (response.statusCode == 409) {
+      } else if (statusCode == 409 && (pointsUsed == 0 || paymentId.isEmpty)) {
+        // Already requested. (After a points + online payment the server's
+        // message below says how to get the money back.)
         final ServiceHistoryController serviceHistoryController =
             Get.isRegistered<ServiceHistoryController>()
                 ? Get.find<ServiceHistoryController>()
@@ -255,8 +280,8 @@ class ServiceHistoryCheckoutController extends GetxController {
           context: Get.context!,
           title: 'Failed',
           subtitle:
-              pointsUsed > 0
-                  ? _serverMessage(response.body)
+              message.isNotEmpty
+                  ? message
                   : 'Failed to submit service history request. Please try again.',
           type: ToastType.error,
         );
@@ -288,14 +313,6 @@ class ServiceHistoryCheckoutController extends GetxController {
     } finally {
       isSubmitServiceHistoryRequestLoading.value = false;
     }
-  }
-
-  String _serverMessage(String body) {
-    try {
-      final message = jsonDecode(body)['message'];
-      if (message is String && message.isNotEmpty) return message;
-    } catch (_) {}
-    return 'Failed to submit service history request. Please try again.';
   }
 
   // Get email and phone and store in shared prefs if they are empty

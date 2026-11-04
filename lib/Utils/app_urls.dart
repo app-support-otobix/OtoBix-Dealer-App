@@ -245,6 +245,10 @@ class AppUrls {
   static String get dealerServicesRcCheckDecline =>
       "${_dealerMembership}services/rc-check/decline";
 
+  // Service History paid with points, and the rest online ({ paymentId }).
+  static String get dealerServicesServiceHistory =>
+      "${_dealerMembership}services/service-history";
+
   static String get dealerInventory => "${_dealerMembership}inventory";
 
   static String dealerInventoryList({

@@ -382,12 +382,14 @@ class ServiceHistoryCheckoutPage extends StatelessWidget {
               children: [
                 const SizedBox(height: 3),
                 _buildBillRow('Membership points', '- $points'),
-                const SizedBox(height: 3),
-                _buildBillRow(
-                  'To pay online',
-                  '₹ ${c.amountToPay.toStringAsFixed(0)}',
-                  isTotal: true,
-                ),
+                if (c.amountToPay > 0) ...[
+                  const SizedBox(height: 3),
+                  _buildBillRow(
+                    'To pay online',
+                    '₹ ${c.amountToPay.toStringAsFixed(0)}',
+                    isTotal: true,
+                  ),
+                ],
               ],
             );
           }),
@@ -426,9 +428,11 @@ class ServiceHistoryCheckoutPage extends StatelessWidget {
     return Obx(
       () => ButtonWidget(
         text:
-            c.pointsToUse > 0
+            c.pointsToUse == 0
+                ? 'Proceed to Checkout'
+                : c.amountToPay > 0
                 ? 'Pay ₹${c.amountToPay.toStringAsFixed(0)} + ${c.pointsToUse} points'
-                : 'Proceed to Checkout',
+                : 'Pay with ${c.pointsToUse} points',
         // isLoading: serviceHistoryCheckoutController.isSubmitServiceHistoryRequestLoading,
         isLoading: false.obs,
         onTap: () => c.submitServiceHistoryRequest(),

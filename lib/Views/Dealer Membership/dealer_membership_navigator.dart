@@ -124,39 +124,33 @@ class DealerMembershipNavigator {
       (_) => openAuctions(),
       module: _buy,
     ),
-    DealerFeature(
-      'Customer Leads',
-      Icons.groups_outlined,
-      ['leads', 'customer', 'enquiry', 'walk-in'],
-      (_) => openLeads(),
-      module: _leads,
-    ),
+    // Leads are dealer leads only (customer leads are off for now).
     DealerFeature(
       'Offers Received',
       Icons.local_offer_outlined,
-      ['offers', 'dealer leads', 'received', 'negotiation'],
-      (_) => openLeads(tab: 1),
+      ['leads', 'offers', 'dealer leads', 'received', 'negotiation'],
+      (_) => openLeads(),
       module: _leads,
     ),
     DealerFeature(
       'My Offers Sent',
       Icons.send_outlined,
       ['offers', 'sent', 'my offers'],
-      (_) => openLeads(tab: 1, section: 1),
+      (_) => openLeads(section: 1),
       module: _leads,
     ),
     DealerFeature(
       'Connections',
       Icons.link,
       ['connection', 'request', 'deal room request'],
-      (_) => openLeads(tab: 1, section: 2),
+      (_) => openLeads(section: 2),
       module: _leads,
     ),
     DealerFeature(
       'Deal Rooms',
       Icons.meeting_room_outlined,
       ['deal room', 'deal', 'chat'],
-      (_) => openLeads(tab: 1, section: 3),
+      (_) => openLeads(section: 3),
       module: _leads,
     ),
     DealerFeature(
@@ -257,10 +251,9 @@ class DealerMembershipNavigator {
   static void openSell({int tab = 0}) =>
       _ifEnabled(_sell, () => Get.to(() => DealerSellPage(initialTab: tab)));
 
-  static void openLeads({int tab = 0, int section = 0}) => _ifEnabled(
+  static void openLeads({int section = 0}) => _ifEnabled(
     _leads,
-    () =>
-        Get.to(() => DealerLeadsPage(initialTab: tab, dealerSection: section)),
+    () => Get.to(() => DealerLeadsPage(dealerSection: section)),
   );
 
   static void openActivityLog() => Get.to(() => const ActivityLogPage());
@@ -295,11 +288,8 @@ class DealerMembershipNavigator {
     }
   }
 
-  static void openCarLeads(DealerInventoryCarModel car) =>
-      Get.to(() => CarLeadsOffersPage(car: car));
-
   static void openCarOffers(DealerInventoryCarModel car) =>
-      Get.to(() => CarLeadsOffersPage(car: car, initialTab: 1));
+      Get.to(() => CarLeadsOffersPage(car: car));
 
   static void openOfferToDealers(DealerInventoryCarModel car) =>
       Get.to(() => SellerInitiatedConnectionPage(car: car));

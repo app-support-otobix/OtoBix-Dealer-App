@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:otobix/Controllers/Dealer%20Membership/dealer_inventory_controller.dart';
-import 'package:otobix/Controllers/Dealer%20Membership/dealer_leads_controller.dart';
 import 'package:otobix/Controllers/Dealer%20Membership/dealer_negotiations_controller.dart';
 import 'package:otobix/Models/Dealer%20Membership/dealer_inventory_car_model.dart';
 import 'package:otobix/Models/Dealer%20Membership/dealer_negotiation_model.dart';
@@ -9,46 +8,32 @@ import 'package:otobix/Utils/app_colors.dart';
 import 'package:otobix/Utils/global_functions.dart';
 import 'package:otobix/Views/Dealer%20Membership/dealer_membership_navigator.dart';
 import 'package:otobix/Widgets/Dealer%20Membership/chat_message_bubble.dart';
-import 'package:otobix/Widgets/Dealer%20Membership/customer_leads_list.dart';
 import 'package:otobix/Widgets/Dealer%20Membership/dealer_common_widgets.dart';
 import 'package:otobix/Widgets/Dealer%20Membership/offer_card.dart';
 import 'package:otobix/Widgets/Dealer%20Membership/vehicle_spec_sheet.dart';
 import 'package:otobix/Widgets/app_bar_widget.dart';
 
+/// One car's dealer offers. (Its customer leads and Add Lead are off for now;
+/// they are being reworked.)
 class CarLeadsOffersPage extends StatefulWidget {
   final DealerInventoryCarModel car;
-  final int initialTab;
-  const CarLeadsOffersPage({super.key, required this.car, this.initialTab = 0});
+  const CarLeadsOffersPage({super.key, required this.car});
 
   @override
   State<CarLeadsOffersPage> createState() => _CarLeadsOffersPageState();
 }
 
-class _CarLeadsOffersPageState extends State<CarLeadsOffersPage>
-    with SingleTickerProviderStateMixin {
+class _CarLeadsOffersPageState extends State<CarLeadsOffersPage> {
   late DealerInventoryCarModel car = widget.car;
-  late final leads = DealerLeadsController.to.leadsFor(carId: car.id);
   final offers = <DealerNegotiationModel>[].obs;
   final discovery = Rxn<DealerPriceDiscoveryModel>();
   final isLoadingOffers = true.obs;
   final offersError = ''.obs;
-  late final TabController tabs = TabController(
-    length: 2,
-    vsync: this,
-    initialIndex: widget.initialTab,
-  );
 
   @override
   void initState() {
     super.initState();
-    if (!car.isCustomerCar) leads.refresh();
     _loadOffers();
-  }
-
-  @override
-  void dispose() {
-    tabs.dispose();
-    super.dispose();
   }
 
   Future<void> _loadOffers() async {
@@ -90,50 +75,7 @@ class _CarLeadsOffersPageState extends State<CarLeadsOffersPage>
       appBar: AppBarWidget(
         title: car.isCustomerCar ? 'Dealer Offers' : car.title,
       ),
-      floatingActionButton:
-          car.isCustomerCar
-              ? null
-              : FloatingActionButton.small(
-                backgroundColor: AppColors.green,
-                foregroundColor: AppColors.white,
-                tooltip: 'Add lead',
-                onPressed: () async {
-                  if (await showAddLeadDialog(context, carId: car.id) != null) {
-                    leads.refresh();
-                  }
-                },
-                child: const Icon(Icons.person_add_alt),
-              ),
-      body: SafeArea(
-        child:
-            car.isCustomerCar
-                ? _offersList(header: true)
-                : Column(
-                  children: [
-                    Obx(
-                      () => TabBar(
-                        controller: tabs,
-                        labelColor: AppColors.green,
-                        unselectedLabelColor: AppColors.grey,
-                        indicatorColor: AppColors.green,
-                        tabs: [
-                          Tab(text: 'Customer Leads (${leads.items.length})'),
-                          Tab(text: 'Dealer Offers (${offers.length})'),
-                        ],
-                      ),
-                    ),
-                    Expanded(
-                      child: TabBarView(
-                        controller: tabs,
-                        children: [
-                          CustomerLeadsList(leads: leads),
-                          _offersList(header: false),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-      ),
+      body: SafeArea(child: _offersList(header: car.isCustomerCar)),
     );
   }
 

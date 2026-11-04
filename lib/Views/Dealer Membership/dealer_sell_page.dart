@@ -192,7 +192,6 @@ class _InventoryList extends StatelessWidget {
                       () => Get.to(
                         () => CarIntakePage(ownership: car.ownership, car: car),
                       ),
-                  onLeads: () => DealerMembershipNavigator.openCarLeads(car),
                   onOffers: () => DealerMembershipNavigator.openCarOffers(car),
                 );
               },
