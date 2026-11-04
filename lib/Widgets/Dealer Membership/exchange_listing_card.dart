@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:otobix/Controllers/Dealer%20Membership/dealer_exchange_controller.dart';
 import 'package:otobix/Models/Dealer%20Membership/dealer_exchange_model.dart';
 import 'package:otobix/Utils/app_colors.dart';
@@ -25,6 +26,9 @@ double _demoDistanceKm(DealerExchangeListingModel l) =>
 /// Every photo of the car, full screen: swipe through, pinch to zoom.
 void _openImages(List<String> images) =>
     Get.to(() => ShowImagePage(imageUrls: images));
+
+String _dateOf(DateTime? date) =>
+    date == null ? '' : DateFormat('d MMM yyyy').format(date.toLocal());
 
 class ExchangeListingCard extends StatelessWidget {
   final DealerExchangeListingModel listing;
@@ -150,6 +154,10 @@ class ExchangeListingCard extends StatelessWidget {
               ('RTO', l.rto),
               ('City', l.city),
               ('Kms', '${GlobalFunctions.formatNumber(l.kms)} km'),
+              if (l.isPremiumListing) ...[
+                ('Inspected On', _dateOf(l.inspectionDate)),
+                ('Listed On', _dateOf(l.listedAt)),
+              ],
               ('Listing', l.listingCode),
             ],
           ),
@@ -414,14 +422,14 @@ class _InspectionReportLink extends StatelessWidget {
                 : () => DealerMembershipNavigator.openCarInspection(listing),
         borderRadius: BorderRadius.circular(4),
         child: Padding(
-          padding: const EdgeInsets.only(top: 4, bottom: 2),
+          padding: const EdgeInsets.only(top: 6, bottom: 2),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               loading
                   ? const SizedBox(
-                    width: 15,
-                    height: 15,
+                    width: 26,
+                    height: 26,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
                       color: AppColors.blue,
@@ -429,14 +437,14 @@ class _InspectionReportLink extends StatelessWidget {
                   )
                   : const Icon(
                     Icons.fact_check_outlined,
-                    size: 15,
+                    size: 26,
                     color: AppColors.blue,
                   ),
-              const SizedBox(width: 4),
+              const SizedBox(width: 6),
               const Text(
                 'Inspection Report',
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: AppColors.blue,
                 ),

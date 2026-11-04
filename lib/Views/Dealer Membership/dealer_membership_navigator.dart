@@ -415,7 +415,13 @@ class DealerMembershipNavigator {
       listing.id,
       carSource: listing.carSource,
     );
-    if (n == null) return;
+    if (n != null) enterDealRoom(n);
+  }
+
+  /// The next step into a conversation's Deal Room: the room itself once it is
+  /// open, the connection while it waits on the owner or on my payment, else
+  /// the request.
+  static void enterDealRoom(DealerNegotiationModel n) {
     if (n.dealRoomId.isNotEmpty) return openDealRoom(n.dealRoomId);
     if (n.hasPendingConnection || n.awaitsMyPayment) {
       return openConnection(n.connectionId);
