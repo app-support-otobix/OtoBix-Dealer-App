@@ -158,6 +158,10 @@ class _DealChatPageState extends State<DealChatPage> {
               'Seller',
               n.isBuyer ? other : 'You',
               AppColors.blue,
+              onTap:
+                  n.isBuyer && !n.counterpart.isRevealed
+                      ? () => _showSellerHiddenDialog(n)
+                      : null,
             ),
           ),
         ],
@@ -165,38 +169,74 @@ class _DealChatPageState extends State<DealChatPage> {
     );
   }
 
-  Widget _partyBox(IconData icon, String label, String subtitle, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 6),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: color.withValues(alpha: 0.25)),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: color, size: 14),
-          Text(
-            label,
-            style: TextStyle(
-              color: color,
-              fontWeight: FontWeight.bold,
-              fontSize: 10,
+  Widget _partyBox(
+    IconData icon,
+    String label,
+    String subtitle,
+    Color color, {
+    VoidCallback? onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 6),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: color.withValues(alpha: 0.25)),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: color, size: 14),
+            Text(
+              label,
+              style: TextStyle(
+                color: color,
+                fontWeight: FontWeight.bold,
+                fontSize: 10,
+              ),
             ),
+            Text(
+              subtitle,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: color.withValues(alpha: 0.8),
+                fontSize: 9,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // The seller stays anonymous until the Deal Room opens.
+  Future<void> _showSellerHiddenDialog(DealerNegotiationModel n) async {
+    final enter = await Get.dialog<bool>(
+      AlertDialog(
+        title: const Text('Seller details', style: TextStyle(fontSize: 16)),
+        content: const Text(
+          "Enter Deal Room to know the seller's details.",
+          style: TextStyle(fontSize: 13),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(result: false),
+            child: const Text('Cancel'),
           ),
-          Text(
-            subtitle,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: color.withValues(alpha: 0.8),
-              fontSize: 9,
-              fontWeight: FontWeight.w600,
+          TextButton(
+            onPressed: () => Get.back(result: true),
+            child: const Text(
+              'Enter Deal Room',
+              style: TextStyle(color: AppColors.green),
             ),
           ),
         ],
       ),
     );
+    if (enter == true) DealerMembershipNavigator.enterDealRoom(n);
   }
 
   Widget _statusStrip(DealerNegotiationModel n) {

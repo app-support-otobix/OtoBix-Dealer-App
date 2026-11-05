@@ -93,6 +93,7 @@ class DealerExchangeListingModel {
   final String sellerType;
   final String sellerCity;
   final DateTime? listedAt;
+  final DateTime? inspectionDate; // a customer's car: its OtoBix inspection
   final int matchPercent;
   final String matchedRequirement;
   final DealerMyOfferModel? myOffer;
@@ -134,6 +135,7 @@ class DealerExchangeListingModel {
       sellerType = _str(j['seller']?['dealerType']),
       sellerCity = _str(j['seller']?['city']),
       listedAt = GlobalFunctions.parse<DateTime>(j['listedAt']),
+      inspectionDate = GlobalFunctions.parse<DateTime>(j['inspectionDate']),
       matchPercent = _int(j['matchPercent']),
       matchedRequirement = _str(j['matchedRequirement']),
       distanceKm = (j['distanceKm'] as num?)?.toDouble(),
