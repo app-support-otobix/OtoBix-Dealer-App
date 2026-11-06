@@ -163,7 +163,7 @@ class _UpgradeMembershipPageState extends State<UpgradeMembershipPage> {
               Text(
                 topUp != null
                     ? 'Added points join this cycle and expire when it ends, like your plan points. They do not carry over.'
-                    : 'A plan bought while your membership is active starts when your current plan ends; that plan\'s unused points expire then. Until then your current plan keeps working.',
+                    : 'A plan bought while your membership is active adds to it: its points, checks, Service History and connections add up, and each plan ends on its own date. What you use counts against the plan ending first.',
                 style: const TextStyle(fontSize: 11, color: AppColors.grey),
               ),
             ],

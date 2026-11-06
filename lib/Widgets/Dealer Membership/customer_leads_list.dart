@@ -91,7 +91,7 @@ class CustomerLeadsList extends StatelessWidget {
           isEmpty: leads.items.isEmpty,
           emptyIcon: Icons.people_outline,
           emptyMessage:
-              'No customer leads yet. Enquiries from the OtoBix app show up here; add walk-ins with +.',
+              'No customer leads yet. Enquiries from the OtoBix app show up here.',
           onRetry: leads.refresh,
           child: NotificationListener<ScrollNotification>(
             onNotification: (n) {

@@ -227,19 +227,20 @@ class _MembershipDashboardPageState extends State<MembershipDashboardPage> {
             statusLine,
             style: const TextStyle(color: AppColors.grey, fontSize: 11),
           ),
-          // Bought plans waiting their turn, each after the one before it.
-          for (final q in m.queuedPlans)
-            Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: Text(
-                'Next: ${q.name} · from ${q.startDate == null ? '' : date.format(q.startDate!)}',
-                style: const TextStyle(
-                  color: AppColors.green,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
+          // Plans that stack: each adds its points and allowances and ends on its own date.
+          if (m.plans.length > 1)
+            for (final p in m.plans)
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(
+                  '${p.name} · till ${p.endDate == null ? '' : date.format(p.endDate!)}',
+                  style: const TextStyle(
+                    color: AppColors.green,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
-            ),
           if (summary != null && m.isActive) ...[
             const SizedBox(height: 10),
             Text(
