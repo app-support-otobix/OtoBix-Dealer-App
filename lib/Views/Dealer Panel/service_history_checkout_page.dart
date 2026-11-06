@@ -374,6 +374,25 @@ class ServiceHistoryCheckoutPage extends StatelessWidget {
             '₹ ${serviceHistoryCheckoutController.total.toStringAsFixed(0)}',
             isTotal: true,
           ),
+          Obx(() {
+            final c = serviceHistoryCheckoutController;
+            final points = c.pointsToUse;
+            if (points == 0) return const SizedBox.shrink();
+            return Column(
+              children: [
+                const SizedBox(height: 3),
+                _buildBillRow('Membership points', '- $points'),
+                if (c.amountToPay > 0) ...[
+                  const SizedBox(height: 3),
+                  _buildBillRow(
+                    'To pay online',
+                    '₹ ${c.amountToPay.toStringAsFixed(0)}',
+                    isTotal: true,
+                  ),
+                ],
+              ],
+            );
+          }),
         ],
       ),
     );
@@ -405,18 +424,25 @@ class ServiceHistoryCheckoutPage extends StatelessWidget {
   }
 
   Widget _buildCheckoutButton() {
-    return ButtonWidget(
-      text: 'Proceed to Checkout',
-      // isLoading: serviceHistoryCheckoutController.isSubmitServiceHistoryRequestLoading,
-      isLoading: false.obs,
-      onTap:
-          () => serviceHistoryCheckoutController.submitServiceHistoryRequest(),
-      width: 250,
-      height: 35,
-      elevation: 2,
-      borderRadius: 22,
-      fontSize: 13,
-      backgroundColor: AppColors.red,
+    final c = serviceHistoryCheckoutController;
+    return Obx(
+      () => ButtonWidget(
+        text:
+            c.pointsToUse == 0
+                ? 'Proceed to Checkout'
+                : c.amountToPay > 0
+                ? 'Pay ₹${c.amountToPay.toStringAsFixed(0)} + ${c.pointsToUse} points'
+                : 'Pay with ${c.pointsToUse} points',
+        // isLoading: serviceHistoryCheckoutController.isSubmitServiceHistoryRequestLoading,
+        isLoading: false.obs,
+        onTap: () => c.submitServiceHistoryRequest(),
+        width: 250,
+        height: 35,
+        elevation: 2,
+        borderRadius: 22,
+        fontSize: 13,
+        backgroundColor: AppColors.red,
+      ),
     );
   }
 }

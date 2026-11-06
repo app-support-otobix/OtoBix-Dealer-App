@@ -25,11 +25,11 @@ Future<Widget> initializeApp() async {
 
   await FirebaseAppCheck.instance.activate(
     providerAndroid:
-        AppConstants.deploymentEnvironment != DeploymentEnvironment.prod
+        AppConstants.deploymentEnvironment == DeploymentEnvironment.prod
             ? AndroidDebugProvider(debugToken: AppConstants.appCheckDebugToken)
             : const AndroidPlayIntegrityProvider(),
     providerApple:
-        AppConstants.deploymentEnvironment != DeploymentEnvironment.prod
+        AppConstants.deploymentEnvironment == DeploymentEnvironment.prod
             ? AppleDebugProvider(debugToken: AppConstants.appCheckDebugToken)
             : const AppleAppAttestProvider(),
   ); // To give a token to the public APIs so that they know they are being hit from our app

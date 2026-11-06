@@ -5,18 +5,18 @@ import 'package:otobix/Controllers/registration_form_controller.dart';
 import 'package:otobix/Utils/app_colors.dart';
 import 'package:otobix/Utils/app_constants.dart';
 import 'package:otobix/Utils/app_icons.dart';
+import 'package:otobix/Widgets/Dealer%20Membership/dealer_type_picker.dart';
+import 'package:otobix/Widgets/address_search_field.dart';
 import 'package:otobix/Widgets/button_widget.dart';
 import 'package:otobix/Widgets/dropdown_widget.dart';
 
 class RegistrationFormPage extends StatelessWidget {
   final String userRole;
-  final String phoneNumber;
   final String verificationToken;
 
   RegistrationFormPage({
     super.key,
     required this.userRole,
-    required this.phoneNumber,
     required this.verificationToken,
   });
 
@@ -80,35 +80,12 @@ class RegistrationFormPage extends StatelessWidget {
                   child: Column(
                     children: [
                       SizedBox(height: 10),
+                      if (userRole == AppConstants.roles.dealer) ...[
+                        _buildRegisterAs(),
+                        SizedBox(height: 20),
+                      ],
                       _buildLocationDropdown(),
                       SizedBox(height: 20),
-                      _buildCustomTextField(
-                        icon: Icons.person,
-                        label: "User Name / User ID",
-                        controller: getxController.dealerNameController,
-                        hintText: "e.g. AmitParekh007",
-                        keyboardType: TextInputType.text,
-                        isRequired: true,
-                        isUserName: true,
-                        onChanged: (val) {
-                          final regex = RegExp(r'^[a-zA-Z0-9]+$');
-
-                          if (val.trim().isEmpty) {
-                            getxController.usernameValidationError.value =
-                                "Username is required";
-                            return;
-                          }
-
-                          if (!regex.hasMatch(val.trim())) {
-                            getxController.usernameValidationError.value =
-                                "Username must be alphanumeric (A-Z, 0-9)";
-                            return;
-                          }
-
-                          // ✅ Only call API if above passed
-                          getxController.validateUsername();
-                        },
-                      ),
                       _buildCustomTextField(
                         icon: Icons.email,
                         label: "Email",
@@ -171,26 +148,6 @@ class RegistrationFormPage extends StatelessWidget {
                         ),
                       if (userRole == AppConstants.roles.dealer)
                         _buildCustomTextField(
-                          icon: Icons.phone_android,
-                          label: "Primary Contact Mobile No.",
-                          controller: getxController.primaryMobileController,
-                          hintText: "e.g. 9876543210",
-                          keyboardType: TextInputType.phone,
-                          isRequired: true,
-                          maxLengthTen: true,
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return 'Primary mobile number is required';
-                            }
-                            final phoneRegex = RegExp(r'^[6-9]\d{9}$');
-                            if (!phoneRegex.hasMatch(value.trim())) {
-                              return 'Enter a valid 10-digit mobile number';
-                            }
-                            return null;
-                          },
-                        ),
-                      if (userRole == AppConstants.roles.dealer)
-                        _buildCustomTextField(
                           icon: Icons.person_outline,
                           label: "Secondary Contact Person (Optional)",
                           controller:
@@ -199,69 +156,6 @@ class RegistrationFormPage extends StatelessWidget {
                           keyboardType: TextInputType.text,
                           isRequired: false,
                         ),
-                      if (userRole == AppConstants.roles.dealer)
-                        _buildCustomTextField(
-                          icon: Icons.phone_android,
-                          label: "Secondary Contact Mobile No. (Optional)",
-                          controller: getxController.secondaryMobileController,
-                          hintText: "e.g. 9123456789",
-                          keyboardType: TextInputType.phone,
-                          isRequired: false,
-                          maxLengthTen: true,
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return null;
-                            }
-
-                            final phoneRegex = RegExp(r'^[6-9]\d{9}$');
-
-                            if (!phoneRegex.hasMatch(value.trim())) {
-                              return 'Enter a valid 10-digit mobile number';
-                            }
-
-                            return null;
-                          },
-                        ),
-                      _buildCustomTextField(
-                        icon: Icons.lock,
-                        label: "Password",
-                        controller: getxController.passwordController,
-                        hintText: "e.g. AmitParekh@123",
-                        keyboardType: TextInputType.visiblePassword,
-                        isRequired: true,
-                        isPassword: true,
-                        obscureText: getxController.obscurePassword,
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'Password is required';
-                          }
-
-                          if (value.length < 8) {
-                            return 'Password must be at least 8 characters';
-                          }
-
-                          if (!RegExp(r'[A-Z]').hasMatch(value)) {
-                            return 'Password must include at least one uppercase letter';
-                          }
-
-                          if (!RegExp(r'[a-z]').hasMatch(value)) {
-                            return 'Password must include at least one lowercase letter';
-                          }
-
-                          if (!RegExp(r'[0-9]').hasMatch(value)) {
-                            return 'Password must include at least one number';
-                          }
-
-                          if (!RegExp(
-                            r'[!@#$%^&*(),.?":{}|<>]',
-                          ).hasMatch(value)) {
-                            return 'Password must include at least one special character';
-                          }
-
-                          return null; // ✅ Valid
-                        },
-                      ),
-
                       // _buildCustomTextField(
                       //   icon: Icons.lock,
                       //   label: "Confirm Password",
@@ -441,6 +335,61 @@ class RegistrationFormPage extends StatelessWidget {
     );
   }
 
+  // Dealer type: New Car Dealer / Used Car Dealer / Broker, then what the
+  // chosen one gets.
+  Widget _buildRegisterAs() {
+    return GetBuilder<RegistrationFormController>(
+      builder: (getxController) {
+        return FormField<String>(
+          validator:
+              (_) =>
+                  getxController.selectedDealerType == null
+                      ? 'Please choose your dealer type'
+                      : null,
+          builder: (formFieldState) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                RichText(
+                  text: TextSpan(
+                    text: 'Dealer Type',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                      color: AppColors.grey,
+                    ),
+                    children: [
+                      TextSpan(
+                        text: ' *',
+                        style: TextStyle(
+                          color: AppColors.red,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                DealerTypePicker(
+                  options: getxController.registerAsOptions,
+                  selected: getxController.selectedDealerType,
+                  errorText:
+                      formFieldState.hasError ? formFieldState.errorText : null,
+                  onSelected: (type) {
+                    getxController.selectedDealerType = type;
+                    getxController.update();
+                    formFieldState.didChange(type);
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
   Widget _buildEntityTypeDropdown(BuildContext context) {
     return GetBuilder<RegistrationFormController>(
       builder: (getxController) {
@@ -529,7 +478,6 @@ class RegistrationFormPage extends StatelessWidget {
     required IconData icon,
     bool isRequired = false,
     bool isPassword = false,
-    bool isUserName = false,
     RxBool? obscureText,
     Function(String?)? validator,
     Function(String)? onChanged,
@@ -587,9 +535,7 @@ class RegistrationFormPage extends StatelessWidget {
           }
 
           // ✅ Then fallback to default required check
-          if (isRequired &&
-              !isUserName &&
-              (value == null || value.trim().isEmpty)) {
+          if (isRequired && (value == null || value.trim().isEmpty)) {
             return 'This field is required';
           }
 
@@ -628,40 +574,6 @@ class RegistrationFormPage extends StatelessWidget {
         isPassword && obscureText != null
             ? Obx(() => buildField(obscure: obscureText.value))
             : buildField(obscure: false),
-
-        // show username error manually
-        isUserName
-            ? Obx(() {
-              final error = getxController.usernameValidationError.value;
-              if (error.isEmpty) return SizedBox.shrink();
-              final isAvailable = error.toLowerCase().contains('available');
-              return Padding(
-                padding: const EdgeInsets.only(left: 8, top: 3),
-                child: Row(
-                  children: [
-                    Text(
-                      error,
-                      style: TextStyle(
-                        color:
-                            isAvailable
-                                ? AppColors.green
-                                : AppColors.validationErrorRed,
-                        fontSize: 12,
-                        // fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    isAvailable
-                        ? Icon(
-                          Icons.check_circle,
-                          color: AppColors.green,
-                          size: 15,
-                        )
-                        : SizedBox.shrink(),
-                  ],
-                ),
-              );
-            })
-            : SizedBox.shrink(),
 
         const SizedBox(height: 30),
       ],
@@ -798,8 +710,19 @@ class RegistrationFormPage extends StatelessWidget {
                     child: Row(
                       children: [
                         Expanded(
-                          child: TextFormField(
+                          child: AddressSearchField(
+                            key: ObjectKey(controller),
                             controller: controller,
+                            otpVerificationToken: verificationToken,
+                            onPicked:
+                                (place) => getxController.setAddressPlace(
+                                  controller,
+                                  place,
+                                ),
+                            onCleared:
+                                () => getxController.clearAddressPlace(
+                                  controller,
+                                ),
                             decoration: InputDecoration(
                               prefixIcon: Icon(
                                 Icons.location_city,
@@ -813,7 +736,10 @@ class RegistrationFormPage extends StatelessWidget {
                               contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 10,
                               ),
-                              hintText: "Enter Address ${index + 1}",
+                              hintText:
+                                  index == 0
+                                      ? "Search your showroom name or address"
+                                      : "Search or enter Address ${index + 1}",
                               hintStyle: TextStyle(
                                 color: AppColors.grey.withValues(alpha: .5),
                                 fontSize: 12,
@@ -878,7 +804,6 @@ class RegistrationFormPage extends StatelessWidget {
     onTap:
         () => getxController.showTermsAndConditionsThenSubmit(
           userRole: userRole,
-          contactNumber: phoneNumber,
           verificationToken: verificationToken,
         ),
     height: 40,

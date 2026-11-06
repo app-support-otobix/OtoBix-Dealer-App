@@ -69,6 +69,41 @@ class ApiService {
     }, endpoint);
   }
 
+  static Future<http.Response> delete({
+    required String endpoint,
+    Map<String, String>? customHeaders,
+  }) async {
+    final url = Uri.parse(endpoint);
+
+    return _sendRequest(() async {
+      final requestHeaders = await _createHeaders(customHeaders);
+
+      return http.delete(url, headers: requestHeaders);
+    }, endpoint);
+  }
+
+  static Future<http.Response> multipart({
+    required String endpoint,
+    required String fileField,
+    required List<String> filePaths,
+    Map<String, String>? fields,
+  }) async {
+    final url = Uri.parse(endpoint);
+
+    return _sendRequest(() async {
+      final requestHeaders =
+          await _createHeaders()
+            ..remove('Content-Type');
+      final request = http.MultipartRequest('POST', url)
+        ..headers.addAll(requestHeaders);
+      if (fields != null) request.fields.addAll(fields);
+      for (final path in filePaths) {
+        request.files.add(await http.MultipartFile.fromPath(fileField, path));
+      }
+      return http.Response.fromStream(await request.send());
+    }, endpoint);
+  }
+
   // -------------- Create Headers --------------
   static Future<Map<String, String>> _createHeaders([
     Map<String, String>? customHeaders,

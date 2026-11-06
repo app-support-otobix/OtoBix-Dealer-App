@@ -6,6 +6,9 @@
     <!-- <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/> -->
     <uses-permission android:name="android.permission.CAMERA"/>
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Showroom location (read once, when the dealer sets it) -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <!-- Force remove media/storage permissions if any plugin adds them -->
     <uses-permission
         android:name="android.permission.READ_EXTERNAL_STORAGE"

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:otobix/Models/Dealer%20Membership/dealer_membership_model.dart';
+import 'package:otobix/Models/place_model.dart';
 import 'package:otobix/Models/user_model.dart';
 import 'package:otobix/Network/api_service.dart';
 import 'package:otobix/Utils/app_constants.dart';
@@ -20,10 +22,9 @@ class RegistrationFormController extends GetxController {
     dealerEmailController.clear();
     dealershipNameController.clear();
     primaryContactPersonController.clear();
-    primaryMobileController.clear();
     secondaryContactPersonController.clear();
-    secondaryMobileController.clear();
     addressControllers.clear();
+    addressPlaces.clear();
     selectedEntityType = null;
     selectedState = null;
     touchedFields.clear();
@@ -42,6 +43,7 @@ class RegistrationFormController extends GetxController {
 
     // NEW: load entity names for dropdown
     fetchEntityNames();
+    fetchRegisterAsOptions();
   }
 
   @override
@@ -51,9 +53,7 @@ class RegistrationFormController extends GetxController {
     dealerEmailController.dispose();
     dealershipNameController.dispose();
     primaryContactPersonController.dispose();
-    primaryMobileController.dispose();
     secondaryContactPersonController.dispose();
-    secondaryMobileController.dispose();
     passwordController.dispose();
     for (var controller in addressControllers) {
       controller.dispose();
@@ -70,13 +70,17 @@ class RegistrationFormController extends GetxController {
     update();
   }
 
-  RxString usernameValidationError = ''.obs;
-
   RxBool isLoading = false.obs;
   String? selectedState;
 
   final RxList<String> entityTypes = <String>[].obs; // used by dropdown
   String? selectedEntityType;
+
+  // Dealer type: New Car Dealer, Used Car Dealer or Broker, each with the
+  // plans it gets (from the server; the fallback has no plan details).
+  List<DealerRegisterAsModel> registerAsOptions =
+      DealerRegisterAsModel.fallback;
+  String? selectedDealerType;
 
   List<String> filteredStates = [];
   List<String> indianStates = AppConstants.indianStates;
@@ -92,13 +96,33 @@ class RegistrationFormController extends GetxController {
       TextEditingController();
   final TextEditingController primaryContactPersonController =
       TextEditingController();
-  final TextEditingController primaryMobileController = TextEditingController();
   final TextEditingController secondaryContactPersonController =
-      TextEditingController();
-  final TextEditingController secondaryMobileController =
       TextEditingController();
 
   List<TextEditingController> addressControllers = [];
+
+  /// The place picked from the suggestions for an address field. The first
+  /// address with one is sent as the showroom location, which puts this
+  /// dealer's cars in nearest-first order for other dealers.
+  final Map<TextEditingController, PlaceDetailsModel> addressPlaces = {};
+
+  void setAddressPlace(
+    TextEditingController controller,
+    PlaceDetailsModel place,
+  ) {
+    addressPlaces[controller] = place;
+    if (selectedState == null) {
+      final state = place.state.toLowerCase();
+      selectedState = indianStates.firstWhereOrNull(
+        (s) => s.toLowerCase() == state,
+      );
+    }
+    update();
+  }
+
+  void clearAddressPlace(TextEditingController controller) {
+    addressPlaces.remove(controller);
+  }
 
   void filterStates(String query) {
     if (query.isEmpty) {
@@ -125,23 +149,19 @@ class RegistrationFormController extends GetxController {
   }
 
   void removeAddressField(int index) {
-    addressControllers.removeAt(index);
+    addressPlaces.remove(addressControllers.removeAt(index));
     update();
   }
 
   Future<void> submitForm({
     required String userRole,
-    required String contactNumber,
     required String verificationToken,
   }) async {
     try {
-      // Trigger username check
-      bool isUsernameValid = await validateUsername();
-
       // Validate form
       bool isFormValid = formKey.currentState!.validate();
 
-      if (!isUsernameValid || !isFormValid) {
+      if (!isFormValid) {
         // Show toast
         ToastWidget.show(
           context: Get.context!,
@@ -152,13 +172,10 @@ class RegistrationFormController extends GetxController {
         // Mark all required fields as touched so errors show
         touchedFields.addAll([
           "State",
-          "Dealer Name",
           "Dealer Email",
           "Dealership Name",
           "Entity Type",
           "Primary Contact Person",
-          "Primary Contact Mobile No.",
-          "Password",
         ]);
 
         update();
@@ -167,25 +184,22 @@ class RegistrationFormController extends GetxController {
 
       isLoading.value = true;
 
+      // No user name, password or phone number: sign-in is by OTP, and the
+      // server names the account and takes the number from the verified OTP.
       final userModel = UserModel(
         userRole: userRole,
         location: selectedState ?? "",
-        userName: dealerNameController.text.trim(),
+        userName: '',
         email: dealerEmailController.text.trim(),
         dealershipName: dealershipNameController.text.trim(),
         entityType: selectedEntityType ?? "",
         primaryContactPerson: primaryContactPersonController.text.trim(),
-        primaryContactNumber: primaryMobileController.text.trim(),
-        password: passwordController.text,
-        phoneNumber: contactNumber,
+        password: '',
+        phoneNumber: '',
         secondaryContactPerson:
             secondaryContactPersonController.text.isEmpty
                 ? null
                 : secondaryContactPersonController.text.trim(),
-        secondaryContactNumber:
-            secondaryMobileController.text.isEmpty
-                ? null
-                : secondaryMobileController.text.trim(),
         addressList: addressControllers.map((e) => e.text).toList(),
         id: '',
         approvalStatus: 'Pending',
@@ -193,10 +207,23 @@ class RegistrationFormController extends GetxController {
         updatedAt: DateTime.now(),
       );
 
+      final showroom =
+          addressControllers
+              .map((c) => addressPlaces[c])
+              .whereType<PlaceDetailsModel>()
+              .firstOrNull;
+
       // Add verification token to the request body
       final requestBody = {
         ...userModel.toJson(),
         "otpVerificationToken": verificationToken,
+        if (userRole == AppConstants.roles.dealer)
+          "dealerType": selectedDealerType,
+        if (showroom != null)
+          "showroomLocation": {
+            "latitude": showroom.latitude,
+            "longitude": showroom.longitude,
+          },
       };
 
       final response = await ApiService.post(
@@ -267,60 +294,26 @@ class RegistrationFormController extends GetxController {
   //   }
   // }
 
-  Future<bool> validateUsername() async {
-    String userName = dealerNameController.text.trim();
-
-    // ✅ Only if valid format, then check API for availability
-    try {
-      final response = await ApiService.post(
-        endpoint: AppUrls.checkUsernameExists(userName),
-        body: {},
-      );
-
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> data = json.decode(response.body);
-
-        final bool isAvailable = data['available'] == true;
-
-        if (isAvailable) {
-          usernameValidationError.value = "Username is available ";
-          return true;
-        } else {
-          usernameValidationError.value = "Username already exists";
-          return false;
-        }
-      } else {
-        usernameValidationError.value = "Error checking username";
-        return false;
-      }
-    } catch (e) {
-      debugPrint("Username validation error → $e");
-      usernameValidationError.value = "Error checking username";
-      return false;
-    }
-  }
-
   // Clear fields
   void clearFields() {
     dealerNameController.clear();
     dealerEmailController.clear();
     dealershipNameController.clear();
     primaryContactPersonController.clear();
-    primaryMobileController.clear();
     secondaryContactPersonController.clear();
-    secondaryMobileController.clear();
     passwordController.clear();
 
     obscurePassword.value = true;
     selectedEntityType = null;
+    selectedDealerType = null;
     selectedState = null;
 
     addressControllers.clear();
     addressControllers.add(TextEditingController());
+    addressPlaces.clear();
 
     // 🔁 Reset validation-related data
     formKey.currentState?.reset();
-    usernameValidationError.value = '';
     touchedFields.clear();
 
     // 🔁 Reset state filtering if needed
@@ -332,14 +325,12 @@ class RegistrationFormController extends GetxController {
   /// Call this from the Submit button.
   Future<void> showTermsAndConditionsThenSubmit({
     required String userRole,
-    required String contactNumber,
     required String verificationToken,
   }) async {
     // 1) run same validations you already have
-    final okUser = await validateUsername();
     final okForm = formKey.currentState?.validate() ?? false;
 
-    if (!okUser || !okForm) {
+    if (!okForm) {
       ToastWidget.show(
         context: Get.context!,
         title: "Please fill all required fields",
@@ -348,13 +339,10 @@ class RegistrationFormController extends GetxController {
 
       touchedFields.addAll([
         "State",
-        "Dealer Name",
         "Dealer Email",
         "Dealership Name",
         "Entity Type",
         "Primary Contact Person",
-        "Primary Contact Mobile No.",
-        "Password",
       ]);
       update();
       return;
@@ -387,11 +375,7 @@ class RegistrationFormController extends GetxController {
 
     // If no terms & conditions found in database, submit form directly
     if (html.trim().isEmpty) {
-      submitForm(
-        userRole: userRole,
-        contactNumber: contactNumber,
-        verificationToken: verificationToken,
-      );
+      submitForm(userRole: userRole, verificationToken: verificationToken);
       return;
     }
 
@@ -401,11 +385,7 @@ class RegistrationFormController extends GetxController {
         title: title,
         html: html,
         onAgree: () {
-          submitForm(
-            userRole: userRole,
-            contactNumber: contactNumber,
-            verificationToken: verificationToken,
-          );
+          submitForm(userRole: userRole, verificationToken: verificationToken);
         },
       ),
       isScrollControlled: true, // allow tall sheet
@@ -449,6 +429,25 @@ class RegistrationFormController extends GetxController {
       ]);
     }
     update(); // refresh GetBuilder
+  }
+
+  Future<void> fetchRegisterAsOptions() async {
+    try {
+      final resp = await ApiService.get(
+        endpoint: AppUrls.dealerRegistrationOptions,
+      );
+      if (resp.statusCode != 200) return;
+      final data = (jsonDecode(resp.body) as Map<String, dynamic>)['data'];
+      final options = [
+        for (final o in (data?['options'] as List? ?? const []))
+          if (o is Map)
+            DealerRegisterAsModel.fromJson(Map<String, dynamic>.from(o)),
+      ];
+      if (options.isNotEmpty) registerAsOptions = options;
+      update();
+    } catch (e) {
+      debugPrint('Register-as options not loaded: $e');
+    }
   }
 
   // // Fetch entity documents

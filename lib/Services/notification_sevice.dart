@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
+import 'package:otobix/Controllers/Dealer%20Membership/dealer_chat_controller.dart';
 import 'package:otobix/Services/notification_router.dart';
 import 'package:otobix/Utils/app_constants.dart';
 import 'package:otobix/Widgets/toast_widget.dart';
@@ -54,6 +55,14 @@ class NotificationService {
 
       // Only call this if you want to stop the default auto-display:
       event.preventDefault();
+
+      // A dealer chat already on screen shows its new message; no banner.
+      final target = data['parametersForScreen'];
+      if (target is Map &&
+          target['targetType'] == 'NEGOTIATION' &&
+          DealerChatController.openChats.contains(target['targetId'])) {
+        return;
+      }
 
       // v5: display the SAME notification object
       event.notification.display();

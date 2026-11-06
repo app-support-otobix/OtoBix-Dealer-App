@@ -16,6 +16,11 @@ class AppUrls {
 
   static String get register => "${baseUrl}auth/register";
 
+  // Showroom address search (Google Places through the backend)
+  static String get placesAutocomplete => "${baseUrl}places/autocomplete";
+
+  static String get placesDetails => "${baseUrl}places/details";
+
   static String get forgetPassword => "${baseUrl}auth/forget-password";
 
   static String get logout => "${baseUrl}auth/logout";
@@ -198,6 +203,219 @@ class AppUrls {
       "${baseUrl}self-inspection/make-offer-on-self-inspected-car";
 
   static String get createGuestUser => "${baseUrl}guest-user/create";
+
+  static String get _dealerMembership => "${baseUrl}dealer-membership/";
+
+  // Before login: "Register as" choices and their plans.
+  static String get dealerRegistrationOptions =>
+      "${_dealerMembership}registration-options";
+
+  static String get dealerMembershipConfig => "${_dealerMembership}config";
+
+  static String get dealerMembershipHome => "${_dealerMembership}home";
+
+  static String get dealerMembership => "${_dealerMembership}membership";
+
+  static String get dealerProfileUpdate =>
+      "${_dealerMembership}membership/register";
+
+  static String get dealerShowroomLocation =>
+      "${_dealerMembership}membership/showroom-location";
+
+  static String dealerMembershipLedger({
+    required String type,
+    required int page,
+    required int limit,
+  }) =>
+      "${_dealerMembership}membership/ledger?type=$type&page=$page&limit=$limit";
+
+  static String get dealerMembershipOfflinePayment =>
+      "${_dealerMembership}membership/offline-payment";
+
+  // Once, for dealers enrolled before registration asked the dealer type.
+  static String get dealerMembershipDealerType =>
+      "${_dealerMembership}membership/dealer-type";
+
+  static String get dealerMembershipVerifyPayment =>
+      "${_dealerMembership}membership/verify-payment";
+
+  static String get dealerServicesRcCheck =>
+      "${_dealerMembership}services/rc-check";
+
+  static String get dealerServicesRcCheckDecline =>
+      "${_dealerMembership}services/rc-check/decline";
+
+  // Service History paid with points, and the rest online ({ paymentId }).
+  static String get dealerServicesServiceHistory =>
+      "${_dealerMembership}services/service-history";
+
+  static String get dealerInventory => "${_dealerMembership}inventory";
+
+  static String dealerInventoryList({
+    required String ownership,
+    required int page,
+    required int limit,
+  }) =>
+      "${_dealerMembership}inventory?ownership=$ownership&page=$page&limit=$limit";
+
+  static String dealerInventoryCar(String id) =>
+      "${_dealerMembership}inventory/$id";
+
+  static String dealerInventoryCarStatus(String id) =>
+      "${_dealerMembership}inventory/$id/status";
+
+  static String get dealerInventoryFetchDetails =>
+      "${_dealerMembership}inventory/fetch-details";
+
+  static String get dealerInventoryUploadImage =>
+      "${_dealerMembership}inventory/upload-image";
+
+  static String dealerExchangeCars(Map<String, String> query) =>
+      Uri.parse(
+        "${_dealerMembership}exchange/cars",
+      ).replace(queryParameters: query).toString();
+
+  static String dealerExchangeFilterOptions({String make = ''}) =>
+      "${_dealerMembership}exchange/filter-options?make=${Uri.encodeQueryComponent(make)}";
+
+  static String dealerExchangeMatches({
+    required int page,
+    required int limit,
+    String requirementId = '',
+  }) =>
+      "${_dealerMembership}exchange/matches?page=$page&limit=$limit&requirementId=$requirementId";
+
+  static String dealerExchangeCar(String id) =>
+      "${_dealerMembership}exchange/cars/$id";
+
+  static String dealerExchangeQuickOffer(String id) =>
+      "${_dealerMembership}exchange/cars/$id/offer";
+
+  // Customer inventory: Premium Listing cars
+  static String dealerCustomerCars(Map<String, String> query) =>
+      Uri.parse(
+        "${_dealerMembership}exchange/customer-cars",
+      ).replace(queryParameters: query).toString();
+
+  static String dealerCustomerCarOffer(String id) =>
+      "${_dealerMembership}exchange/customer-cars/$id/offer";
+
+  static String get dealerRequirements => "${_dealerMembership}requirements";
+
+  static String dealerRequirement(String id) =>
+      "${_dealerMembership}requirements/$id";
+
+  static String get dealerNegotiationStart =>
+      "${_dealerMembership}negotiations/start";
+
+  static String dealerNegotiations(Map<String, String> query) =>
+      Uri.parse(
+        "${_dealerMembership}negotiations",
+      ).replace(queryParameters: query).toString();
+
+  static String dealerNegotiation(String id) =>
+      "${_dealerMembership}negotiations/$id";
+
+  static String dealerNegotiationMessages(
+    String id, {
+    String before = '',
+    int limit = 30,
+  }) =>
+      "${_dealerMembership}negotiations/$id/messages?limit=$limit&before=${Uri.encodeQueryComponent(before)}";
+
+  static String dealerNegotiationSend(String id) =>
+      "${_dealerMembership}negotiations/$id/messages";
+
+  static String dealerNegotiationOffer(String id) =>
+      "${_dealerMembership}negotiations/$id/offer";
+
+  static String dealerNegotiationRespond(String id) =>
+      "${_dealerMembership}negotiations/$id/respond";
+
+  static String dealerConnectionPrecheck(Map<String, String> query) =>
+      Uri.parse(
+        "${_dealerMembership}connections/precheck",
+      ).replace(queryParameters: query).toString();
+
+  static String dealerConnectionCandidates(String carId) =>
+      "${_dealerMembership}connections/candidates?carId=$carId";
+
+  static String dealerConnections(Map<String, String> query) =>
+      Uri.parse(
+        "${_dealerMembership}connections",
+      ).replace(queryParameters: query).toString();
+
+  static String get dealerConnectionRequest =>
+      "${_dealerMembership}connections";
+
+  static String dealerConnection(String id) =>
+      "${_dealerMembership}connections/$id";
+
+  static String dealerConnectionRespond(String id) =>
+      "${_dealerMembership}connections/$id/respond";
+
+  static String dealerConnectionCancel(String id) =>
+      "${_dealerMembership}connections/$id/cancel";
+
+  static String dealerConnectionVerifyPayment(String id) =>
+      "${_dealerMembership}connections/$id/verify-payment";
+
+  static String dealerDealRooms({required int page, required int limit}) =>
+      "${_dealerMembership}deal-rooms?page=$page&limit=$limit";
+
+  static String dealerDealRoom(String id) =>
+      "${_dealerMembership}deal-rooms/$id";
+
+  static String dealerDealRoomStatus(String id) =>
+      "${_dealerMembership}deal-rooms/$id/status";
+
+  static String dealerLeads(Map<String, String> query) =>
+      Uri.parse(
+        "${_dealerMembership}leads",
+      ).replace(queryParameters: query).toString();
+
+  static String get dealerLeadCreate => "${_dealerMembership}leads";
+
+  static String dealerLeadStatus(String id) =>
+      "${_dealerMembership}leads/$id/status";
+
+  static String dealerActivity({
+    required String module,
+    required String service,
+    required int page,
+    required int limit,
+  }) =>
+      "${_dealerMembership}activity?module=$module&service=$service&page=$page&limit=$limit";
+
+  static String get searchCarMakes =>
+      "${baseUrl}customer/sell-my-car/search-car-makes";
+
+  static String get searchCarModelsByMake =>
+      "${baseUrl}customer/sell-my-car/search-car-models-by-make";
+
+  static String get searchCarVariantsByMakeModel =>
+      "${baseUrl}customer/sell-my-car/search-car-variants-by-make-model";
+
+  static String get insuranceFetchQuotes =>
+      "${baseUrl}customer/insurance/fetch-quotes";
+
+  static String get insuranceGeneratedQuotes =>
+      "${baseUrl}customer/insurance/get-generated-quotes-list";
+
+  static String get insuranceRtoList =>
+      "${baseUrl}customer/insurance/get-rto-list";
+
+  static String get insuranceMakesList =>
+      "${baseUrl}customer/insurance/get-makes-list";
+
+  static String insuranceModelsList(int makeId) =>
+      "${baseUrl}customer/insurance/get-models-list?makeId=$makeId";
+
+  static String insuranceVariantsList(int modelId) =>
+      "${baseUrl}customer/insurance/get-variants-list?modelId=$modelId";
+
+  static String get addTelecallingRequest =>
+      "${baseUrl}inspection/telecallings/add";
 
   // Socket URL Extraction
   static String _extractSocketBaseUrl(String url) {

@@ -16,7 +16,6 @@ class RegisterPinCodeController extends GetxController {
   Future<void> verifyOtp({
     required String requestId,
     required String otp,
-    required String phoneNumber,
   }) async {
     try {
       final response = await ApiService.post(
@@ -41,7 +40,6 @@ class RegisterPinCodeController extends GetxController {
         Get.to(
           () => RegistrationFormPage(
             userRole: AppConstants.roles.dealer,
-            phoneNumber: phoneNumber,
             verificationToken: verificationToken,
           ),
         );

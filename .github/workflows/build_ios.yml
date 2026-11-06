@@ -4,7 +4,8 @@ name: Deploy iOS App to TestFlight
 on:
   push:
     branches:
-      - main
+      # - main
+      - development
 
 jobs:
   build-and-upload:
