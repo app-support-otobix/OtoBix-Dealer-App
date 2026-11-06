@@ -9,6 +9,12 @@
     <!-- Showroom location (read once, when the dealer sets it) -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <!-- geolocator_android 5.x adds this for its background-tracking service. The app
+         never starts that service (one getCurrentPosition call, app open), and the
+         permission makes Play Console ask for a foreground service declaration. -->
+    <uses-permission
+        android:name="android.permission.FOREGROUND_SERVICE_LOCATION"
+        tools:node="remove" />
     <!-- Force remove media/storage permissions if any plugin adds them -->
     <uses-permission
         android:name="android.permission.READ_EXTERNAL_STORAGE"
