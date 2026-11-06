@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:otobix/Controllers/Dealer%20Membership/dealer_membership_controller.dart';
 import 'package:otobix/Models/Dealer%20Membership/dealer_membership_model.dart';
 import 'package:otobix/Utils/app_colors.dart';
@@ -85,14 +86,38 @@ class _UpgradeMembershipPageState extends State<UpgradeMembershipPage> {
             return _noTopUpState();
           }
           final plans = config.plans;
+          // A plan running now cannot be bought again until it ends.
+          DateTime? activeTill(DealerPlanModel p) =>
+              m?.plans
+                  .firstWhereOrNull(
+                    (r) => r.planCode == p.code && r.isRunningToday,
+                  )
+                  ?.endDate;
+          final buyable = plans.where((p) => activeTill(p) == null).toList();
           final DealerPurchasable? plan =
               topUp ??
-              plans.firstWhereOrNull((p) => p.code == _planCode) ??
-              plans.firstOrNull;
+              buyable.firstWhereOrNull((p) => p.code == _planCode) ??
+              buyable.firstOrNull;
           final method =
               _method ??
               config.paymentMethods.firstWhereOrNull((p) => p.enabled)?.code;
-          if (plan == null) return const SizedBox();
+          if (plan == null) {
+            if (plans.isEmpty) return const SizedBox();
+            return ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                _sectionTitle('Your plans'),
+                for (final p in plans) ...[
+                  _planTile(p, selected: false, activeTill: activeTill(p)),
+                  const SizedBox(height: 10),
+                ],
+                const Text(
+                  'All your plans are running. You can buy one again once it ends.',
+                  style: TextStyle(fontSize: 12, color: AppColors.grey),
+                ),
+              ],
+            );
+          }
 
           return ListView(
             padding: const EdgeInsets.all(16),
@@ -110,7 +135,11 @@ class _UpgradeMembershipPageState extends State<UpgradeMembershipPage> {
               ] else ...[
                 _sectionTitle('Choose a plan'),
                 for (final p in plans) ...[
-                  _planTile(p, selected: p.code == plan.code),
+                  _planTile(
+                    p,
+                    selected: p.code == plan.code,
+                    activeTill: activeTill(p),
+                  ),
                   const SizedBox(height: 10),
                 ],
               ],
@@ -162,8 +191,8 @@ class _UpgradeMembershipPageState extends State<UpgradeMembershipPage> {
               const SizedBox(height: 8),
               Text(
                 topUp != null
-                    ? 'Added points join this cycle and expire when it ends, like your plan points. They do not carry over.'
-                    : 'A plan bought while your membership is active adds to it: its points, checks, Service History and connections add up, and each plan ends on its own date. What you use counts against the plan ending first.',
+                    ? 'Added points never expire: what is left carries over to your next plan. They are used after your plan\'s own points.'
+                    : 'A plan bought while your membership is active adds to it: its points, checks, Service History and connections add up, and each plan ends on its own date. What you use counts against the plan ending first. A plan you already have can be bought again once it ends.',
                 style: const TextStyle(fontSize: 11, color: AppColors.grey),
               ),
             ],
@@ -294,9 +323,16 @@ class _UpgradeMembershipPageState extends State<UpgradeMembershipPage> {
     ),
   );
 
-  Widget _planTile(DealerPlanModel p, {required bool selected}) {
+  // `activeTill`: the last day of this plan while the dealer has it running;
+  // it shows a tick and cannot be chosen (the same plan cannot run twice).
+  Widget _planTile(
+    DealerPlanModel p, {
+    required bool selected,
+    DateTime? activeTill,
+  }) {
+    final active = activeTill != null;
     return InkWell(
-      onTap: () => setState(() => _planCode = p.code),
+      onTap: active ? null : () => setState(() => _planCode = p.code),
       borderRadius: BorderRadius.circular(14),
       child: Container(
         padding: const EdgeInsets.all(14),
@@ -315,8 +351,12 @@ class _UpgradeMembershipPageState extends State<UpgradeMembershipPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Icon(
-              selected ? Icons.radio_button_checked : Icons.radio_button_off,
-              color: selected ? AppColors.green : AppColors.grey,
+              active
+                  ? Icons.check_circle
+                  : selected
+                  ? Icons.radio_button_checked
+                  : Icons.radio_button_off,
+              color: active || selected ? AppColors.green : AppColors.grey,
               size: 20,
             ),
             const SizedBox(width: 10),
@@ -324,6 +364,18 @@ class _UpgradeMembershipPageState extends State<UpgradeMembershipPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  if (active)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 4),
+                      child: Text(
+                        'Active till ${DateFormat('dd-MM-yyyy').format(activeTill)} · buy again once it ends',
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.green,
+                        ),
+                      ),
+                    ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [

@@ -435,7 +435,7 @@ class DealerMembershipController extends GetxController {
             ? '${added.name} added'
             : 'Membership active',
         isTopUp
-            ? 'Use them until your membership ends.'
+            ? 'They never expire, and are used after your plan\'s own points.'
             : added != null
             ? 'Its points and allowances are added to your current plan, till ${DateFormat('dd-MM-yyyy').format(added.endDate!)}.'
             : 'Your points have been allocated.',
