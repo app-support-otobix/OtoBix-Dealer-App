@@ -8,12 +8,14 @@ import 'package:otobix/Widgets/Dealer%20Membership/vehicle_spec_sheet.dart';
 class InventoryCarCard extends StatelessWidget {
   final DealerInventoryCarModel car;
   final VoidCallback onEdit;
+  final VoidCallback onLeads;
   final VoidCallback onOffers;
 
   const InventoryCarCard({
     super.key,
     required this.car,
     required this.onEdit,
+    required this.onLeads,
     required this.onOffers,
   });
 
@@ -153,9 +155,20 @@ class InventoryCarCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          // Customer leads are off for now (being reworked): dealer offers only.
           Row(
             children: [
+              if (!isCustomerCar) ...[
+                Expanded(
+                  child: _CounterButton(
+                    icon: Icons.people_alt_outlined,
+                    count: car.leadCount,
+                    label: 'Customer Leads',
+                    color: AppColors.green,
+                    onTap: onLeads,
+                  ),
+                ),
+                const SizedBox(width: 10),
+              ],
               Expanded(
                 child: _CounterButton(
                   icon: Icons.handshake_outlined,

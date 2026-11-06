@@ -469,50 +469,31 @@ class ServiceHistoryPage extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Transaction ID',
+              // No transaction ID: a points one is too long and pushed the
+              // buttons off the card. The left side takes what the buttons leave.
+              Expanded(
+                child: RichText(
+                  text: TextSpan(
                     style: const TextStyle(
                       fontSize: 10.5,
                       color: Colors.black87,
-                      fontWeight: FontWeight.w500,
                     ),
-                  ),
-                  Text(
-                    report.paymentId,
-                    style: const TextStyle(
-                      fontSize: 10.5,
-                      color: Colors.black87,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 5),
-                  RichText(
-                    text: TextSpan(
-                      style: const TextStyle(
-                        fontSize: 10.5,
-                        color: Colors.black87,
+                    children: [
+                      const TextSpan(
+                        text: 'Date - ',
+                        style: TextStyle(fontWeight: FontWeight.w500),
                       ),
-                      children: [
-                        const TextSpan(
-                          text: 'Date - ',
-                          style: TextStyle(fontWeight: FontWeight.w500),
+                      TextSpan(
+                        text: serviceHistoryController.formatDateWithSuffix(
+                          report.updatedAt,
                         ),
-                        TextSpan(
-                          text: serviceHistoryController.formatDateWithSuffix(
-                            report.updatedAt,
-                          ),
-                          style: const TextStyle(fontWeight: FontWeight.w700),
-                        ),
-                      ],
-                    ),
+                        style: const TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
-
-              // const SizedBox(width: 10),
+              const SizedBox(width: 10),
               Column(
                 children: [
                   // ButtonWidget(

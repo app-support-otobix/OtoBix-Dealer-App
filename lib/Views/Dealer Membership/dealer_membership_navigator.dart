@@ -288,8 +288,11 @@ class DealerMembershipNavigator {
     }
   }
 
-  static void openCarOffers(DealerInventoryCarModel car) =>
+  static void openCarLeads(DealerInventoryCarModel car) =>
       Get.to(() => CarLeadsOffersPage(car: car));
+
+  static void openCarOffers(DealerInventoryCarModel car) =>
+      Get.to(() => CarLeadsOffersPage(car: car, initialTab: 1));
 
   static void openOfferToDealers(DealerInventoryCarModel car) =>
       Get.to(() => SellerInitiatedConnectionPage(car: car));
