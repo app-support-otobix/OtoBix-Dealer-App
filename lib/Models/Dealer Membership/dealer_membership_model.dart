@@ -236,6 +236,13 @@ class DealerRunningPlanModel {
       name = _str(j['name']),
       startDate = DateTime.tryParse(_str(j['startDate'])),
       endDate = DateTime.tryParse(_str(j['endDate']));
+
+  /// Still in its days: its last day is today or later.
+  bool get isRunningToday {
+    final now = DateTime.now();
+    return endDate != null &&
+        !endDate!.isBefore(DateTime(now.year, now.month, now.day));
+  }
 }
 
 class DealerMembershipModel {
@@ -273,7 +280,8 @@ class DealerMembershipModel {
   final int daysLeft;
   final bool showRenewalWarning;
   final int availablePoints;
-  // Points added by top-ups this cycle (already in availablePoints).
+  // Top-up points not used yet (already in availablePoints). They never
+  // expire and are used after the plans' own points.
   final int topUpPoints;
   // The plans running now; more than one when a plan was bought while
   // another ran (their points and allowances add up).

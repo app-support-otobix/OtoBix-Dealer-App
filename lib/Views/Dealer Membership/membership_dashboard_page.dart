@@ -241,6 +241,19 @@ class _MembershipDashboardPageState extends State<MembershipDashboardPage> {
                   ),
                 ),
               ),
+          // Top-up points carry over from plan to plan.
+          if (m.topUpPoints > 0)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                'Includes ${GlobalFunctions.formatNumber(m.topUpPoints)} top-up points · they never expire',
+                style: const TextStyle(
+                  color: AppColors.blue,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
           if (summary != null && m.isActive) ...[
             const SizedBox(height: 10),
             Text(
