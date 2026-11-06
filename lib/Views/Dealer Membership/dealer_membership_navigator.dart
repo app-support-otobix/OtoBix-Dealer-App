@@ -484,15 +484,19 @@ class DealerMembershipNavigator {
           Icons.shield_outlined,
           Colors.deepPurple,
           'Insurance',
-          'Compare & buy policies',
+          // 'Compare & buy policies',
+          'Coming Soon...',
           openInsurance,
+          isEnabled: false,
         ),
         _DrawerItem(
           Icons.account_balance_outlined,
           AppColors.deepOrange,
           'Finance',
-          'EMI estimate & customer loans',
+          // 'EMI estimate & customer loans',
+          'Coming Soon...',
           openFinance,
+          isEnabled: false,
         ),
       ]);
 
@@ -624,49 +628,55 @@ class DealerMembershipNavigator {
   }
 
   static Widget _drawerTile(BuildContext sheetContext, _DrawerItem item) {
-    return InkWell(
-      onTap: () {
-        Navigator.of(sheetContext).pop();
-        item.onTap();
-      },
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: item.color.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
+    return Opacity(
+      opacity: item.isEnabled ? 1.0 : 0.5,
+      child: InkWell(
+        onTap:
+            item.isEnabled
+                ? () {
+                  Navigator.of(sheetContext).pop();
+                  item.onTap();
+                }
+                : null,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: item.color.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(item.icon, color: item.color, size: 22),
               ),
-              child: Icon(item.icon, color: item.color, size: 22),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    item.label,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.black,
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.label,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.black,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    item.subtitle,
-                    style: const TextStyle(
-                      fontSize: 11.5,
-                      color: AppColors.grey,
+                    const SizedBox(height: 2),
+                    Text(
+                      item.subtitle,
+                      style: const TextStyle(
+                        fontSize: 11.5,
+                        color: AppColors.grey,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            const Icon(Icons.chevron_right, color: AppColors.grey, size: 20),
-          ],
+              const Icon(Icons.chevron_right, color: AppColors.grey, size: 20),
+            ],
+          ),
         ),
       ),
     );
@@ -679,5 +689,13 @@ class _DrawerItem {
   final String label;
   final String subtitle;
   final VoidCallback onTap;
-  _DrawerItem(this.icon, this.color, this.label, this.subtitle, this.onTap);
+  final bool isEnabled;
+  _DrawerItem(
+    this.icon,
+    this.color,
+    this.label,
+    this.subtitle,
+    this.onTap, {
+    this.isEnabled = true,
+  });
 }
