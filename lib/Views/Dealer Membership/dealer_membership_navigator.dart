@@ -523,6 +523,13 @@ class DealerMembershipNavigator {
         return openDealRoom(id);
       case 'LEAD':
       case 'LEADS':
+        // A customer lead on one of the dealer's own cars carries the car's
+        // id: open that car's Customer Leads, as the Leads page holds dealer
+        // leads only. Without one (or if the car can't be read), Leads.
+        if (id.isNotEmpty && isShown(_sell)) {
+          final car = await DealerInventoryController.to.getCar(id);
+          if (car != null) return openCarLeads(car);
+        }
         return openLeads();
       default:
         return openMembership();
