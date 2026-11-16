@@ -7,7 +7,7 @@ import 'package:otobix/Widgets/app_bar_widget.dart';
 
 /// Buy › Customer Inventory: customers' cars their owners listed for dealers
 /// (Premium Listing). Chatting and offers are free; the owner's name and phone
-/// cost 1% of the expected price (₹2,000 to ₹10,000) once they accept a connection.
+/// cost a flat ₹2,000 once they accept a connection.
 class CustomerInventoryPage extends StatefulWidget {
   const CustomerInventoryPage({super.key});
 
@@ -134,8 +134,8 @@ class _CustomerInventoryPageState extends State<CustomerInventoryPage> {
               padding: EdgeInsets.fromLTRB(16, 8, 16, 10),
               child: Text(
                 'Cars their owners listed on OtoBix. Chat and offers are free; '
-                'once an owner accepts your connection, pay 1% of the expected price '
-                '(₹2,000 to ₹10,000) to see their name and phone.',
+                'once an owner accepts your connection, pay ₹2,000 to see their '
+                'name and phone.',
                 style: TextStyle(fontSize: 11, color: AppColors.grey),
               ),
             ),

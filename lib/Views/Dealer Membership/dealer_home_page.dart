@@ -382,13 +382,53 @@ class _DealerHomePageState extends State<DealerHomePage> {
             child: const Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Gaadi Ka Deal Karo Fix, With OtoBix',
-                  style: TextStyle(
-                    fontFamily: 'Montserrat',
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16.2,
-                    color: AppColors.white,
+                Text.rich(
+                  TextSpan(
+                    style: TextStyle(
+                      fontFamily: 'Montserrat',
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16.2,
+                      color: AppColors.white,
+                    ),
+                    children: [
+                      TextSpan(text: 'Gaadi Ki Deal Karo Fix, With '),
+                      // OtoBix in the logo's red and blue, on a white tag
+                      // because red text does not read on the green banner.
+                      WidgetSpan(
+                        alignment: PlaceholderAlignment.middle,
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: AppColors.white,
+                            borderRadius: BorderRadius.all(Radius.circular(4)),
+                          ),
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 5,
+                              vertical: 1,
+                            ),
+                            child: Text.rich(
+                              TextSpan(
+                                style: TextStyle(
+                                  fontFamily: 'Montserrat',
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16.2,
+                                ),
+                                children: [
+                                  TextSpan(
+                                    text: 'Oto',
+                                    style: TextStyle(color: AppColors.red),
+                                  ),
+                                  TextSpan(
+                                    text: 'Bix',
+                                    style: TextStyle(color: AppColors.blue),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 SizedBox(height: 4),
