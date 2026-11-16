@@ -124,33 +124,39 @@ class DealerMembershipNavigator {
       (_) => openAuctions(),
       module: _buy,
     ),
-    // Leads are dealer leads only (customer leads are off for now).
+    DealerFeature(
+      'Customer Leads',
+      Icons.groups_outlined,
+      ['leads', 'customer', 'enquiry', 'website'],
+      (_) => openLeads(),
+      module: _leads,
+    ),
     DealerFeature(
       'Offers Received',
       Icons.local_offer_outlined,
-      ['leads', 'offers', 'dealer leads', 'received', 'negotiation'],
-      (_) => openLeads(),
+      ['offers', 'dealer leads', 'received', 'negotiation'],
+      (_) => openLeads(tab: 1),
       module: _leads,
     ),
     DealerFeature(
       'My Offers Sent',
       Icons.send_outlined,
       ['offers', 'sent', 'my offers'],
-      (_) => openLeads(section: 1),
+      (_) => openLeads(tab: 1, section: 1),
       module: _leads,
     ),
     DealerFeature(
       'Connections',
       Icons.link,
       ['connection', 'request', 'deal room request'],
-      (_) => openLeads(section: 2),
+      (_) => openLeads(tab: 1, section: 2),
       module: _leads,
     ),
     DealerFeature(
       'Deal Rooms',
       Icons.meeting_room_outlined,
       ['deal room', 'deal', 'chat'],
-      (_) => openLeads(section: 3),
+      (_) => openLeads(tab: 1, section: 3),
       module: _leads,
     ),
     DealerFeature(
@@ -251,9 +257,11 @@ class DealerMembershipNavigator {
   static void openSell({int tab = 0}) =>
       _ifEnabled(_sell, () => Get.to(() => DealerSellPage(initialTab: tab)));
 
-  static void openLeads({int section = 0}) => _ifEnabled(
+  /// Leads: tab 0 Customer, tab 1 Dealer (opened on [section]).
+  static void openLeads({int tab = 0, int section = 0}) => _ifEnabled(
     _leads,
-    () => Get.to(() => DealerLeadsPage(dealerSection: section)),
+    () =>
+        Get.to(() => DealerLeadsPage(initialTab: tab, dealerSection: section)),
   );
 
   static void openActivityLog() => Get.to(() => const ActivityLogPage());
@@ -523,10 +531,10 @@ class DealerMembershipNavigator {
         return openDealRoom(id);
       case 'LEAD':
       case 'LEADS':
-        // A customer lead on one of the dealer's own cars carries the car's
-        // id: open that car's Customer Leads, as the Leads page holds dealer
-        // leads only. Without one (or if the car can't be read), Leads.
-        if (id.isNotEmpty && isShown(_sell)) {
+        // New leads on one of the dealer's own cars carry the car's id (LEADS):
+        // open that car's Customer Leads. LEAD carries the lead's own id, not a
+        // car's. Otherwise, the Customer tab of Leads.
+        if (type == 'LEADS' && id.isNotEmpty && isShown(_sell)) {
           final car = await DealerInventoryController.to.getCar(id);
           if (car != null) return openCarLeads(car);
         }

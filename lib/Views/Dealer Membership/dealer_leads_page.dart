@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:otobix/Controllers/Dealer%20Membership/dealer_connections_controller.dart';
+import 'package:otobix/Controllers/Dealer%20Membership/dealer_leads_controller.dart';
 import 'package:otobix/Controllers/Dealer%20Membership/dealer_negotiations_controller.dart';
 import 'package:otobix/Controllers/Dealer%20Membership/dealer_paged_list.dart';
 import 'package:otobix/Models/Dealer%20Membership/dealer_connection_model.dart';
@@ -8,22 +9,35 @@ import 'package:otobix/Models/Dealer%20Membership/dealer_deal_room_model.dart';
 import 'package:otobix/Utils/app_colors.dart';
 import 'package:otobix/Utils/global_functions.dart';
 import 'package:otobix/Views/Dealer%20Membership/dealer_membership_navigator.dart';
+import 'package:otobix/Widgets/Dealer%20Membership/customer_leads_list.dart';
 import 'package:otobix/Widgets/Dealer%20Membership/dealer_common_widgets.dart';
 import 'package:otobix/Widgets/Dealer%20Membership/offer_card.dart';
 import 'package:otobix/Widgets/app_bar_widget.dart';
 
-/// Dealer leads: offers received and sent, connections and Deal Rooms.
-/// (Customer leads and Add Lead are off for now; they are being reworked.)
+/// Customer leads (enquiries from the OtoBix app and website) and dealer leads
+/// (offers received and sent, connections, Deal Rooms). Add Lead is off for now.
 class DealerLeadsPage extends StatefulWidget {
+  final int initialTab;
   final int dealerSection;
-  const DealerLeadsPage({super.key, this.dealerSection = 0});
+  const DealerLeadsPage({
+    super.key,
+    this.initialTab = 0,
+    this.dealerSection = 0,
+  });
 
   @override
   State<DealerLeadsPage> createState() => _DealerLeadsPageState();
 }
 
-class _DealerLeadsPageState extends State<DealerLeadsPage> {
+class _DealerLeadsPageState extends State<DealerLeadsPage>
+    with SingleTickerProviderStateMixin {
+  late final TabController tabs = TabController(
+    length: 2,
+    vsync: this,
+    initialIndex: widget.initialTab,
+  );
   late int section = widget.dealerSection;
+  final leads = DealerLeadsController.to.allLeads;
   final negotiations = DealerNegotiationsController.to;
   final connections = DealerConnectionsController.to;
 
@@ -37,7 +51,14 @@ class _DealerLeadsPageState extends State<DealerLeadsPage> {
   @override
   void initState() {
     super.initState();
+    leads.refresh();
     _loadSection();
+  }
+
+  @override
+  void dispose() {
+    tabs.dispose();
+    super.dispose();
   }
 
   DealerPagedList _list() =>
@@ -55,7 +76,25 @@ class _DealerLeadsPageState extends State<DealerLeadsPage> {
     return Scaffold(
       backgroundColor: AppColors.white,
       appBar: AppBarWidget(title: 'Leads'),
-      body: SafeArea(child: _dealerTab()),
+      body: SafeArea(
+        child: Column(
+          children: [
+            TabBar(
+              controller: tabs,
+              labelColor: AppColors.green,
+              unselectedLabelColor: AppColors.grey,
+              indicatorColor: AppColors.green,
+              tabs: const [Tab(text: 'Customer'), Tab(text: 'Dealer')],
+            ),
+            Expanded(
+              child: TabBarView(
+                controller: tabs,
+                children: [CustomerLeadsList(leads: leads), _dealerTab()],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
