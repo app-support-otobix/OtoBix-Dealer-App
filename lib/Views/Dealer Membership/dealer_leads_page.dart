@@ -189,7 +189,7 @@ class _DealerLeadsPageState extends State<DealerLeadsPage>
       'PENDING' =>
         '${c.isPremiumListing ? 'Free request' : '${c.pointsPerSide} reserved'} · ${GlobalFunctions.timeLeft(c.expiresAt)}',
       'PAYMENT_DUE' =>
-        'Owner accepted · pay ${GlobalFunctions.formatRupees(c.priceRupees)}',
+        'Owner accepted · pay ${c.price.listText}',
       'ACCEPTED' => 'Identity revealed · Deal Room open',
       'DECLINED' => 'Declined · $released',
       'EXPIRED' => 'No reply in time · nothing charged',

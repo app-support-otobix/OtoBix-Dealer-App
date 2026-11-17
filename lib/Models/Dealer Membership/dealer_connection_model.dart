@@ -1,4 +1,5 @@
 import 'package:otobix/Models/Dealer%20Membership/dealer_negotiation_model.dart';
+import 'package:otobix/Models/Dealer%20Membership/dealer_price_model.dart';
 import 'package:otobix/Utils/global_functions.dart';
 
 String _str(dynamic v) => GlobalFunctions.parse<String>(v) ?? '';
@@ -18,8 +19,9 @@ class DealerConnectionModel {
   final DealerPartyModel counterpart;
   final String status;
   final int pointsPerSide;
-  // Premium Listing: paid once the car owner accepts (no points).
+  // Premium Listing: paid once the car owner accepts (no points), GST included.
   final int priceRupees;
+  final DealerPriceModel price;
   final DateTime? requestedAt;
   final DateTime? expiresAt;
   final String dealRoomId;
@@ -31,6 +33,7 @@ class DealerConnectionModel {
   DealerConnectionModel.fromJson(Map<String, dynamic> j)
     : id = _str(j['id']),
       priceRupees = _int(j['priceRupees']),
+      price = DealerPriceModel.fromJson(j),
       connectionCode = _str(j['connectionCode']),
       negotiationId = _str(j['negotiationId']),
       carId = _str(j['car']?['id']),
@@ -56,7 +59,8 @@ class DealerConnectionPrecheckModel {
   final String planName;
   final int availablePoints;
   final int cost;
-  final int priceRupees; // Premium Listing: paid once the owner accepts
+  final int priceRupees; // Premium Listing: paid once the owner accepts, GST included
+  final DealerPriceModel price;
   final int expiryHours;
   final bool listingActive;
   final int pendingByMe;
@@ -72,6 +76,7 @@ class DealerConnectionPrecheckModel {
       availablePoints = _int(j['availablePoints']),
       cost = _int(j['cost']),
       priceRupees = _int(j['priceRupees']),
+      price = DealerPriceModel.fromJson(j),
       expiryHours = _int(j['expiryHours']),
       listingActive = j['listingActive'] == true,
       pendingByMe = _int(j['pendingByMe']),

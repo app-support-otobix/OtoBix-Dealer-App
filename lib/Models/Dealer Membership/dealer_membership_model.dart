@@ -1,3 +1,4 @@
+import 'package:otobix/Models/Dealer%20Membership/dealer_price_model.dart';
 import 'package:otobix/Utils/global_functions.dart';
 
 int _int(dynamic v) => GlobalFunctions.parse<int>(v) ?? 0;
@@ -15,7 +16,10 @@ List<Map<String, dynamic>> _maps(dynamic v) => [
 abstract interface class DealerPurchasable {
   String get code;
   String get name;
+
+  /// What the dealer pays, 18% GST included ([price] breaks it down).
   int get priceRupees;
+  DealerPriceModel get price;
 }
 
 class DealerPlanModel implements DealerPurchasable {
@@ -25,6 +29,8 @@ class DealerPlanModel implements DealerPurchasable {
   final String name;
   @override
   final int priceRupees;
+  @override
+  final DealerPriceModel price;
   final int pointsPerCycle;
   final int listingCap;
   // Broker plans: customer cars only, this many a cycle.
@@ -39,6 +45,7 @@ class DealerPlanModel implements DealerPurchasable {
     : code = _str(j['code']),
       name = _str(j['name']),
       priceRupees = _int(j['priceRupees']),
+      price = DealerPriceModel.fromJson(j),
       pointsPerCycle = _int(j['pointsPerCycle']),
       listingCap = _int(j['listingCap']),
       customerCarsPerCycle = _int(j['customerCarsPerCycle']),
@@ -47,8 +54,8 @@ class DealerPlanModel implements DealerPurchasable {
       benefits = _strings(j['benefits']);
 }
 
-/// More points for the current cycle (1,000 for ₹1,000): usable for any
-/// feature, until the cycle ends.
+/// More points (1,000 for ₹1,000 + GST): usable for any feature, and they
+/// never expire.
 class DealerTopUpModel implements DealerPurchasable {
   @override
   final String code;
@@ -56,6 +63,8 @@ class DealerTopUpModel implements DealerPurchasable {
   final String name;
   @override
   final int priceRupees;
+  @override
+  final DealerPriceModel price;
   final int points;
   final List<String> benefits;
 
@@ -63,6 +72,7 @@ class DealerTopUpModel implements DealerPurchasable {
     : code = _str(j['code']),
       name = _str(j['name']),
       priceRupees = _int(j['priceRupees']),
+      price = DealerPriceModel.fromJson(j),
       points = _int(j['points']),
       benefits = _strings(j['benefits']);
 }
@@ -210,7 +220,8 @@ class DealerPendingPaymentModel {
   // What it buys, e.g. "Dealer Pro" or "1,000 OtoBix Points".
   final String name;
   final bool isTopUp;
-  final int amountRupees;
+  final int amountRupees; // GST included
+  final int gstRupees; // 0 on a request from before GST
   final DateTime? requestedAt;
 
   DealerPendingPaymentModel.fromJson(Map<String, dynamic> j)
@@ -219,6 +230,7 @@ class DealerPendingPaymentModel {
       name = _str(j['name']),
       isTopUp = j['isTopUp'] == true,
       amountRupees = _int(j['amountRupees']),
+      gstRupees = _int(j['gstRupees']),
       requestedAt = _date(j['requestedAt']);
 }
 

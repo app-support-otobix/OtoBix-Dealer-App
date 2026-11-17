@@ -146,7 +146,7 @@ class _RequestConnectionPageState extends State<RequestConnectionPage> {
   List<Widget> _precheck(DealerConnectionPrecheckModel p) {
     // A Premium Listing car: free to request, paid once the owner accepts.
     final premium = p.priceRupees > 0;
-    final price = GlobalFunctions.formatRupees(p.priceRupees);
+    final price = p.price.fullText;
     return [
       DealerSectionCard(
         title: 'Pre-checks',
@@ -268,7 +268,7 @@ class _RequestConnectionPageState extends State<RequestConnectionPage> {
             ),
             Text(
               c.isPremiumListing
-                  ? '${c.connectionCode} · $price once the owner accepts'
+                  ? '${c.connectionCode} · ${c.price.fullText} once the owner accepts'
                   : '${c.connectionCode} · ${c.pointsPerSide} points per side',
               style: const TextStyle(color: AppColors.grey, fontSize: 11),
             ),
@@ -341,7 +341,7 @@ class _RequestConnectionPageState extends State<RequestConnectionPage> {
 
   String _explain(DealerConnectionModel c) {
     if (c.isPremiumListing) {
-      final price = GlobalFunctions.formatRupees(c.priceRupees);
+      final price = c.price.fullText;
       switch (c.status) {
         case 'PENDING':
           return 'Waiting for the car owner to accept. Nothing is charged until they do; withdraw any time.';
