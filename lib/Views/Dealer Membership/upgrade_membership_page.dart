@@ -188,6 +188,15 @@ class _UpgradeMembershipPageState extends State<UpgradeMembershipPage> {
                 width: double.infinity,
                 onTap: () => _submit(plan),
               ),
+              if (plan.price.hasGst) ...[
+                const SizedBox(height: 6),
+                Center(
+                  child: Text(
+                    plan.price.breakdownText,
+                    style: const TextStyle(fontSize: 11, color: AppColors.grey),
+                  ),
+                ),
+              ],
               const SizedBox(height: 8),
               Text(
                 topUp != null
@@ -244,7 +253,7 @@ class _UpgradeMembershipPageState extends State<UpgradeMembershipPage> {
                 ),
               ),
               Text(
-                GlobalFunctions.formatRupees(t.priceRupees),
+                t.price.listText,
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 13,
@@ -282,7 +291,7 @@ class _UpgradeMembershipPageState extends State<UpgradeMembershipPage> {
                 children: [
                   Expanded(
                     child: Text(
-                      '$plan · ${GlobalFunctions.formatRupees(pending.amountRupees)}',
+                      '$plan · ${GlobalFunctions.formatRupees(pending.amountRupees)}${pending.gstRupees > 0 ? ' incl. GST' : ''}',
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 15,
@@ -387,7 +396,7 @@ class _UpgradeMembershipPageState extends State<UpgradeMembershipPage> {
                         ),
                       ),
                       Text(
-                        '${GlobalFunctions.formatRupees(p.priceRupees)} / ${p.cycleDays} days',
+                        '${p.price.listText} / ${p.cycleDays} days',
                         style: const TextStyle(
                           fontSize: 12,
                           color: AppColors.grey,

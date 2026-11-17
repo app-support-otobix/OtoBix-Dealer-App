@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:otobix/Models/Dealer%20Membership/dealer_membership_model.dart';
 import 'package:otobix/Utils/app_colors.dart';
-import 'package:otobix/Utils/global_functions.dart';
 
 /// Dealer type chips (New Car Dealer, Used Car Dealer, Broker) and, under
 /// them, the chosen type's plans in short. Used on the registration form and
@@ -105,7 +104,7 @@ class DealerPlansSummaryCard extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  '${GlobalFunctions.formatRupees(p.priceRupees)} / ${p.cycleDays} days',
+                  '${p.price.listText} / ${p.cycleDays} days',
                   style: const TextStyle(fontSize: 11, color: AppColors.grey),
                 ),
               ],

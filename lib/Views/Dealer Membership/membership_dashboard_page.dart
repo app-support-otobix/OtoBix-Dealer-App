@@ -276,7 +276,7 @@ class _MembershipDashboardPageState extends State<MembershipDashboardPage> {
                 onPressed: DealerMembershipNavigator.openAddPoints,
                 icon: const Icon(Icons.add_circle_outline, size: 18),
                 label: Text(
-                  'Add ${GlobalFunctions.formatNumber(controller.config.value!.topUp!.points)} points · ${GlobalFunctions.formatRupees(controller.config.value!.topUp!.priceRupees)}',
+                  'Add ${GlobalFunctions.formatNumber(controller.config.value!.topUp!.points)} points · ${controller.config.value!.topUp!.price.listText}',
                   style: const TextStyle(fontSize: 12),
                 ),
                 style: OutlinedButton.styleFrom(
