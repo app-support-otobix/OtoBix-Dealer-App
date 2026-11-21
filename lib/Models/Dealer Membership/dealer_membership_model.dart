@@ -272,9 +272,12 @@ class DealerMembershipModel {
   final String city;
   final String state;
   final int tradeRadiusKm;
-  // Set from the phone GPS; other dealers' cars show their distance from it.
+  // Set from a searched address or the phone GPS; other dealers' cars show
+  // their distance from it.
   final bool hasShowroomLocation;
   final DateTime? showroomLocationAt;
+  // Its PIN code; '' when unknown.
+  final String showroomPincode;
   final String status;
   final DealerPlanModel? plan;
   // The free Promo trial runs on dates OtoBix set from the CRM and they have
@@ -335,6 +338,7 @@ class DealerMembershipModel {
       tradeRadiusKm = _int(j['tradeRadiusKm']),
       hasShowroomLocation = j['showroomLocation'] is Map,
       showroomLocationAt = _date(j['showroomLocation']?['updatedAt']),
+      showroomPincode = _str(j['showroomLocation']?['pincode']),
       status = _str(j['status']).isEmpty ? 'NONE' : _str(j['status']),
       plan =
           j['plan'] is Map

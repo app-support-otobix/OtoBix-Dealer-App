@@ -57,4 +57,28 @@ void main() {
     }
     expect(membership({'promoTrial': null}).trialQueued, isFalse);
   });
+
+  test('showroom location: its PIN code, or none', () {
+    final set = membership({
+      'showroomLocation': {
+        'latitude': 22.47,
+        'longitude': 88.4,
+        'pincode': '700094',
+        'updatedAt': '2026-11-21T06:00:00.000Z',
+      },
+    });
+    expect(set.hasShowroomLocation, isTrue);
+    expect(set.showroomPincode, '700094');
+
+    // An older backend sends no PIN code.
+    final noPin = membership({
+      'showroomLocation': {'latitude': 22.47, 'longitude': 88.4},
+    });
+    expect(noPin.hasShowroomLocation, isTrue);
+    expect(noPin.showroomPincode, '');
+
+    final unset = membership({'showroomLocation': null});
+    expect(unset.hasShowroomLocation, isFalse);
+    expect(unset.showroomPincode, '');
+  });
 }

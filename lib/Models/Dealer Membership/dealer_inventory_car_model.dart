@@ -18,6 +18,7 @@ class DealerInventoryCarModel {
   final String carAddress;
   final double? carLatitude;
   final double? carLongitude;
+  final String carPincode; // '' when unknown
   final String registrationNumber;
   final String title;
   final String make;
@@ -66,6 +67,7 @@ class DealerInventoryCarModel {
       carAddress = _str(j['carAddress']),
       carLatitude = (j['carLocation']?['latitude'] as num?)?.toDouble(),
       carLongitude = (j['carLocation']?['longitude'] as num?)?.toDouble(),
+      carPincode = _str(j['carPincode']),
       registrationNumber = _str(j['registrationNumber']),
       title = _str(j['title']),
       make = _str(j['make']),
