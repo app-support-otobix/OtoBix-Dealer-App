@@ -8,6 +8,7 @@ import 'package:otobix/Models/Dealer%20Membership/dealer_membership_model.dart';
 import 'package:otobix/Utils/app_colors.dart';
 import 'package:otobix/Utils/app_images.dart';
 import 'package:otobix/Utils/global_functions.dart';
+import 'package:otobix/Views/Dealer%20Membership/dealer_assistant_page.dart';
 import 'package:otobix/Views/Dealer%20Membership/dealer_membership_navigator.dart';
 import 'package:otobix/Views/Dealer%20Membership/dealer_type_choice_page.dart';
 import 'package:otobix/Views/Dealer%20Panel/user_notifications_page.dart';
@@ -143,27 +144,40 @@ class _DealerHomePageState extends State<DealerHomePage> {
             ),
           ],
         ),
-        IconButton(
-          icon: Obx(
-            () => Badge.count(
-              count:
-                  Get.isRegistered<HomeController>()
-                      ? Get.find<HomeController>()
-                          .unreadNotificationsCount
-                          .value
-                      : 0,
-              isLabelVisible:
-                  Get.isRegistered<HomeController>() &&
-                  Get.find<HomeController>().unreadNotificationsCount.value > 0,
-              child: const Icon(
-                Icons.notifications_outlined,
-                color: AppColors.grey,
-              ),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Voice assistant: ask for cars or about the account by voice.
+            IconButton(
+              tooltip: 'Voice assistant',
+              icon: const Icon(Icons.mic_none_rounded, color: AppColors.green),
+              onPressed: () => Get.to(() => const DealerAssistantPage()),
             ),
-          ),
-          onPressed: () => Get.to(() => UserNotificationsPage()),
+            _notificationsButton(),
+          ],
         ),
       ],
+    );
+  }
+
+  Widget _notificationsButton() {
+    return IconButton(
+      icon: Obx(
+        () => Badge.count(
+          count:
+              Get.isRegistered<HomeController>()
+                  ? Get.find<HomeController>().unreadNotificationsCount.value
+                  : 0,
+          isLabelVisible:
+              Get.isRegistered<HomeController>() &&
+              Get.find<HomeController>().unreadNotificationsCount.value > 0,
+          child: const Icon(
+            Icons.notifications_outlined,
+            color: AppColors.grey,
+          ),
+        ),
+      ),
+      onPressed: () => Get.to(() => UserNotificationsPage()),
     );
   }
 

@@ -9,6 +9,8 @@
     <!-- Showroom location (read once, when the dealer sets it) -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <!-- Voice assistant on Dealer Home: the phone's own speech recognition -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <!-- geolocator_android 5.x adds this for its background-tracking service. The app
          never starts that service (one getCurrentPosition call, app open), and the
          permission makes Play Console ask for a foreground service declaration. -->
@@ -69,6 +71,14 @@
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
+        </intent>
+        <!-- Voice assistant: Android 11+ hides the speech recogniser and the
+             text-to-speech engine from apps that don't declare them here. -->
+        <intent>
+            <action android:name="android.speech.RecognitionService" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE" />
         </intent>
     </queries>
 </manifest>

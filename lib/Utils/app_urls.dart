@@ -216,6 +216,9 @@ class AppUrls {
 
   static String get dealerMembership => "${_dealerMembership}membership";
 
+  // Voice assistant (Dealer Home mic)
+  static String get dealerAssistantChat => "${_dealerMembership}assistant/chat";
+
   static String get dealerProfileUpdate =>
       "${_dealerMembership}membership/register";
 

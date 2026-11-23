@@ -34,6 +34,10 @@
 		<string>App requires access to your photo library to upload profile pictures and photos of cars you list.</string>
 		<!-- <key>NSUserTrackingUsageDescription</key>
 		<string>App uses tracking to deliver personalized notifications.</string> -->
+		<key>NSMicrophoneUsageDescription</key>
+		<string>OtoBix uses the microphone when you tap the mic on Dealer Home, so you can ask for cars by voice.</string>
+		<key>NSSpeechRecognitionUsageDescription</key>
+		<string>OtoBix turns what you say to the voice assistant into text, so it can find the cars you ask for.</string>
 		<key>NSLocationWhenInUseUsageDescription</key>
 		<string>OtoBix uses your location only when you set your showroom location, to show how far other dealers' cars are from your showroom.</string>
 		<key>UIApplicationSupportsIndirectInputEvents</key>
