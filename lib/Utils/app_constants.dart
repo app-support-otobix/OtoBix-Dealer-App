@@ -3,7 +3,7 @@ enum DeploymentEnvironment { local, dev, prod }
 class AppConstants {
   // ---- Deploy on Production or Development by changing this ----
   static const DeploymentEnvironment deploymentEnvironment =
-      DeploymentEnvironment.prod;
+      DeploymentEnvironment.dev; // voice-assistant branch: the dev backend on Render, on development data
 
   static const String appCheckDebugToken =
       '3DD4FF19-5B1F-41EF-9CA4-28AA9FB0AC21';
@@ -71,7 +71,9 @@ class AppConstants {
   // ---- configuration per environment ----
   static const _localConfiguration = _EnvConfig(
     deploymentEnvironmentName: 'local',
-    renderBaseUrl: 'http://192.168.1.2:4000/api/',
+    // The laptop's backend through the USB cable: run `adb reverse tcp:4000 tcp:4000`
+    // (the office Wi-Fi keeps devices apart, so the laptop's LAN address can't be reached).
+    renderBaseUrl: 'http://localhost:4000/api/',
     oneSignalAppId: 'a6697fe1-be34-420f-9aa7-1fa369e1b07c',
   );
 
