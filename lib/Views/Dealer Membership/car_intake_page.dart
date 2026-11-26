@@ -43,6 +43,8 @@ class _CarIntakePageState extends State<CarIntakePage> {
   final _carAddress = TextEditingController();
   double? _carLat;
   double? _carLng;
+  // The picked address's PIN code; '' for GPS (the server looks it up).
+  String _carPincode = '';
 
   DealerRcPrefillModel? _facts;
   String? _transmission;
@@ -87,6 +89,7 @@ class _CarIntakePageState extends State<CarIntakePage> {
       _carAddress.text = car.carAddress;
       _carLat = car.carLatitude;
       _carLng = car.carLongitude;
+      _carPincode = car.carPincode;
       _imageUrls = List.of(car.images);
     } else if (!_isCustomerCar) {
       // A dealer's own car is in their city; a customer's car takes the city
@@ -197,6 +200,7 @@ class _CarIntakePageState extends State<CarIntakePage> {
           'latitude': _carLat,
           'longitude': _carLng,
           'address': _carAddress.text.trim(),
+          if (_carPincode.isNotEmpty) 'pincode': _carPincode,
         },
       },
     };
@@ -533,6 +537,7 @@ class _CarIntakePageState extends State<CarIntakePage> {
     setState(() {
       _carLat = position.latitude;
       _carLng = position.longitude;
+      _carPincode = '';
     });
   }
 
@@ -562,12 +567,14 @@ class _CarIntakePageState extends State<CarIntakePage> {
               (place) => setState(() {
                 _carLat = place.latitude;
                 _carLng = place.longitude;
+                _carPincode = place.pincode;
                 if (place.city.isNotEmpty) _city.text = place.city;
               }),
           onCleared:
               () => setState(() {
                 _carLat = null;
                 _carLng = null;
+                _carPincode = '';
               }),
         ),
         Obx(

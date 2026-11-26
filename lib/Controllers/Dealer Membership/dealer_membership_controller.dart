@@ -82,7 +82,7 @@ class DealerMembershipController extends GetxController {
       // Plans and dealer types follow the dealer (broker or not).
       config.value = null;
       membership.value = null;
-      _askedForShowroomLocation = false;
+      _showroomSheetOpen = false;
       dealerName.value = '';
       newLeads.value = 0;
       pendingActivities.clear();
@@ -101,24 +101,28 @@ class DealerMembershipController extends GetxController {
     await loadHome();
   }
 
-  // Dealers enrolled before registration asked for the showroom address have
+  // Dealers enrolled before registration required the showroom address have
   // no position, so Dealer Exchange shows no distances to or from them. Dealer
-  // Home asks for it once each time the app opens until it is set: after the
-  // dealer type, and never brokers (customer cars only, no Buy).
-  bool _askedForShowroomLocation = false;
+  // Home makes them set it: a sheet that stays until a location is saved,
+  // after the dealer type, and never for brokers (customer cars only, no Buy).
+  // If the sheet ever closes without one, the next membership update or visit
+  // to Dealer Home opens it again.
+  bool _showroomSheetOpen = false;
 
   bool shouldAskForShowroomLocation() {
     final m = membership.value;
-    if (_askedForShowroomLocation ||
+    if (_showroomSheetOpen ||
         m == null ||
         m.hasShowroomLocation ||
         m.needsDealerType ||
         m.isBroker) {
       return false;
     }
-    _askedForShowroomLocation = true;
+    _showroomSheetOpen = true;
     return true;
   }
+
+  void showroomSheetClosed() => _showroomSheetOpen = false;
 
   // Dealer Hub events come to the dealer's user room. A reconnect drops the
   // socket's rooms, so it is joined again on every connect.
@@ -364,10 +368,10 @@ class DealerMembershipController extends GetxController {
     }
   }
 
-  /// UPI: pays through the app's shared Razorpay flow (its order and
-  /// verification are kept in the payments collection), then the server checks
-  /// that payment against the plan or top-up and starts the plan or adds the
-  /// points.
+  /// Online (UPI, card, net banking): pays through the app's shared Razorpay
+  /// flow (its order and verification are kept in the payments collection),
+  /// then the server checks that payment against the plan or top-up and starts
+  /// the plan or adds the points.
   Future<void> purchasePlan(DealerPurchasable plan) async {
     if (isPaying.value) return;
     isPaying.value = true;
@@ -413,10 +417,10 @@ class DealerMembershipController extends GetxController {
         return;
       }
 
-      final data = await DealerMembershipApi.post(
-        AppUrls.dealerMembershipVerifyPayment,
-        {'planCode': plan.code, ...success.toJson()},
-      );
+      final data = await _confirmPayment({
+        'planCode': plan.code,
+        ...success.toJson(),
+      }, paymentId: success.paymentId);
       membership.value = DealerMembershipModel.fromJson(
         Map<String, dynamic>.from(data),
       );
@@ -442,14 +446,35 @@ class DealerMembershipController extends GetxController {
         ToastType.success,
       );
       loadHome(silent: true);
-    } on DealerApiException catch (e) {
+    } on _PaymentNotConfirmed catch (e) {
       _toast(
         'Payment received, activation pending',
-        e.message,
+        '${e.error.message} Your payment ID: ${e.paymentId}',
         ToastType.warning,
       );
     } finally {
       isPaying.value = false;
+    }
+  }
+
+  /// Razorpay has already taken the money, and the server applies an order
+  /// only once, so a dropped connection or a server hiccup is tried again.
+  Future<dynamic> _confirmPayment(
+    Map<String, dynamic> body, {
+    required String paymentId,
+  }) async {
+    for (var attempt = 1; ; attempt++) {
+      try {
+        return await DealerMembershipApi.post(
+          AppUrls.dealerMembershipVerifyPayment,
+          body,
+        );
+      } on DealerApiException catch (e) {
+        final retry =
+            e.code == 'NETWORK' || e.code == 'TIMEOUT' || e.statusCode >= 500;
+        if (!retry || attempt == 3) throw _PaymentNotConfirmed(e, paymentId);
+        await Future.delayed(Duration(seconds: 2 * attempt));
+      }
     }
   }
 
@@ -622,4 +647,13 @@ class DealerMembershipController extends GetxController {
       type: type,
     );
   }
+}
+
+// Paid on Razorpay, but the server did not confirm it: the dealer keeps the
+// payment ID to quote to OtoBix.
+class _PaymentNotConfirmed implements Exception {
+  const _PaymentNotConfirmed(this.error, this.paymentId);
+
+  final DealerApiException error;
+  final String paymentId;
 }

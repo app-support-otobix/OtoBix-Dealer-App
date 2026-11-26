@@ -50,9 +50,15 @@ class _DealerHomePageState extends State<DealerHomePage> {
     super.dispose();
   }
 
-  void _askForShowroomLocation() {
-    if (mounted && controller.shouldAskForShowroomLocation()) {
-      askForShowroomLocation();
+  // A dealer with no showroom location must set one: the sheet stays until a
+  // location is saved. Should it close any other way, the next membership
+  // update or visit opens it again.
+  Future<void> _askForShowroomLocation() async {
+    if (!mounted || !controller.shouldAskForShowroomLocation()) return;
+    try {
+      await askForShowroomLocation();
+    } finally {
+      controller.showroomSheetClosed();
     }
   }
 

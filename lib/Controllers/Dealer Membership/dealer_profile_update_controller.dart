@@ -58,7 +58,8 @@ class DealerProfileUpdateController extends GetxController {
   /// Saves the showroom location from a searched address ([place], which has a
   /// position) or else the phone's GPS (the dealer is asked to do this at the
   /// showroom); other dealers' cars then show their distance from it. Only the
-  /// distance ever reaches other dealers.
+  /// distance ever reaches other dealers. The address's PIN code goes with it;
+  /// without one (GPS) the server looks it up from the position.
   Future<bool> setShowroomLocation({PlaceDetailsModel? place}) async {
     if (isLocating.value) return false;
     isLocating.value = true;
@@ -68,6 +69,8 @@ class DealerProfileUpdateController extends GetxController {
           await DealerMembershipApi.put(AppUrls.dealerShowroomLocation, {
             'latitude': place?.latitude ?? gps!.latitude,
             'longitude': place?.longitude ?? gps!.longitude,
+            if (place != null && place.pincode.isNotEmpty)
+              'pincode': place.pincode,
           });
       _membership.value = DealerMembershipModel.fromJson(
         Map<String, dynamic>.from(data),

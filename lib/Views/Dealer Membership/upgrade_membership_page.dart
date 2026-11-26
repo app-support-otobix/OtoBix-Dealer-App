@@ -11,8 +11,8 @@ import 'package:otobix/Widgets/button_widget.dart';
 import 'package:otobix/Widgets/toast_widget.dart';
 
 /// Upgrade (or renew) the plan, or with [addPoints] buy more points for the
-/// current cycle. Both pay the same way: UPI or an offline payment OtoBix
-/// confirms.
+/// current cycle. Both pay the same way: online through Razorpay (UPI, card,
+/// net banking) or an offline payment OtoBix confirms.
 class UpgradeMembershipPage extends StatefulWidget {
   const UpgradeMembershipPage({super.key, this.addPoints = false});
 
@@ -149,6 +149,13 @@ class _UpgradeMembershipPageState extends State<UpgradeMembershipPage> {
                 _methodTile(pm, selected: pm.code == method),
                 const SizedBox(height: 8),
               ],
+              if (method == 'UPI')
+                Text(
+                  topUp != null
+                      ? 'Pay by UPI, card or net banking through Razorpay. The points are added as soon as the payment goes through.'
+                      : 'Pay by UPI, card or net banking through Razorpay. The plan starts as soon as the payment goes through.',
+                  style: const TextStyle(fontSize: 11, color: AppColors.grey),
+                ),
               if (method == 'OFFLINE') ...[
                 const SizedBox(height: 6),
                 TextField(
