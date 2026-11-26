@@ -102,9 +102,15 @@ class RegistrationFormController extends GetxController {
   List<TextEditingController> addressControllers = [];
 
   /// The place picked from the suggestions for an address field. The first
-  /// address with one is sent as the showroom location, which puts this
-  /// dealer's cars in nearest-first order for other dealers.
+  /// address with one is sent as the showroom location (with its PIN code),
+  /// which puts this dealer's cars in nearest-first order for other dealers.
+  /// A dealer's first address must be one: the showroom location is required.
   final Map<TextEditingController, PlaceDetailsModel> addressPlaces = {};
+
+  /// Whether [controller]'s address was picked from the suggestions (so it
+  /// has a position).
+  bool hasPickedPlace(TextEditingController controller) =>
+      addressPlaces[controller]?.hasPosition ?? false;
 
   void setAddressPlace(
     TextEditingController controller,
@@ -223,6 +229,8 @@ class RegistrationFormController extends GetxController {
           "showroomLocation": {
             "latitude": showroom.latitude,
             "longitude": showroom.longitude,
+            // Without one the server looks it up from the position.
+            if (showroom.pincode.isNotEmpty) "pincode": showroom.pincode,
           },
       };
 

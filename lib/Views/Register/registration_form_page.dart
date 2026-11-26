@@ -703,6 +703,10 @@ class RegistrationFormPage extends StatelessWidget {
             ...getxController.addressControllers.asMap().entries.map((entry) {
               final index = entry.key;
               final controller = entry.value;
+              // A dealer's first address is the showroom: it must be picked
+              // from the suggestions, which gives its location and PIN code.
+              final showroomRequired =
+                  index == 0 && userRole == AppConstants.roles.dealer;
               return Column(
                 children: [
                   Padding(
@@ -714,6 +718,7 @@ class RegistrationFormPage extends StatelessWidget {
                             key: ObjectKey(controller),
                             controller: controller,
                             otpVerificationToken: verificationToken,
+                            pickRequired: showroomRequired,
                             onPicked:
                                 (place) => getxController.setAddressPlace(
                                   controller,
@@ -744,11 +749,25 @@ class RegistrationFormPage extends StatelessWidget {
                                 color: AppColors.grey.withValues(alpha: .5),
                                 fontSize: 12,
                               ),
+                              helperText:
+                                  showroomRequired
+                                      ? 'Pick it from the suggestions: it sets your showroom location'
+                                      : null,
+                              helperStyle: TextStyle(
+                                color: AppColors.grey,
+                                fontSize: 11,
+                              ),
                             ),
                             validator: (value) {
                               if (index == 0 &&
                                   (value == null || value.trim().isEmpty)) {
-                                return 'At least one address is required';
+                                return showroomRequired
+                                    ? 'Showroom address is required'
+                                    : 'At least one address is required';
+                              }
+                              if (showroomRequired &&
+                                  !getxController.hasPickedPlace(controller)) {
+                                return 'Pick your showroom address from the suggestions';
                               }
                               return null;
                             },

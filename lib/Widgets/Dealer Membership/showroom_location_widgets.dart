@@ -105,7 +105,9 @@ class ShowroomLocationCard extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     isSet
-                        ? 'Updated ${DateFormat('d MMM yyyy').format(m!.showroomLocationAt?.toLocal() ?? DateTime.now())} · tap Update to change it'
+                        ? 'Updated ${DateFormat('d MMM yyyy').format(m!.showroomLocationAt?.toLocal() ?? DateTime.now())}'
+                            '${m.showroomPincode.isEmpty ? '' : ' · PIN ${m.showroomPincode}'}'
+                            ' · tap Update to change it'
                         : 'Search your showroom address, or use your location while at the showroom. Other dealers never see it, only the distance.',
                     style: const TextStyle(fontSize: 11, color: AppColors.grey),
                   ),
@@ -134,16 +136,18 @@ class ShowroomLocationCard extends StatelessWidget {
   }
 }
 
-/// Asks a dealer who has no showroom location yet (enrolled before registration
-/// asked for the address) to set one, when Dealer Home opens. Closes with true
-/// once one is saved; Later asks again the next time the app opens.
+/// Makes a dealer who has no showroom location yet (enrolled before
+/// registration required the address) set one, when Dealer Home opens. It
+/// cannot be closed (no Later, no tap outside, no swipe down, no Back) until a
+/// location is saved, and then closes with true.
 Future<bool?> askForShowroomLocation() =>
     _ShowroomLocationSheet.show(asking: true);
 
 /// Two ways to set the showroom location: search its address, or read the
 /// phone GPS while at the showroom. Closes with true once one is saved.
 class _ShowroomLocationSheet extends StatefulWidget {
-  /// Opened by the app rather than by the dealer: says why, and offers Later.
+  /// Opened by the app rather than by the dealer: says why, and stays open
+  /// until a location is saved.
   final bool asking;
   const _ShowroomLocationSheet({this.asking = false});
 
@@ -153,6 +157,8 @@ class _ShowroomLocationSheet extends StatefulWidget {
     _ShowroomLocationSheet(asking: asking),
     isScrollControlled: true,
     ignoreSafeArea: false,
+    isDismissible: !asking,
+    enableDrag: !asking,
     backgroundColor: AppColors.white,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
@@ -181,6 +187,14 @@ class _ShowroomLocationSheetState extends State<_ShowroomLocationSheet> {
   @override
   Widget build(BuildContext context) {
     final media = MediaQuery.of(context);
+    // Asked by the app: Back does nothing; saving a location closes it.
+    return PopScope(
+      canPop: !widget.asking,
+      child: _sheet(media),
+    );
+  }
+
+  Widget _sheet(MediaQueryData media) {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: ConstrainedBox(
@@ -210,8 +224,8 @@ class _ShowroomLocationSheetState extends State<_ShowroomLocationSheet> {
               const SizedBox(height: 4),
               Text(
                 widget.asking
-                    ? 'Distances now come from Google Maps. Search your '
-                        "showroom's address so other dealers' cars show "
+                    ? 'Your showroom location is needed to continue. Search '
+                        "your showroom's address so other dealers' cars show "
                         'exactly how far they are from you. They never see '
                         'it, only the distance.'
                     : 'Other dealers never see it, only how far their cars are from you.',
@@ -221,6 +235,7 @@ class _ShowroomLocationSheetState extends State<_ShowroomLocationSheet> {
               AddressSearchField(
                 controller: _address,
                 autofocus: true,
+                pickRequired: true, // typing alone saves nothing here
                 decoration: const InputDecoration(
                   hintText: 'Search your showroom name or address',
                   hintStyle: TextStyle(fontSize: 13),
@@ -252,17 +267,6 @@ class _ShowroomLocationSheetState extends State<_ShowroomLocationSheet> {
                           ),
                         ),
               ),
-              if (widget.asking)
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: () => Navigator.of(context).pop(false),
-                    child: const Text(
-                      'Later',
-                      style: TextStyle(color: AppColors.grey),
-                    ),
-                  ),
-                ),
             ],
           ),
         ),

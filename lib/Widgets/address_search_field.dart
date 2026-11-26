@@ -26,6 +26,10 @@ class AddressSearchField extends StatefulWidget {
   /// The field was emptied, so a position picked earlier no longer applies.
   final VoidCallback? onCleared;
 
+  /// Only a picked suggestion counts here (the showroom location), so the
+  /// hints never say to type the address instead.
+  final bool pickRequired;
+
   const AddressSearchField({
     super.key,
     required this.controller,
@@ -35,6 +39,7 @@ class AddressSearchField extends StatefulWidget {
     this.autofocus = false,
     this.otpVerificationToken,
     this.onCleared,
+    this.pickRequired = false,
   });
 
   @override
@@ -134,12 +139,17 @@ class _AddressSearchFieldState extends State<AddressSearchField> {
       );
       note =
           found.isEmpty
-              ? 'No matching places. Try the area or street name, or type the full address.'
+              ? widget.pickRequired
+                  ? 'No matching places. Try the area or street name.'
+                  : 'No matching places. Try the area or street name, or type the full address.'
               : '';
     } catch (e) {
       debugPrint('Address suggestions unavailable: $e');
       found = const [];
-      note = _reason(e, _unavailable);
+      note =
+          widget.pickRequired
+              ? 'Address suggestions are not available right now. Please try again in a moment.'
+              : _reason(e, _unavailable);
     }
     if (!mounted || search != _search || !_focusNode.hasFocus) return;
     _setNote(note);
@@ -190,10 +200,12 @@ class _AddressSearchFieldState extends State<AddressSearchField> {
     } catch (e) {
       debugPrint('Address details unavailable: $e');
       _setNote(
-        _reason(
-          e,
-          'That address could not be loaded. Please pick it again or type the address.',
-        ),
+        widget.pickRequired
+            ? 'That address could not be loaded. Please pick it again.'
+            : _reason(
+              e,
+              'That address could not be loaded. Please pick it again or type the address.',
+            ),
       );
     } finally {
       _session = PlacesApi.newSessionToken(); // the details call ends a session

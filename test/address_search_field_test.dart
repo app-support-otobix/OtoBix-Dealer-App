@@ -66,7 +66,8 @@ void main() {
     cleared = 0;
   });
 
-  Future<void> pumpField(WidgetTester tester) => tester.pumpWidget(
+  Future<void> pumpField(WidgetTester tester, {bool pickRequired = false}) =>
+      tester.pumpWidget(
     MaterialApp(
       home: Scaffold(
         body: SingleChildScrollView(
@@ -75,6 +76,7 @@ void main() {
             otpVerificationToken: 'otp-token',
             onPicked: (p) => picked = p,
             onCleared: () => cleared++,
+            pickRequired: pickRequired,
           ),
         ),
       ),
@@ -137,6 +139,7 @@ void main() {
       );
       expect(picked?.latitude, 22.5726);
       expect(picked?.longitude, 88.4321);
+      expect(picked?.pincode, '700091'); // sent on with the location
       expect(find.text('Park Street'), findsNothing); // list closed
       expect(find.byIcon(Icons.where_to_vote), findsOneWidget);
       // The picked address is not searched again.
@@ -206,4 +209,34 @@ void main() {
     await type(tester, 'Unknown Motors Kolkata');
     expect(find.textContaining('No matching places'), findsNothing);
   });
+
+  testWidgets(
+    'where a pick is required, the hints never say to type the address',
+    (tester) async {
+      backend.failSuggestions = true;
+      await pumpField(tester, pickRequired: true);
+      await type(tester, '12 Park Street, Kolkata');
+      await tester.pump(const Duration(milliseconds: 400));
+      await tester.pump();
+      expect(
+        find.text(
+          'Address suggestions are not available right now. Please try again in a moment.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.textContaining('type the'), findsNothing);
+      expect(picked, isNull);
+
+      backend.failSuggestions = false;
+      backend.noSuggestions = true;
+      await type(tester, 'Unknown Motors Kolkata');
+      await tester.pump(const Duration(milliseconds: 400));
+      await tester.pump();
+      expect(
+        find.text('No matching places. Try the area or street name.'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('type the'), findsNothing);
+    },
+  );
 }
